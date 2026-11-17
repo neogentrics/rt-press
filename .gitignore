@@ -1,0 +1,13 @@
+node_modules/
+release/
+dist/
+.DS_Store
+*.log
+.env
+.env.*
+
+# The typesetter program is downloaded and checked at build time, never committed.
+vendor/typst/
+
+# Real books are private test files and never go in the repo.
+test/private/
