@@ -74,7 +74,8 @@ decided = [
     ('Where the words live', 'One home for the text. A book from RT Story Tracker is read-only here, with a jump to the chapter; a book brought in from files can be corrected here.'),
     ('How far the covers go', 'Size, place and set type. A template for your illustrator, the art placed, the type set and checked. No painting tools.'),
     ('What 1.0 does', 'Interiors for KDP first. Frames in 1.1, art in 1.2, covers in 1.3 and 1.4, where Press replaces your build script.'),
-    ('Where it\'s built', 'On the Linux build machine, with Windows and Mac installers from GitHub Actions.'),
+    ('The plan', 'Approved on 17 November 2026.'),
+    ('Where it\'s built','On the Linux build machine, with Windows and Mac installers from GitHub Actions.'),
 ]
 defaults = [
     ('KDP rules are hard rules', 'Trim, page count, margins, bleed and file rules can\'t be switched off. Your house rules are a preset: on for you, offered to everyone.'),
@@ -97,12 +98,12 @@ page = f'''<!DOCTYPE html>
 <nav aria-label="Sections"><a class="lead" href="#now">Now</a><a href="#ideas">Our way</a><a href="#coming">Releases</a><a href="#owns">Who keeps what</a><a href="#later">Later</a><a href="#decisions">Decisions</a></nav></div></div>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
-<div class="kicker"><span class="pulse" aria-hidden="true"></span>Waiting for your approval</div>
-<h1 id="nowh">The plan is written. No code has been started.</h1>
+<div class="kicker"><span class="pulse" aria-hidden="true"></span>Step zero has started</div>
+<h1 id="nowh">The plan is approved. Step zero has started.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer\'s rules before you upload.</p>
-<ul><li><b>Approve the plan</b><span>Building starts when you say so. Approving also approves the 5 defaults under Decisions.</span></li>
-<li><b>Pick the test book</b><span>One of your finished books that your build script already makes, to compare against.</span></li>
-<li><b>Then step zero</b><span>Prove the typesetter: your book, set by Press, matched against your script in under 30 seconds.</span></li></ul>
+<ul><li><b>Approved</b><span>On 17 November 2026, with the 5 defaults under Decisions.</span></li>
+<li><b>The test book</b><span>A frameless 6 × 9 novel, hardcover pinned at 128 pages, because 1.0 makes no page frames.</span></li>
+<li><b>Found so far</b><span>Typst writes the TrimBox and reports each chapter\'s page, but bleeds on both side edges, so Press trims the spine side.</span></li></ul>
 </section>
 <div class="glance">
 <div class="card next"><span class="label">First release</span><b><a href="#r-v10">v1.0: Interiors for KDP</a></b><p>Paperback and hardcover interiors with themes, page-turn repair, even page bottoms, a pinned page count and every check.</p></div>
@@ -111,7 +112,7 @@ page = f'''<!DOCTYPE html>
 </div>
 <section aria-labelledby="railh"><div class="section-head"><h2 id="railh">Every version</h2></div>
 <div class="rail"><div class="rail-group"><span class="rail-label">1.x</span><div class="rail-nodes">{rail}</div></div>
-<div class="key"><span><i class="k-now"></i>Next up, once approved</span><span><i class="k-plan"></i>Planned</span></div></div></section>
+<div class="key"><span><i class="k-now"></i>In progress</span><span><i class="k-plan"></i>Planned</span></div></div></section>
 <section id="ideas" aria-labelledby="ideash"><div class="section-head"><h2 id="ideash">Our own way of doing the job</h2><p>Three ideas the app is built around</p></div>
 <div class="ideas">
 <div class="card"><b>The checks read the file</b><p>Every check runs on the finished PDF, not on the settings, so nothing passes on a promise. A broken rule shows on the page it\'s on.</p></div>
@@ -132,11 +133,11 @@ page = f'''<!DOCTYPE html>
 </tbody></table></div></section>
 <section id="later" aria-labelledby="laterh"><div class="section-head"><h2 id="laterh">Later and ongoing</h2></div>
 <div class="list">{"".join(rel_html(r, "idea") for r in later)}</div></section>
-<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults waiting for your approval</p></div>
-<div class="decisions">{"".join(dec(t, p, "decision open") for t, p in defaults)}
+<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan</p></div>
+<div class="decisions">{"".join(dec(t, p) for t, p in defaults)}
 <details class="more" open><summary>Chosen by you</summary><div class="inside">{"".join(dec(t, p) for t, p in decided)}</div></details></div>
 </section>
-<footer>From <a href="https://github.com/neogentrics/rt-press">the private repo</a>, plan of 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
+<footer>From <a href="https://github.com/neogentrics/rt-press">the private repo</a>, plan approved 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
 </div>
 '''
 script = re.search(r'<script>.*?</script>', layout, re.S).group(0)

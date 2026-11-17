@@ -46,9 +46,14 @@ it and writes the cover. No painting or drawing tools.
 ✅ **Chosen 17 November 2026: on the Linux build machine.** Build and test there; Windows and Mac installers come from
 GitHub Actions.
 
-## Defaults, open to change
+### 7. The plan
 
-These follow the owner's existing books and the other apps. Say so to change any of them.
+✅ **Approved 17 November 2026,** with the defaults below. The step-zero test book is a frameless 6 × 9 novel whose
+hardcover is pinned at 128 pages, because 1.0 makes no page frames.
+
+## Defaults, approved with the plan
+
+These follow the owner's existing books and the other apps. Any of them can still change.
 
 | # | Default | Why |
 |---|---|---|

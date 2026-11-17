@@ -37,8 +37,21 @@ The owner chose to bundle an open typesetter ([decision 2](../decisions.md#2-how
 | Where an element landed | `typst eval` with a query, from outside | the query reference |
 | Shipping it | A prebuilt program for each system, or a WebAssembly build whose PDF output isn't documented | the releases page, typst.ts |
 
-Three items here aren't settled by the docs and are tested in step zero: that 0.15 really writes the TrimBox, how page
-numbers map to physical pages in a query, and the file names and sizes of the prebuilt programs.
+### Measured on the build machine, 17 November 2026
+
+A test book in Typst 0.15.1, 6 × 9 with 0.125 in bleed and odd-page chapter starts:
+
+| Question | Found |
+|---|---|
+| Prebuilt programs | All six: Windows, Mac and Linux, each x64 and arm64, 14 to 22 MB compressed. **No checksums are published**, so Press pins its own SHA-256 for each. |
+| TrimBox | Written: `[9 9 441 657]` on a `[0 0 450 666]` page |
+| BleedBox | Not written |
+| Bleed sides | **On all four edges.** The page is 6.25 in wide, where KDP wants 6.125 in with no bleed at the spine. Press's finishing step trims the inside edge of each page. |
+| Where each chapter landed | Read from outside with `typst eval` and `location().page()`: physical pages 1, 5 and 9, as odd-page starts should be |
+| Fonts | Embedded (two font files), no Type 3 |
+| Transparency | None |
+| PDF version | 1.7 |
+| CMYK | Not shown yet: the colour sits inside compressed streams, which this test didn't open |
 
 ## How Press uses it
 
@@ -49,8 +62,8 @@ numbers map to physical pages in a query, and the file names and sizes of the pr
    checksum when the app is built. Nothing is installed on the computer.
 4. **Press measures and repairs.** It asks where each paragraph and line landed, fixes page turns and short pages by
    adjusting the generated source, and sets again, as the owner's script does with LibreOffice but in seconds.
-5. **Press finishes the file.** It adds what Typst doesn't write, such as the BleedBox and the file's details, and removes
-   anything a printer rejects.
+5. **Press finishes the file.** It trims the bleed off each page's inside edge, adds what Typst doesn't write, such as the
+   BleedBox and the file's details, and removes anything a printer rejects.
 6. **Press checks the file it wrote.** The checks read the finished PDF, not the settings, so a check can't pass on a
    promise. A failed check stops the file being saved.
 
@@ -60,7 +73,7 @@ The preview uses the same Typst build, as page images, so what you see is what g
 
 | Gate | How it's measured |
 |---|---|
-| It matches the owner's standard | One of his finished books, set by Press and by his script: same trim, margins and fonts; chapter starts on the same side; page turns no worse; bottom lines even |
+| It matches the owner's standard | The test book (chosen 17 November 2026: a frameless 6 × 9 novel, hardcover pinned at 128 pages), set by Press and by his script: same trim, margins and fonts; chapter starts on the same side; page turns no worse; bottom lines even |
 | It's quick | The whole book in under 30 seconds on the build machine |
 | It's the same everywhere | The same page count and the same page breaks on Windows, Mac and Linux |
 | KDP takes it | Fonts embedded, nothing transparent, page boxes right, and the previewer reports nothing |

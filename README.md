@@ -7,8 +7,8 @@ For Windows, Mac and Linux, with no account, no ads and nothing else to install.
 RT Press is part of the **Recon Towers** suite, built by its Dev Department. It was inspired by the owner writing his own
 books.
 
-> **Status: being planned. No code has been written, and there's nothing to download yet.**
-> Building starts when the owner approves the plan. Start with the [roadmap](ROADMAP.md).
+> **Status: step zero.** The plan was approved on 17 November 2026, and the typesetter is being proved on a real book.
+> There's nothing to download yet. Start with the [roadmap](ROADMAP.md).
 
 ## What it will do
 

@@ -9,7 +9,7 @@ tags: [roadmap, planning]
 # Roadmap
 
 RT Press lays out a finished book for print. This page lists the releases, each one something that can be tested on its
-own. Nothing here is built yet: **building starts when the owner approves this plan.** The choices behind it are in
+own. **The owner approved this plan on 17 November 2026, and step zero has started.** The choices behind it are in
 [decisions](docs/decisions.md).
 
 > [!TIP]
@@ -27,7 +27,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 
 | Release | Theme | Status |
 |---|---|---|
-| [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | Waiting for approval |
+| [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | 🚧 Started |
 | [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | Planned |
 | [v1.1](#v11--page-frames-and-ornaments) | Page frames and ornaments | Planned |
 | [v1.2](#v12--art-on-the-page) | Art on the page | Planned |
