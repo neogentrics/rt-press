@@ -29,6 +29,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Fetch the typesetter (refused unless it matches the lock file)
+        run: npm run fetch:typst:current
       - run: npm test
       - name: End-to-end test (real app)
         if: runner.os != 'Linux'
