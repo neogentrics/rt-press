@@ -141,7 +141,7 @@ page = f'''<!DOCTYPE html>
 <div class="decisions">{"".join(dec(t, p, "decision open") for t, p in openq)}{"".join(dec(t, p) for t, p in defaults)}
 <details class="more" open><summary>Chosen by you</summary><div class="inside">{"".join(dec(t, p) for t, p in decided)}</div></details></div>
 </section>
-<footer>From <a href="https://github.com/neogentrics/rt-press">the private repo</a>, plan approved 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
+<footer>From <a href="https://github.com/neogentrics/rt-press">the repo</a>, plan approved 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
 </div>
 '''
 script = re.search(r'<script>.*?</script>', layout, re.S).group(0)
