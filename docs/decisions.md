@@ -70,10 +70,11 @@ These follow the owner's existing books and the other apps. Any of them can stil
 | 14 | The step-zero test book is one of the owner's finished books, chosen with him at the start of step zero | It has to be a book his script already builds, to compare against. |
 | 15 | Electron, plain JavaScript and the same build, test and release tools as RT Story Tracker | Shared code and one way of releasing for every app. |
 
-## Open, the owner's
+## Also chosen
 
 ### Visibility of this repo
 
-The three new apps' repos are private, and a private repo can't be listed in the suite's latest-versions file or offered as
-a store download. The owner is deciding, app by app, whether to make each repo public at its first public release. Press
-plans on that: nothing here changes visibility, and its Bench page keeps `repoPrivate` until he does.
+✅ **Chosen 18 November 2026: public, from now.** A private repo can't be linked from the Bench page, listed in the suite's
+latest-versions file or offered as a store download, so the owner made it public rather than wait for a first release.
+Nothing private is in it: the test book and the owner's build script stay in a folder git ignores, and the history was
+checked for names, people and secrets first. The licence is still proprietary, as for RT Story Tracker.

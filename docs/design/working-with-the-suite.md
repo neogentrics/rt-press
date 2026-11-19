@@ -69,4 +69,4 @@ on 18 November 2026. Where the two differ, that page wins.
 | Updates and compatibility | Links by App Link version and accepted document kinds, never app version; *Update available* is a nudge; only an incompatible protocol blocks | v1.7 |
 | "Latest" version | Read from the suite's own versions file when the panel opens or the app starts, kept for a day, and nothing about the person is sent | v1.7 |
 | Research clips | Not accepted | — |
-| A private repo | Can't be in the versions file or offered as a download until the owner makes it public ([decisions](../decisions.md#visibility-of-this-repo)) | His call |
+| Repo visibility | Public since 18 November 2026, so Press can be in the versions file and offered as a download ([decisions](../decisions.md#visibility-of-this-repo)) | v1.0 |
