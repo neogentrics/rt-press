@@ -56,3 +56,17 @@ moved. Until v1.7, a refresh is a new send from RT Story Tracker.
 
 Interior designs, themes, frames, cover wraps and the finished print files. RT Author Desk records what was made and when;
 it never keeps a copy of the design.
+
+## The suite's rules Press follows
+
+From the shared plan, [app-suite.md](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-suite.md), as it stood
+on 18 November 2026. Where the two differ, that page wins.
+
+| Rule | What Press does | When |
+|---|---|---|
+| Installed list | Writes `installed/rt-press.json` on first run and after each update, and removes it on uninstall | v1.0 |
+| Apps status | The toolbar icon and panel, with the suite's exact wording, copied from RT Story Tracker's | v1.7 |
+| Updates and compatibility | Links by App Link version and accepted document kinds, never app version; *Update available* is a nudge; only an incompatible protocol blocks | v1.7 |
+| "Latest" version | Read from the suite's own versions file when the panel opens or the app starts, kept for a day, and nothing about the person is sent | v1.7 |
+| Research clips | Not accepted | — |
+| A private repo | Can't be in the versions file or offered as a download until the owner makes it public ([decisions](../decisions.md#visibility-of-this-repo)) | His call |

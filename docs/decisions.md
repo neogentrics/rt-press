@@ -69,3 +69,11 @@ These follow the owner's existing books and the other apps. Any of them can stil
 | 13 | The owner's existing theme files are brought over by a private one-time converter, kept out of this repo | They name his books, and public files never do. |
 | 14 | The step-zero test book is one of the owner's finished books, chosen with him at the start of step zero | It has to be a book his script already builds, to compare against. |
 | 15 | Electron, plain JavaScript and the same build, test and release tools as RT Story Tracker | Shared code and one way of releasing for every app. |
+
+## Open, the owner's
+
+### Visibility of this repo
+
+The three new apps' repos are private, and a private repo can't be listed in the suite's latest-versions file or offered as
+a store download. The owner is deciding, app by app, whether to make each repo public at its first public release. Press
+plans on that: nothing here changes visibility, and its Bench page keeps `repoPrivate` until he does.

@@ -85,6 +85,9 @@ defaults = [
     ('Your existing themes', 'Brought over by a private one-time converter, kept out of the repo, because they name your books.'),
     ('The step-zero book', 'One of your finished books, chosen with you at the start of step zero.'),
 ]
+openq = [
+    ('Is this repo public at its first release?', 'A private repo can't be in the suite's latest-versions file or offered as a store download. You're deciding app by app. Nothing here changes visibility until you say.'),
+]
 def dec(t, p, cls='decision'):
     return f'<div class="{cls}"><h3>{html.escape(t)}</h3><p>{html.escape(p)}</p></div>'
 
@@ -134,8 +137,8 @@ page = f'''<!DOCTYPE html>
 </tbody></table></div></section>
 <section id="later" aria-labelledby="laterh"><div class="section-head"><h2 id="laterh">Later and ongoing</h2></div>
 <div class="list">{"".join(rel_html(r, "idea") for r in later)}</div></section>
-<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan</p></div>
-<div class="decisions">{"".join(dec(t, p) for t, p in defaults)}
+<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan, {len(openq)} waiting for you</p></div>
+<div class="decisions">{"".join(dec(t, p, "decision open") for t, p in openq)}{"".join(dec(t, p) for t, p in defaults)}
 <details class="more" open><summary>Chosen by you</summary><div class="inside">{"".join(dec(t, p) for t, p in decided)}</div></details></div>
 </section>
 <footer>From <a href="https://github.com/neogentrics/rt-press">the private repo</a>, plan approved 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
