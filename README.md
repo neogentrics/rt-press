@@ -7,8 +7,14 @@ For Windows, Mac and Linux, with no account, no ads and nothing else to install.
 RT Press is part of the **Recon Towers** suite, built by its Dev Department. It was inspired by the owner writing his own
 books.
 
+[![Tests](https://img.shields.io/github/actions/workflow/status/neogentrics/rt-press/ci.yml?branch=main&style=for-the-badge&label=tests&labelColor=150e22)](https://github.com/neogentrics/rt-press/actions/workflows/ci.yml)
+[![Platforms](https://img.shields.io/badge/windows%20%7C%20macOS%20%7C%20linux-b79cff?style=for-the-badge&labelColor=150e22)](#what-it-runs-on)
+[![Status](https://img.shields.io/badge/status-step%20zero-9b1c31?style=for-the-badge&labelColor=150e22)](ROADMAP.md#step-zero--prove-the-typesetter)
+[![Price](https://img.shields.io/badge/price-free-f2b417?style=for-the-badge&labelColor=150e22)](LICENSE)
+
 > **Status: step zero.** The plan was approved on 17 November 2026, and the typesetter is being proved on a real book.
-> There's nothing to download yet. Start with the [roadmap](ROADMAP.md).
+> There's nothing to download yet. Start with the [roadmap](ROADMAP.md), or follow the work in
+> [the issues](https://github.com/neogentrics/rt-press/issues).
 
 ## What it will do
 
