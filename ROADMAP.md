@@ -42,9 +42,8 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 
 ## Step zero — Prove the typesetter
 
-Not a version-1 release, but it ends with an alpha the owner can install and test. Press rests on a typesetter it doesn't
-own, so the first job is to show that it can set a real book to the standard the owner's books are set to today. See
-[typesetting](docs/design/typesetting.md).
+No release. Press rests on a typesetter it doesn't own, so the first job is to show that it can set a real book to the
+standard the owner's books are set to today. See [typesetting](docs/design/typesetting.md).
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -52,11 +51,9 @@ own, so the first job is to show that it can set a real book to the standard the
 | Typst inside | M | The typesetter ships inside the app for each system, checked against its published checksum when the app is built. Nothing else is installed. |
 | A real book, rebuilt | L | One of the owner's finished books, set by Press and compared with the PDF his own build script makes: page count, where each chapter starts, page turns, bottom lines, fonts and file checks. |
 | The file KDP gets | S | Trim and bleed boxes, every font embedded, nothing transparent, and the previewer on KDP accepting it. |
-| 🙋 A first alpha | L | A window over all of the above: open a book, choose a trim size, build the PDF, see the checks page by page, and open the file. Released as a pre-release, `v1.0.0-alpha.0`, so it can be tested on a real computer. Later alphas follow as 1.0 fills in. |
 
 **Test:** the rebuilt book matches or beats the script's on every count above, in under 30 seconds instead of 8 to 12
-minutes, and makes the same pages on all three systems. If it can't, this is where the owner hears about it, before v1.0. The alpha installs on Windows, opens the test book and builds a
-PDF whose checks pass.
+minutes, and makes the same pages on all three systems. If it can't, this is where the owner hears about it, before v1.0.
 
 ## v1.0 — Interiors for KDP
 

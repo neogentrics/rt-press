@@ -75,7 +75,7 @@ decided = [
     ('How far the covers go', 'Size, place and set type. A template for your illustrator, the art placed, the type set and checked. No painting tools.'),
     ('What 1.0 does', 'Interiors for KDP first. Frames in 1.1, art in 1.2, covers in 1.3 and 1.4, where Press replaces your build script.'),
     ('The plan', 'Approved on 17 November 2026.'),
-    ('Alphas for testing', 'A pre-release alpha as soon as the typesetting works, and more as 1.0 fills in, so you can test on your own computer. Released only when you say so.'),
+    ('No alpha', 'You test the first working version. Step zero ends with its results, not a release.'),
     ('Where it\'s built','On the Linux build machine, with Windows and Mac installers from GitHub Actions.'),
 ]
 defaults = [

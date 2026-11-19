@@ -51,11 +51,10 @@ GitHub Actions.
 ✅ **Approved 17 November 2026,** with the defaults below. The step-zero test book is a frameless 6 × 9 novel whose
 hardcover is pinned at 128 pages, because 1.0 makes no page frames.
 
-### 8. Alphas for testing
+### 8. No alpha
 
-✅ **Chosen 18 November 2026: release a pre-release alpha as soon as the typesetting works,** and keep releasing alphas
-(`v1.0.0-alpha.1` and on) as 1.0 fills in, so the owner can test on his own computer. They're marked as pre-releases and
-unsigned, and the release workflow runs only when the owner says so. Author Desk is released the same way.
+✅ **Chosen 18 November 2026: no alpha. The owner tests the first working version.** Step zero ends with its results
+document, not a release, and v1.0 is the first thing he installs.
 
 ## Defaults, approved with the plan
 
