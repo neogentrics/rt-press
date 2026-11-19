@@ -68,5 +68,6 @@ on 18 November 2026. Where the two differ, that page wins.
 | Apps status | The toolbar icon and panel, with the suite's exact wording, copied from RT Story Tracker's | v1.7 |
 | Updates and compatibility | Links by App Link version and accepted document kinds, never app version; *Update available* is a nudge; only an incompatible protocol blocks | v1.7 |
 | "Latest" version | Read from the suite's own versions file when the panel opens or the app starts, kept for a day, and nothing about the person is sent | v1.7 |
+| Look and feel | The frame matches RT Markdown Reader's: short menus and the command palette, the Help menu, Help Center and Tutorial, the About window, one Preferences window, the shared themes, an icon toolbar, self-update, accessibility checks, languages and plain wording. The print preview and layout screens get their own design inside it | v1.0 |
 | Research clips | Not accepted | — |
 | Repo visibility | Public since 18 November 2026, so Press can be in the versions file and offered as a download ([decisions](../decisions.md#visibility-of-this-repo)) | v1.0 |

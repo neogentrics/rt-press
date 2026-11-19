@@ -74,9 +74,14 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 | 🙋 Checks before upload | M | KDP's rules for trim, page count, margins, bleed, fonts, picture resolution, links and blank pages. A broken rule is shown on the page it's on, and the file isn't written until it's fixed. |
 | Preview | M | The pages as they'll print, side by side as spreads, updating as you change the theme. |
 | Installed list | S | On first run and after each update, writes `installed/rt-press.json` (id, name, version, launch path, protocol) in the App Link folder, and removes it on uninstall, so the other apps can find Press. |
+| 🙋 Menus and Help | M | File, Edit, View and Help, each kept short, with less-used commands in submenus and every command runnable by name from the command palette (`Ctrl+K`). The Help menu in the suite's order: *Help Center* (`F1`), *Tutorial*, *Check for Updates…*, *About RT Press*. Guides are plain Markdown files in a `help` folder, and the tutorial offers a practice book. |
+| 🙋 About and Preferences | S | The suite's About window: icon, version, *Website*, *What's new in this version*, *Report a problem or suggest a feature*, *Source code*, the Electron, Chromium, Node and system versions with *Copy details*, and links to the licence and the open-source notices. One Preferences window (`Ctrl+,`) holds every setting. |
+| 🙋 Themes and the toolbar | M | The shared themes with *Follow System*, *Glass*, *Colour-safe* and *Customize Theme*, and the theme button on the main screen. An icon toolbar with a name on hover for each button. |
+| 🙋 Updates, access and languages | M | *Restart to update* where the system allows it, and a download link where it doesn't. Every button named, every theme at WCAG AA contrast, Windows high contrast, and everything doable from the keyboard, all checked by the tests. Spanish, French and German, and right-to-left layouts. |
 
 **Test:** lay out a book in each trim size, upload it to KDP's previewer, and it reports nothing. Change one word in RT
-Story Tracker, refresh, and only that page moves.
+Story Tracker, refresh, and only that page moves. The menus, Help, About and Preferences use RT Markdown
+Reader's wording, and every theme passes the contrast test. The print preview and the layout screens have their own design, inside that frame.
 
 ## v1.1 — Page frames and ornaments
 
