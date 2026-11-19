@@ -34,7 +34,7 @@ chat.
 
 ## Milestones
 
-Each ends with its tests passing and a commit. Tell the planning session in chat: the milestone, the commit hash, and the
+M1 to M6 end with their tests passing and a commit; M7 ends with the alpha. Tell the planning session in chat: the milestone, the commit hash, and the
 test result.
 
 **M1. An empty app.** `package.json` (name `rt-press`, productName `RT Press`, appId `com.recontowers.press`, version
@@ -80,6 +80,22 @@ check against a good file and a deliberately broken one. Also settle the open qu
 landed (page and y position). Write a function that finds pages ending mid-sentence, then a toy repair: change the generated
 source so the whole sentence starts the next page, set again, and show the page turn moved and nothing else did. Report what
 Typst lets you steer and what it doesn't, and the time per round.
+
+**M7. The first alpha.** Only after M6 passes. If M6 fails, stop and tell the planning session: the alpha waits for the
+owner's decision. Otherwise, a plain window over the pieces already built, so the owner can test on his own computer:
+
+1. **Open a book:** a folder of Word chapters or of Markdown files (one file a chapter, in filename order), using the M3
+   importer. Show the title, the chapter list and the word count.
+2. **Choose:** a trim size from `print-rules.js` (every KDP paperback and hardcover size), paper, and the one starter theme.
+   The inside margin follows the page count.
+3. **Build:** write the PDF to a folder the owner picks, and show the page count and how long it took.
+4. **See the checks:** every result from M5, with its page; a failed check says what to fix. Show the pages as images with
+   `pdfjs-dist`, as Story Tracker's print preview does.
+5. **Open the file** in the system's PDF viewer.
+
+Nothing else: no frames, art, covers, other printers or App Link. The window keeps its choices in the encrypted project. The
+end-to-end test drives it: open the test book, build, and read the checks. The planning session writes the release workflow
+and publishes the installers; you don't touch `.github/`.
 
 ## Handing it back
 
