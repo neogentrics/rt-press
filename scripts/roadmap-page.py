@@ -86,7 +86,7 @@ defaults = [
     ('The step-zero book', 'One of your finished books, chosen with you at the start of step zero.'),
 ]
 openq = [
-    ('Is this repo public at its first release?', 'A private repo can't be in the suite's latest-versions file or offered as a store download. You're deciding app by app. Nothing here changes visibility until you say.'),
+    ("Is this repo public at its first release?", "A private repo can't be in the suite's latest-versions file or offered as a store download. You said to make it public, so it is."),
 ]
 def dec(t, p, cls='decision'):
     return f'<div class="{cls}"><h3>{html.escape(t)}</h3><p>{html.escape(p)}</p></div>'
