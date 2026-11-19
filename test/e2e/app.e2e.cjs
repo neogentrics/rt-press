@@ -10,6 +10,7 @@ const root = path.join(__dirname, '..', '..');
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-e2e-'));
 const { TYPST_VERSION } = require('../../src/shared/typst-version');
 
+
 // Some editors and shells set ELECTRON_RUN_AS_NODE, which makes Electron start as plain Node and refuse a window.
 const { ELECTRON_RUN_AS_NODE: _ignored, ...environment } = process.env;
 
@@ -25,7 +26,7 @@ const { ELECTRON_RUN_AS_NODE: _ignored, ...environment } = process.env;
     assert.equal(await window.title(), 'RT Press');
     assert.equal(await window.textContent('#app-name'), 'RT Press');
     assert.match(await window.textContent('#app-version'), /^0\.0\.1$/);
-    assert.equal(await window.textContent('#typst-version'), `Typst ${TYPST_VERSION}`);
+    assert.equal(await window.textContent('#typst-version'), `Typst ${TYPST_VERSION}`, 'the window shows what the bundled program reports');
     assert.match(await window.textContent('#storage-state'), /^Working \(SQLite 3\./, 'the encrypted storage works inside Electron');
     assert.match(await window.textContent('#update-state'), /^Off/, 'the updater is wired but off');
     assert.equal(await window.evaluate(() => typeof window.require), 'undefined', 'no Node in the window');

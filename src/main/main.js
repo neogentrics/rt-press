@@ -1,9 +1,9 @@
 'use strict';
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('node:path');
-const { TYPST_VERSION } = require('../shared/typst-version');
 const { hardenWindow } = require('./security');
 const { storageSelfCheck } = require('./self-check');
+const typesetter = require('./typesetter');
 const { Updater } = require('./updater');
 
 // A test gets its own profile, so it can never touch an author's files.
@@ -14,7 +14,17 @@ let mainWindow = null;
 // Updates stay off until RT Press has a first release to find. Turn this on in the release that publishes one.
 const updater = new Updater((status) => mainWindow?.webContents.send('update:status', status), { enabled: false });
 
-function status() {
+// The version the program itself reports, so the window can't say Typst is here when it isn't.
+async function typstStatus() {
+  try {
+    const { version } = await typesetter.version({ resourcesPath: app.isPackaged ? process.resourcesPath : null });
+    return { ok: true, version };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+}
+
+async function status() {
   let storage;
   try {
     storage = storageSelfCheck();
@@ -24,7 +34,7 @@ function status() {
   return {
     name: app.getName(),
     version: app.getVersion(),
-    typst: TYPST_VERSION,
+    typst: await typstStatus(),
     storage,
     update: updater.status,
     updatesEnabled: updater.enabled,
@@ -62,9 +72,9 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.whenReady().then(() => {
-    ipcMain.handle('app:status', () => {
+    ipcMain.handle('app:status', async () => {
       try {
-        return { ok: true, value: status() };
+        return { ok: true, value: await status() };
       } catch (error) {
         return { ok: false, error: error.message };
       }

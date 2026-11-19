@@ -9,7 +9,7 @@ async function start() {
     const status = await window.rtPress.status();
     set('app-name', status.name);
     set('app-version', status.version);
-    set('typst-version', `Typst ${status.typst}`);
+    set('typst-version', status.typst.ok ? `Typst ${status.typst.version}` : `Not found: ${status.typst.error}`);
     set('storage-state', status.storage.ok ? `Working (SQLite ${status.storage.sqlite}, ${status.storage.cipher})` : `Not working: ${status.storage.error ?? 'a check failed'}`);
     set('update-state', status.updatesEnabled ? 'On' : 'Off until the first release');
     document.body.dataset.state = 'ready';
