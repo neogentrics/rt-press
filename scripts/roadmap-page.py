@@ -82,6 +82,7 @@ decided = [
     ('What 1.0 does', 'Interiors for KDP first. Frames in 1.1, art in 1.2, covers in 1.3 and 1.4, where Press replaces your build script.'),
     ('The plan', 'Approved on 17 November 2026.'),
     ('No alpha', 'You test the first working version. Step zero ends with its results, not a release.'),
+    ("Fonts for the comparison", "Open stand-in fonts for now, since the test book's own fonts aren't on the build machine. The page count won't match your PDF exactly, so what doesn't depend on the font is compared. Revisited if an exact match turns out to matter."),
     ('The repo is public', 'So the Bench page can link it, and the suite can list it. Nothing private is in it: your book and build script stay in a folder git ignores.'),
     ('Where it\'s built','On the Linux build machine, with Windows and Mac installers from GitHub Actions.'),
 ]
@@ -92,9 +93,7 @@ defaults = [
     ('Your existing themes', 'Brought over by a private one-time converter, kept out of the repo, because they name your books.'),
     ('The step-zero book', 'One of your finished books, chosen with you at the start of step zero.'),
 ]
-openq = [
-    ("Which fonts for the comparison with your build script?", "Book Antiqua, Felix Titling and Segoe UI Symbol aren't on the build machine, so step zero uses open fonts as stand-ins and the page count won't match your PDF exactly. For an exact match, the licensed fonts go on the build machine, or the comparison runs on your own Windows computer. Open until M4's results are in."),
-]
+openq = []
 def dec(t, p, cls='decision'):
     return f'<div class="{cls}"><h3>{html.escape(t)}</h3><p>{html.escape(p)}</p></div>'
 
@@ -113,7 +112,7 @@ page = f'''<!DOCTYPE html>
 <h1 id="nowh">The plan is approved, and the repo is public.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
 <ul><li><b>Built so far</b><span>The empty app, Typst inside it, and your test book imported: all 16 chapters, matching your build script exactly.</span></li>
-<li><b>Next: set the pages</b><span>Your book typeset by Press. It needs your decision on fonts, under Decisions.</span></li>
+<li><b>Next: set the pages</b><span>Your book typeset by Press, in open stand-in fonts for now.</span></li>
 <li><b>Not green yet</b><span>The tests fail on Windows because of one storage bug. The fix is with the builder.</span></li></ul>
 </section>
 <div class="glance">
@@ -145,7 +144,7 @@ page = f'''<!DOCTYPE html>
 </tbody></table></div></section>
 <section id="later" aria-labelledby="laterh"><div class="section-head"><h2 id="laterh">Later and ongoing</h2></div>
 <div class="list">{"".join(rel_html(r, "idea") for r in later)}</div></section>
-<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan, {len(openq)} waiting for you</p></div>
+<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan</p></div>
 <div class="decisions">{"".join(dec(t, p, "decision open") for t, p in openq)}{"".join(dec(t, p) for t, p in defaults)}
 <details class="more" open><summary>Chosen by you</summary><div class="inside">{"".join(dec(t, p) for t, p in decided)}</div></details></div>
 </section>
