@@ -52,7 +52,7 @@ As of 20 November 2026. The work is on the `step-zero` branch and in [pull reque
 | M3 The test book comes in | ✅ Committed (`a33f72c`), 56 tests, and it matches the owner's build script on all 16 chapters |
 | Tests on Linux and Mac | ✅ Passing |
 | Tests on Windows | ❌ Failing: a storage bug that only Windows shows, found by the tests. The fix is with the builder. |
-| M4 Set the pages | 🚧 In progress. It needs a decision on fonts, under Decisions. |
+| M4 Set the pages | 🚧 In progress, in open stand-in fonts (the owner's choice, 20 November) |
 | M5 The checks, and M6 steering the page | Not started |
 
 ## Step zero — Prove the typesetter
