@@ -40,6 +40,21 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [Later](#later--only-if-needed) | Only if needed | Ideas |
 | [Ongoing](#ongoing--polish--distribution) | Polish & distribution | Ongoing |
 
+## Where it stands
+
+As of 20 November 2026. The work is on the `step-zero` branch and in [pull request 8](https://github.com/neogentrics/rt-press/pull/8), a draft until step zero is done.
+
+| Piece | State |
+|---|---|
+| The plan | ✅ Approved on 17 November, and the repo is public |
+| M1 An empty app, with encrypted storage | ✅ Committed (`e9724c2`), 13 tests |
+| M2 Typst inside the app | ✅ Committed (`87dccf3`), all six systems checked against GitHub's own digests, 25 tests |
+| M3 The test book comes in | ✅ Committed (`a33f72c`), 56 tests, and it matches the owner's build script on all 16 chapters |
+| Tests on Linux and Mac | ✅ Passing |
+| Tests on Windows | ❌ Failing: a storage bug that only Windows shows, found by the tests. The fix is with the builder. |
+| M4 Set the pages | 🚧 In progress. It needs a decision on fonts, under Decisions. |
+| M5 The checks, and M6 steering the page | Not started |
+
 ## Step zero — Prove the typesetter
 
 No release. Press rests on a typesetter it doesn't own, so the first job is to show that it can set a real book to the
@@ -76,7 +91,7 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 | Installed list | S | On first run and after each update, writes `installed/rt-press.json` (id, name, version, launch path, protocol) in the App Link folder, and removes it on uninstall, so the other apps can find Press. |
 | 🙋 Menus and Help | M | File, Edit, View and Help, each kept short, with less-used commands in submenus and every command runnable by name from the command palette (`Ctrl+K`). The Help menu in the suite's order: *Help Center* (`F1`), *Tutorial*, *Check for Updates…*, *About RT Press*. Guides are plain Markdown files in a `help` folder, and the tutorial offers a practice book. |
 | 🙋 About and Preferences | S | The suite's About window: icon, version, *Website*, *What's new in this version*, *Report a problem or suggest a feature*, *Source code*, the Electron, Chromium, Node and system versions with *Copy details*, and links to the licence and the open-source notices. One Preferences window (`Ctrl+,`) holds every setting. |
-| 🙋 Themes and the toolbar | M | The shared themes with *Follow System*, *Glass*, *Colour-safe* and *Customize Theme*, and the theme button on the main screen. An icon toolbar with a name on hover for each button. |
+| 🙋 Themes and the toolbar | M | The shared themes with *Follow System*, *Glass*, *Colour-safe* and *Customize Theme*, and the theme button on the main screen. RT Markdown Reader is adding a *Metallic* finish as a third look beside Solid and Glass (its 3.13, in testing); Press copies it once it's released. An icon toolbar with a name on hover for each button. |
 | 🙋 Updates, access and languages | M | *Restart to update* where the system allows it, and a download link where it doesn't. Every button named, every theme at WCAG AA contrast, Windows high contrast, and everything doable from the keyboard, all checked by the tests. Spanish, French and German, and right-to-left layouts. |
 
 **Test:** lay out a book in each trim size, upload it to KDP's previewer, and it reports nothing. Change one word in RT

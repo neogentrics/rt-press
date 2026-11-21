@@ -78,3 +78,12 @@ These follow the owner's existing books and the other apps. Any of them can stil
 latest-versions file or offered as a store download, so the owner made it public rather than wait for a first release.
 Nothing private is in it: the test book and the owner's build script stay in a folder git ignores, and the history was
 checked for names, people and secrets first. The licence is still proprietary, as for RT Story Tracker.
+
+## Open, the owner's
+
+### Fonts for the test-book comparison
+
+Book Antiqua, Felix Titling and Segoe UI Symbol, the fonts the test book is built in, aren't on the build machine, and their
+licences generally tie them to Windows or Office. Step zero sets the book in open fonts as stand-ins, so its page count
+won't match the owner's build script's PDF exactly. For an exact comparison, either the licensed fonts go on the build
+machine, or the comparison runs on the owner's own Windows computer. Open until M4's results are in.

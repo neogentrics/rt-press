@@ -66,6 +66,12 @@ def rel_html(r, kind, opened=False):
 
 main = [r for r in releases if r['ver'] == 'Step zero' or r['ver'].startswith('v')]
 later = [r for r in releases if r['ver'] in ('Later', 'Ongoing')]
+sm = re.search(r'(?ms)^## Where it stands\n(.*?)(?=^## )', md)
+stand_lines = sm.group(1).splitlines() if sm else []
+stand_rows = [[c.strip() for c in l.strip('|').split('|')] for l in stand_lines if l.startswith('| ') and not l.startswith('| Piece') and not l.startswith('|---')]
+stand_html = ('<section id="stands" aria-labelledby="standh"><div class="section-head"><h2 id="standh">Where it stands</h2><p>As of 20 November 2026</p></div>'
+              '<div class="scroll"><table class="own"><thead><tr><th>Piece</th><th>State</th></tr></thead><tbody>'
+              + ''.join(f'<tr><td>{inline(a)}</td><td>{inline(b)}</td></tr>' for a, b in stand_rows) + '</tbody></table></div></section>')
 rail = ''.join(f'<a class="node {"here" if r["ver"] == "Step zero" else "plan"}" href="#{anchor(r["ver"])}" title="{html.escape(r["theme"])}">{short(r["ver"])}</a>' for r in main)
 
 decided = [
@@ -86,7 +92,9 @@ defaults = [
     ('Your existing themes', 'Brought over by a private one-time converter, kept out of the repo, because they name your books.'),
     ('The step-zero book', 'One of your finished books, chosen with you at the start of step zero.'),
 ]
-openq = []
+openq = [
+    ("Which fonts for the comparison with your build script?", "Book Antiqua, Felix Titling and Segoe UI Symbol aren't on the build machine, so step zero uses open fonts as stand-ins and the page count won't match your PDF exactly. For an exact match, the licensed fonts go on the build machine, or the comparison runs on your own Windows computer. Open until M4's results are in."),
+]
 def dec(t, p, cls='decision'):
     return f'<div class="{cls}"><h3>{html.escape(t)}</h3><p>{html.escape(p)}</p></div>'
 
@@ -101,18 +109,19 @@ page = f'''<!DOCTYPE html>
 <nav aria-label="Sections"><a class="lead" href="#now">Now</a><a href="#ideas">Our way</a><a href="#coming">Releases</a><a href="#owns">Who keeps what</a><a href="#later">Later</a><a href="#decisions">Decisions</a></nav></div></div>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
-<div class="kicker"><span class="pulse" aria-hidden="true"></span>Step zero has started</div>
-<h1 id="nowh">The plan is approved. Step zero has started.</h1>
-<p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer\'s rules before you upload.</p>
-<ul><li><b>Approved</b><span>On 17 November 2026, with the 5 defaults under Decisions.</span></li>
-<li><b>The test book</b><span>A frameless 6 × 9 novel, hardcover pinned at 128 pages, because 1.0 makes no page frames.</span></li>
-<li><b>Found so far</b><span>Typst writes the TrimBox and reports each chapter\'s page, but bleeds on both side edges, so Press trims the spine side.</span></li></ul>
+<div class="kicker"><span class="pulse" aria-hidden="true"></span>Step zero: three of six pieces built</div>
+<h1 id="nowh">The plan is approved, and the repo is public.</h1>
+<p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
+<ul><li><b>Built so far</b><span>The empty app, Typst inside it, and your test book imported: all 16 chapters, matching your build script exactly.</span></li>
+<li><b>Next: set the pages</b><span>Your book typeset by Press. It needs your decision on fonts, under Decisions.</span></li>
+<li><b>Not green yet</b><span>The tests fail on Windows because of one storage bug. The fix is with the builder.</span></li></ul>
 </section>
 <div class="glance">
 <div class="card next"><span class="label">First release</span><b><a href="#r-v10">v1.0: Interiors for KDP</a></b><p>Paperback and hardcover interiors with themes, page-turn repair, even page bottoms, a pinned page count and every check.</p></div>
 <div class="card ok"><span class="label">The goal</span><b><a href="#r-v14">v1.4: The hardcover case wrap</a></b><p>From here Press does everything your build script does, with nothing else installed.</p></div>
 <div class="card you"><span class="label">Needs care</span><b>The typesetter</b><p>You chose to bundle Typst, so step zero tests it on a real book before anything else is built.</p></div>
 </div>
+{stand_html}
 <section aria-labelledby="railh"><div class="section-head"><h2 id="railh">Every version</h2></div>
 <div class="rail"><div class="rail-group"><span class="rail-label">1.x</span><div class="rail-nodes">{rail}</div></div>
 <div class="key"><span><i class="k-now"></i>In progress</span><span><i class="k-plan"></i>Planned</span></div></div></section>
@@ -136,11 +145,11 @@ page = f'''<!DOCTYPE html>
 </tbody></table></div></section>
 <section id="later" aria-labelledby="laterh"><div class="section-head"><h2 id="laterh">Later and ongoing</h2></div>
 <div class="list">{"".join(rel_html(r, "idea") for r in later)}</div></section>
-<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan</p></div>
+<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan, {len(openq)} waiting for you</p></div>
 <div class="decisions">{"".join(dec(t, p, "decision open") for t, p in openq)}{"".join(dec(t, p) for t, p in defaults)}
 <details class="more" open><summary>Chosen by you</summary><div class="inside">{"".join(dec(t, p) for t, p in decided)}</div></details></div>
 </section>
-<footer>From <a href="https://github.com/neogentrics/rt-press">the repo</a>, plan approved 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
+<footer>From <a href="https://github.com/neogentrics/rt-press">the repo</a> (<a href="https://github.com/neogentrics/rt-press/issues">issues</a>, <a href="https://github.com/neogentrics/rt-press/pull/8">the step-zero pull request</a>), plan approved 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
 </div>
 '''
 script = re.search(r'<script>.*?</script>', layout, re.S).group(0)
