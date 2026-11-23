@@ -45,7 +45,7 @@ const launch = (extra = {}) => electron.launch({
     await window.waitForSelector('body[data-state="ready"]');
     assert.equal(await window.title(), 'RT Press');
     assert.equal(await window.textContent('#app-name'), 'RT Press');
-    assert.match(await window.textContent('#app-version'), /^0\.0\.1$/);
+    assert.equal(await window.textContent('#app-version'), require('../../package.json').version);
     assert.equal(await window.textContent('#typst-version'), `Typst ${TYPST_VERSION}`, 'the window shows what the bundled program reports');
     assert.match(await window.textContent('#storage-state'), /^Working \(SQLite 3\./, 'the encrypted storage works inside Electron');
     assert.match(await window.textContent('#update-state'), /^Off/, 'the updater is wired but off');

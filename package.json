@@ -1,7 +1,7 @@
 {
   "name": "rt-press",
   "productName": "RT Press",
-  "version": "0.0.1",
+  "version": "0.1.0-alpha.0",
   "description": "Designed print interiors and cover wraps, checked against the printer's rules, for Windows, macOS and Linux.",
   "author": "Recon Towers Dev Department <author@neogentrics.com>",
   "license": "SEE LICENSE IN LICENSE",
@@ -81,6 +81,14 @@
         {
           "from": "vendor/fonts/stand-in",
           "to": "fonts"
+        },
+        {
+          "from": "licenses",
+          "to": "licenses"
+        },
+        {
+          "from": "THIRD_PARTY_NOTICES.md",
+          "to": "THIRD_PARTY_NOTICES.md"
         }
       ]
     },
@@ -122,6 +130,14 @@
         {
           "from": "vendor/fonts/stand-in",
           "to": "fonts"
+        },
+        {
+          "from": "licenses",
+          "to": "licenses"
+        },
+        {
+          "from": "THIRD_PARTY_NOTICES.md",
+          "to": "THIRD_PARTY_NOTICES.md"
         }
       ]
     },
@@ -159,6 +175,14 @@
         {
           "from": "vendor/fonts/stand-in",
           "to": "fonts"
+        },
+        {
+          "from": "licenses",
+          "to": "licenses"
+        },
+        {
+          "from": "THIRD_PARTY_NOTICES.md",
+          "to": "THIRD_PARTY_NOTICES.md"
         }
       ]
     },

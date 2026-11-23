@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [step-zero, 'feature/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Fetch the typesetter (refused unless it matches the lock file)
+        run: npm run fetch:typst:current
+      - run: npm test
+      - name: End-to-end test (real app)
+        if: runner.os != 'Linux'
+        timeout-minutes: 8
+        run: npm run test:e2e
+      - name: End-to-end test (real app, virtual display)
+        if: runner.os == 'Linux'
+        timeout-minutes: 8
+        run: xvfb-run -a npm run test:e2e

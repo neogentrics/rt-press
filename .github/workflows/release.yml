@@ -1,0 +1,90 @@
+name: Release
+# Every outside action is pinned to the full commit it was checked at (the comment names its release), so a tag that is moved later
+# cannot change what runs here.
+
+# Builds the Windows, Mac and Linux apps and publishes them as a GitHub Release, with the latest*.yml files the app's
+# updater will read. A version with a hyphen in it (0.1.0-alpha.0) is published as a pre-release. Pushing a tag like
+# v0.1.0-alpha.0 does it, or run it by hand (Actions, Release, Run workflow) on the branch to release, and it tags that commit as
+# v<version from package.json>.
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+# The jobs that build can only read. Only the last job, which publishes the release, may write.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: windows, os: windows-latest, script: 'dist:win', app: 'release/win-unpacked/RT Press.exe', window: 'node test/e2e/app.e2e.cjs', files: "release/RTPress-*-Setup.exe\nrelease/RTPress-*-Setup.exe.blockmap\nrelease/latest.yml" }
+          - { name: macos, os: macos-latest, script: 'dist:mac', app: 'release/mac-arm64/RT Press.app/Contents/MacOS/RT Press', window: 'node test/e2e/app.e2e.cjs', files: "release/*.dmg\nrelease/latest-mac.yml" }
+          - { name: linux, os: ubuntu-latest, script: 'dist:linux', app: 'release/linux-unpacked/rt-press', window: 'xvfb-run -a node test/e2e/app.e2e.cjs', files: "release/*.AppImage\nrelease/*.deb\nrelease/latest-linux.yml" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # The typesetter for all six systems, each refused unless it matches the lock file; the Mac build carries both Mac programs.
+      - name: Fetch the typesetter
+        run: npm run fetch:typst
+      - run: npm test
+      - run: npm run ${{ matrix.script }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      # Nothing is published unless the built app opens, imports a book, sets it, checks it and saves it.
+      - name: Run the built app through the whole flow
+        timeout-minutes: 10
+        run: ${{ matrix.window }}
+        env:
+          RTPRESS_E2E_EXECUTABLE: ${{ github.workspace }}/${{ matrix.app }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ matrix.name }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish the release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Work out the tag
+        id: tag
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          name: RT Press ${{ steps.tag.outputs.name }}
+          files: artifacts/*
+          generate_release_notes: true
+          prerelease: ${{ contains(steps.tag.outputs.name, '-') }}
+          fail_on_unmatched_files: true
