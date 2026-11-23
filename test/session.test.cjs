@@ -13,7 +13,18 @@ const { validateTheme } = require('../src/shared/theme');
 const { tempDir, writeDocx } = require('./helpers/docx.cjs');
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-session-test-'));
-test.after(() => fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 5 }));
+// Every session a test opens is closed before the folder goes: Windows won't delete a database that is open.
+const opened = [];
+test.after(() => {
+  for (const session of opened) {
+    try {
+      session.close();
+    } catch {
+      // Closed by the test already.
+    }
+  }
+  fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 5 });
+});
 const skip = !sources().every(({ from }) => fs.existsSync(from)) && 'run "npm install"';
 
 const sentence = (n) => `Sentence ${n} of the made-up story runs over the hill and down to the river, where the fox stops to drink. `;
@@ -28,7 +39,9 @@ function folderOfChapters(count, paragraphs = 4) {
 let n = 0;
 function session(options = {}) {
   const dir = path.join(scratch, `s-${(n += 1)}`);
-  return new Session({ store: openStore(path.join(dir, 'project')), workDir: path.join(dir, 'work'), fontFolder: prepare({ folder: path.join(scratch, 'fonts') }), now: () => new Date(Date.UTC(2026, 10, 20)), ...options });
+  const made = new Session({ store: openStore(path.join(dir, 'project')), workDir: path.join(dir, 'work'), fontFolder: prepare({ folder: path.join(scratch, 'fonts') }), now: () => new Date(Date.UTC(2026, 10, 20)), ...options });
+  opened.push(made);
+  return made;
 }
 
 test('the defaults are valid, and every choice the window offers makes a valid theme', () => {
@@ -62,6 +75,7 @@ test('the chapters in a folder are put in order by their numbers, with temporary
 test('importing a folder makes the book, keeps it in the encrypted project, and it is there when the project is opened again', () => {
   const dir = path.join(scratch, 'again');
   const first = new Session({ store: openStore(path.join(dir, 'project')), workDir: path.join(dir, 'work'), fontFolder: scratch });
+  opened.push(first);
   assert.equal(first.state().hasBook, false);
   const state = first.importFolder(folderOfChapters(3));
   assert.equal(state.hasBook, true);
@@ -72,6 +86,7 @@ test('importing a folder makes the book, keeps it in the encrypted project, and 
   first.setSettings({ body_pt: 11, drop_cap: false });
   first.close();
   const second = new Session({ store: openStore(path.join(dir, 'project')), workDir: path.join(dir, 'work'), fontFolder: scratch });
+  opened.push(second);
   const back = second.state();
   assert.deepEqual(back.chapters.map((c) => c.title), ['Title 1', 'Title 2', 'Title 3']);
   assert.deepEqual(back.details, { title: 'A Made-Up Book', author: 'A. Writer' });

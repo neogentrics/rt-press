@@ -61,16 +61,24 @@ function createProjectFile(dir, { title = '', now = () => new Date() } = {}) {
   const id = crypto.randomUUID();
   const temp = path.join(parent, `${NEW_PREFIX}${id}`);
   fs.mkdirSync(temp);
+  let project = null;
   try {
     const projectKey = createKeys(temp, id);
-    const project = open(temp, id, projectKey);
+    project = open(temp, id, projectKey);
     project.setMeta('id', id);
     project.setMeta('title', title);
     project.setMeta('created_at', now().toISOString());
     project.close();
+    project = null;
     fs.renameSync(temp, dir);
     return { id, projectKey };
   } catch (error) {
+    // The database has to be closed before its folder can go: Windows won't delete a file that is open.
+    try {
+      project?.db.close();
+    } catch {
+      // Already closed, or never opened.
+    }
     fs.rmSync(temp, { recursive: true, force: true, maxRetries: 5 });
     throw error;
   }
