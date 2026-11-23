@@ -28,9 +28,9 @@
     "start": "npm run build:renderer && electron .",
     "test": "node --test \"test/*.test.cjs\"",
     "test:e2e": "npm run fetch:typst:current && npm run build:renderer && node test/e2e/app.e2e.cjs",
-    "dist:win": "npm run build:renderer && electron-builder --win nsis --x64 --publish never",
-    "dist:mac": "npm run build:renderer && electron-builder --mac dmg --arm64 --x64 --publish never",
-    "dist:linux": "npm run build:renderer && electron-builder --linux AppImage deb --x64 --publish never",
+    "dist:win": "npm run fonts:stand-in && npm run build:renderer && electron-builder --win nsis --x64 --publish never",
+    "dist:mac": "npm run fonts:stand-in && npm run build:renderer && electron-builder --mac dmg --arm64 --x64 --publish never",
+    "dist:linux": "npm run fonts:stand-in && npm run build:renderer && electron-builder --linux AppImage deb --x64 --publish never",
     "fetch:typst": "node scripts/fetch-typst.mjs",
     "fetch:typst:current": "node scripts/fetch-typst.mjs --current",
     "fonts:stand-in": "node scripts/prepare-fonts.mjs"
@@ -60,6 +60,15 @@
         "nsis"
       ],
       "files": [
+        "src/main/**",
+        "src/shared/**",
+        "dist/renderer/**",
+        "package.json",
+        "LICENSE",
+        "!node_modules/node-addon-api/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/deps/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/src/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/binding.gyp",
         "!node_modules/better-sqlite3-multiple-ciphers/prebuilds/darwin-*",
         "!node_modules/better-sqlite3-multiple-ciphers/prebuilds/linux*",
         "!node_modules/better-sqlite3-multiple-ciphers/prebuilds/win32-arm64.node"
@@ -68,6 +77,10 @@
         {
           "from": "vendor/typst/win32-${arch}",
           "to": "typst"
+        },
+        {
+          "from": "vendor/fonts/stand-in",
+          "to": "fonts"
         }
       ]
     },
@@ -89,6 +102,15 @@
       "identity": "-",
       "hardenedRuntime": false,
       "files": [
+        "src/main/**",
+        "src/shared/**",
+        "dist/renderer/**",
+        "package.json",
+        "LICENSE",
+        "!node_modules/node-addon-api/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/deps/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/src/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/binding.gyp",
         "!node_modules/better-sqlite3-multiple-ciphers/prebuilds/win32-*",
         "!node_modules/better-sqlite3-multiple-ciphers/prebuilds/linux*"
       ],
@@ -96,6 +118,10 @@
         {
           "from": "vendor/typst/darwin-${arch}",
           "to": "typst"
+        },
+        {
+          "from": "vendor/fonts/stand-in",
+          "to": "fonts"
         }
       ]
     },
@@ -112,6 +138,15 @@
       "maintainer": "Recon Towers Dev Department <author@neogentrics.com>",
       "synopsis": "Designed print interiors and cover wraps, checked against the printer's rules",
       "files": [
+        "src/main/**",
+        "src/shared/**",
+        "dist/renderer/**",
+        "package.json",
+        "LICENSE",
+        "!node_modules/node-addon-api/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/deps/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/src/**",
+        "!node_modules/better-sqlite3-multiple-ciphers/binding.gyp",
         "!node_modules/better-sqlite3-multiple-ciphers/prebuilds/win32-*",
         "!node_modules/better-sqlite3-multiple-ciphers/prebuilds/darwin-*",
         "!node_modules/better-sqlite3-multiple-ciphers/prebuilds/linux*arm64.node"
@@ -120,6 +155,10 @@
         {
           "from": "vendor/typst/linux-${arch}",
           "to": "typst"
+        },
+        {
+          "from": "vendor/fonts/stand-in",
+          "to": "fonts"
         }
       ]
     },

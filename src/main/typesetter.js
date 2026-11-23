@@ -174,4 +174,20 @@ async function evaluate({ input, expression, root, fontPaths = [], systemFonts =
   return { ok, value, ms: result.ms, messages };
 }
 
-module.exports = { DEFAULT_OUTPUT_LIMIT, DEFAULT_TIME_LIMIT_MS, compile, evaluate, findTypst, systemName, typstPath, version };
+// Sets a document as page pictures (PNG) for a preview: one file per page in `outDir`, named p-001.png, p-002.png, and so on.
+// Returns { ok, files, ms, messages }.
+async function renderPages({ input, outDir, root, fontPaths = [], systemFonts = false, ppi = 72, timeLimitMs = DEFAULT_TIME_LIMIT_MS, ...where } = {}) {
+  const program = findTypst(where);
+  fs.rmSync(outDir, { recursive: true, force: true });
+  fs.mkdirSync(outDir, { recursive: true });
+  const args = ['compile', '--diagnostic-format', 'human', '--root', root ?? path.dirname(path.resolve(input)), '--format', 'png', '--ppi', String(ppi)];
+  if (!systemFonts) args.push('--ignore-system-fonts');
+  for (const folder of fontPaths) args.push('--font-path', folder);
+  args.push(path.resolve(input), path.join(outDir, 'p-{0p}.png'));
+  const result = await run(program, args, { timeoutMs: timeLimitMs, env: cleanEnv() });
+  const files = fs.readdirSync(outDir).filter((f) => /^p-\d+\.png$/.test(f)).sort();
+  const ok = !result.reason && !result.error && result.code === 0 && files.length > 0;
+  return { ok, files: ok ? files.map((f) => path.join(outDir, f)) : [], ms: result.ms, messages: [result.error ? `Typst could not be started: ${result.error.message}` : '', result.stdout, result.stderr].filter(Boolean).join('\n').trim() };
+}
+
+module.exports = { DEFAULT_OUTPUT_LIMIT, DEFAULT_TIME_LIMIT_MS, compile, evaluate, findTypst, renderPages, systemName, typstPath, version };
