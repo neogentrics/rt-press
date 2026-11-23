@@ -8,10 +8,10 @@ const { generateTypst } = require('./typst-source');
 
 const QUESTION = '(units: query(<unit>).map(m => m.value), content-pages: query(<content-end>).first().value, pages: query(<total-pages>).first().value)';
 
-// Options: book, theme, workDir (made if it is missing), output (the PDF), fontPaths, fontMap, targetPages, timestamp, timeLimitMs.
+// Options: book, theme, bleed_in, workDir (made if it is missing), output (the PDF), fontPaths, fontMap, targetPages, timestamp, timeLimitMs.
 // Returns { ok, output, pages, contentPages, units: [{ id, type, kind, title, page }], compileMs, evalMs, fonts, notes, messages }.
-async function typesetBook({ book, theme, workDir, output, fontPaths = [], fontMap = {}, targetPages = null, timestamp = null, timeLimitMs, ...where }) {
-  const { source, notes, fontFamilies } = generateTypst({ book, theme, fontMap, targetPages });
+async function typesetBook({ book, theme, workDir, output, fontPaths = [], fontMap = {}, targetPages = null, bleed_in = 0, timestamp = null, timeLimitMs, ...where }) {
+  const { source, notes, fontFamilies } = generateTypst({ book, theme, fontMap, targetPages, bleed_in });
   fs.mkdirSync(workDir, { recursive: true });
   const input = path.join(workDir, 'book.typ');
   fs.writeFileSync(input, source);

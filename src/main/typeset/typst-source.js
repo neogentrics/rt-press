@@ -148,8 +148,9 @@ function lookCode(look) {
 
 // Generates the Typst source for a book. Returns { source, units, notes }.
 //   fontMap       { 'Book Antiqua': 'EB Garamond' }: the family each name in the theme is set in here
+//   bleed_in      bleed on every edge (Typst adds it on all four; the finishing step takes the inside edge back off)
 //   targetPages   pin the page count (a printed spine is sized for it); the book is padded with blank pages to reach it
-function generateTypst({ book, theme: given, fontMap = {}, targetPages = null }) {
+function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, bleed_in = 0 }) {
   const bookProblems = validateBook(book);
   if (bookProblems.length) throw new Error(`The book is not valid: ${bookProblems.map((p) => `${p.path} ${p.message}`).join('; ')}`);
   const theme = withDefaults(given);
@@ -180,7 +181,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null })
     .replace(/BODY_SIZE/g, pt(theme.body.size_pt))
     .replace(/PITCH/g, pt(bodyPitch));
   out.push(`#set document(title: ${str(book.title)})`);
-  out.push(`#set page(width: ${inch(theme.trim.width_in)}, height: ${inch(theme.trim.height_in)}, margin: (inside: ${inch(theme.margins.inside_in)}, outside: ${inch(theme.margins.outside_in)}, top: ${inch(theme.margins.top_in)}, bottom: ${inch(theme.margins.bottom_in)}), binding: left,
+  out.push(`#set page(width: ${inch(theme.trim.width_in)}, height: ${inch(theme.trim.height_in)}, margin: (inside: ${inch(theme.margins.inside_in)}, outside: ${inch(theme.margins.outside_in)}, top: ${inch(theme.margins.top_in)}, bottom: ${inch(theme.margins.bottom_in)}), binding: left,${bleed_in > 0 ? ` bleed: ${inch(bleed_in)},` : ''}
   footer: context align(${folioAlign}, text(font: ${fonts.body}, size: ${pt(theme.folio.size_pt)})[${run(folioBefore)}#counter(page).display()${run(folioAfter)}]))`);
   out.push(`#set text(font: ${fonts.body}, size: ${pt(theme.body.size_pt)}, lang: ${str(book.language || 'en')}, hyphenate: ${theme.body.hyphenate}, top-edge: ${pt(LINE_TOP_EM * theme.body.size_pt)}, bottom-edge: ${pt(-(bodyPitch - LINE_TOP_EM * theme.body.size_pt))})`);
   out.push(`#set par(justify: ${theme.body.justify}, leading: 0pt, spacing: 0pt, first-line-indent: (amount: ${inch(theme.body.first_line_indent_in)}, all: true))`);
