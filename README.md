@@ -44,17 +44,25 @@ books.
 
 ## Download
 
-There is no release yet. The alpha is built from the source, for Linux today:
+| Windows | macOS | Linux |
+|---|---|---|
+| [`.exe` installer](https://github.com/neogentrics/rt-press/releases/tag/v0.1.0-alpha.0) | [`.dmg` for Apple silicon or Intel](https://github.com/neogentrics/rt-press/releases/tag/v0.1.0-alpha.0) | [`AppImage` or `.deb`](https://github.com/neogentrics/rt-press/releases/tag/v0.1.0-alpha.0) |
+
+[Version 0.1.0-alpha.0](https://github.com/neogentrics/rt-press/releases/tag/v0.1.0-alpha.0) is a pre-release on the
+[Releases](https://github.com/neogentrics/rt-press/releases) page. Every build is made and tested on all three systems by
+[the Release workflow](https://github.com/neogentrics/rt-press/actions/workflows/release.yml), which opens each built app,
+imports a book, sets it, checks it and saves it before anything is published.
+
+The builds aren't code-signed yet, so Windows may show a SmartScreen warning the first time (choose *More info*, then *Run
+anyway*), and macOS will ask you to open the app from *System Settings → Privacy & Security*. Updates are off in the alpha.
+
+To build it yourself, on Linux:
 
 ```bash
 npm install
-npm run fetch:typst:current
+npm run fetch:typst
 npm run dist:linux
 ```
-
-That makes an `AppImage` and a `.deb` in `release/`. Windows and Mac builds are set up the same way and haven't been run yet.
-When there is a release, it will be on the [Releases](https://github.com/neogentrics/rt-press/releases/latest) page, with an
-`.exe` installer for Windows, a `.dmg` for Apple silicon or Intel, and an `AppImage` or `.deb` for Linux.
 
 ## What it does
 
@@ -143,4 +151,4 @@ The plan behind it all is in the [roadmap](ROADMAP.md) and the [decisions](docs/
 
 ## Licence
 
-Proprietary. See [LICENSE](LICENSE).
+Proprietary. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
