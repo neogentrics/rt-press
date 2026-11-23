@@ -22,6 +22,37 @@ function ownerOf(paras, page, y) {
   return found;
 }
 
+// Where in `text` the end of `seen` falls. Hyphens and spaces are left out of the comparison, because a line may end at a
+// hyphen the typesetter added or at one the writer did, and the two look alike. The last 40 characters usually name one place;
+// where they name several (a paragraph of repeated words), the place whose preceding text agrees with `seen` for the longest
+// stretch wins, and a tie is not guessed at. Returns the index in `text` just after the match, or -1.
+function locate(text, seen) {
+  const keep = (c) => c !== '-' && !/\s/u.test(c);
+  const chars = [];
+  const origin = [];
+  [...text].forEach((c, i) => {
+    if (keep(c)) {
+      chars.push(c);
+      origin.push(i + 1);
+    }
+  });
+  const flatText = chars.join('');
+  const flatSeen = [...seen].filter(keep).join('');
+  const tail = flatSeen.slice(-40);
+  if (!tail) return -1;
+  const found = [];
+  for (let at = flatText.indexOf(tail); at >= 0; at = flatText.indexOf(tail, at + 1)) found.push(at + tail.length);
+  if (!found.length) return -1;
+  const agree = (end) => {
+    let n = 0;
+    while (n < end && n < flatSeen.length && flatText[end - 1 - n] === flatSeen[flatSeen.length - 1 - n]) n += 1;
+    return n;
+  };
+  const scored = found.map((end) => [agree(end), end]).sort((a, b) => b[0] - a[0]);
+  if (scored.length > 1 && scored[0][0] === scored[1][0]) return -1;
+  return origin[scored[0][1] - 1];
+}
+
 function idOf(text) {
   const m = new RegExp(`^${ID_MARK}([^${ID_MARK}]+)${ID_MARK}`).exec(text);
   return m ? m[1] : null;
@@ -80,12 +111,13 @@ function findMidSentenceTurns({ result, pdf, book, theme }) {
       entry.section = home.section.id;
       entry.block = home.index;
       const text = flat(home.block);
-      const tail = ends.replace(/-$/u, '').slice(-40);
-      const at = text.indexOf(tail);
-      if (at < 0 || text.indexOf(tail, at + 1) >= 0) {
+      // Where the page's last line ends in the paragraph: match the end of the page's text, as much of it as it takes to be
+      // found in only one place (a line alone can repeat in a paragraph of repeated words).
+      const onPage = pageLines.map((l) => l.text.trim()).reduce((joined, line) => (joined.endsWith('-') ? joined.slice(0, -1) + line : `${joined} ${line}`), '').trim();
+      const end = locate(text, onPage);
+      if (end < 0) {
         entry.reason = 'the line could not be placed in the paragraph';
       } else {
-        const end = at + tail.length;
         let start = 0;
         for (const m of text.slice(0, end).matchAll(BOUNDARY)) start = m.index + m[0].length;
         entry.sentenceStart = start;

@@ -6,6 +6,7 @@ const path = require('node:path');
 const { runChecks } = require('../checks');
 const { finishPdf } = require('../pdf/finish');
 const { renderPages } = require('../typesetter');
+const { repairAll } = require('../steer/repair');
 const { generateTypst } = require('../typeset/typst-source');
 const { typesetBook } = require('../typeset/typeset-book');
 const { BLEED_IN } = require('../../shared/print-rules');
@@ -44,8 +45,36 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
   fs.mkdirSync(workDir, { recursive: true });
   const common = { book: toSet, theme, fontPaths: [fontFolder], resourcesPath, targetPages: settings.pin_pages ?? null };
 
+  const timestamp = Math.floor(now().getTime() / 1000);
+
+  // Page turns: find the pages that end in the middle of a sentence and start those sentences on the next page. The repair is
+  // set without bleed (the pages fall the same) and gives back a list of steers; the book itself is never changed.
+  let steers = [];
+  let repair = null;
+  if (settings.page_turns !== 'off') {
+    const t0 = Date.now();
+    onStep('Setting the pages');
+    const set = (list) => typesetBook({ ...common, workDir: path.join(workDir, 'repair'), output: path.join(workDir, 'repair.pdf'), steers: list, trace: true, bleed_in: 0, timestamp });
+    const outcome = await repairAll({
+      set,
+      readPdfBytes: (r) => fs.readFileSync(r.output),
+      book: toSet,
+      theme,
+      maxRounds: 4,
+      maxPushLines: 3,
+      budget: settings.page_turns === 'keep',
+      onProgress: ({ round, midSentence }) => onStep(`Repairing page turns, round ${round + 1}: ${midSentence} split a sentence`),
+    });
+    steers = outcome.steers;
+    const first = outcome.history[0];
+    if (first?.midSentence !== undefined && outcome.turns) {
+      repair = { mode: settings.page_turns, before: first.midSentence, after: outcome.turns.pages.length, pushes: steers.length, rounds: outcome.history.length - 1, pagesBefore: first.contentPages, pagesAfter: outcome.final.contentPages };
+    }
+    timings.repair = Date.now() - t0;
+  }
+
   onStep('Setting the pages');
-  const raw = await typesetBook({ ...common, workDir: path.join(workDir, 'set'), output: path.join(workDir, 'typst.pdf'), bleed_in, timestamp: Math.floor(now().getTime() / 1000) });
+  const raw = await typesetBook({ ...common, steers, workDir: path.join(workDir, 'set'), output: path.join(workDir, 'typst.pdf'), bleed_in, timestamp });
   if (!raw.ok) return { ok: false, reason: 'typesetter', messages: raw.messages };
   timings.set = Math.round(raw.compileMs + raw.evalMs);
 
@@ -63,7 +92,7 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
   // from the trim.
   onStep('Making the preview');
   const previewDir = path.join(workDir, 'preview');
-  const previewSource = generateTypst({ ...common, bleed_in: 0 }).source;
+  const previewSource = generateTypst({ ...common, steers, bleed_in: 0 }).source;
   const input = path.join(workDir, 'preview.typ');
   fs.writeFileSync(input, previewSource);
   const pictures = await renderPages({ input, outDir: previewDir, fontPaths: [fontFolder], ppi: PREVIEW_PPI, resourcesPath });
@@ -77,6 +106,7 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
     contentPages: raw.contentPages,
     units: raw.units,
     notes: raw.notes,
+    repair,
     checks: report.results.map(({ id, title, ok, summary, pages }) => ({ id, title, ok, summary, pages })),
     ready: report.ok,
     preview: pictures.ok ? { dir: previewDir, files: pictures.files } : null,

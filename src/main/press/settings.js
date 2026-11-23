@@ -21,7 +21,12 @@ const DEFAULT_SETTINGS = Object.freeze({
   title_page: true,
   contents: false,
   pin_pages: null,
+  page_turns: 'keep',
 });
+
+// What to do about a page that ends in the middle of a sentence: nothing, move the sentence to the next page only where the
+// section has room (so no page is added), or move it everywhere and let the book grow.
+const PAGE_TURNS = ['off', 'keep', 'grow'];
 
 const PAPER_NAMES = {
   'black-white': 'Black ink, white paper',
@@ -67,6 +72,7 @@ function validateSettings(settings) {
   need('title_page', typeof settings.title_page === 'boolean', 'the title page is on or off');
   need('contents', typeof settings.contents === 'boolean', 'the contents page is on or off');
   need('pin_pages', settings.pin_pages === null || (Number.isInteger(settings.pin_pages) && settings.pin_pages >= 24 && settings.pin_pages <= 900), 'a pinned page count is a whole number from 24 to 900, or empty');
+  need('page_turns', PAGE_TURNS.includes(settings.page_turns), 'page turns are left alone, repaired without adding pages, or repaired allowing extra pages');
   return problems;
 }
 
@@ -104,4 +110,4 @@ function themeFromSettings(given) {
 // What a book's pages are limited to under these settings, for showing before a build.
 const limitsFor = (s) => pageLimits(s.format, s.trim.width_in, s.trim.height_in, s.paper);
 
-module.exports = { BLEED_IN, DEFAULT_SETTINGS, FAMILY, PAPER_NAMES, choices, limitsFor, themeFromSettings, validateSettings, withDefaultSettings };
+module.exports = { PAGE_TURNS, BLEED_IN, DEFAULT_SETTINGS, FAMILY, PAPER_NAMES, choices, limitsFor, themeFromSettings, validateSettings, withDefaultSettings };

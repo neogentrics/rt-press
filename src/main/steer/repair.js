@@ -57,7 +57,7 @@ const startsOf = (result) => result.units.map((u) => u.page).join(',');
 //   budget   true: a section is only given as many pushes as it has free lines on its last page, and a round that moves where
 //            any section starts is undone, so the book keeps its page count; false: push everything and let the book grow
 // Returns { steers, history: [{ round, midSentence, steerable, ms, pages, contentPages }], final, turns }.
-async function repairAll({ set, readPdfBytes, book, theme, maxRounds = 8, maxPushLines = 3, budget = false }) {
+async function repairAll({ set, readPdfBytes, book, theme, maxRounds = 8, maxPushLines = 3, budget = false, onProgress = () => {} }) {
   const steers = [];
   const history = [];
   let result = await set(steers);
@@ -70,6 +70,7 @@ async function repairAll({ set, readPdfBytes, book, theme, maxRounds = 8, maxPus
     }
     const turns = findMidSentenceTurns({ result, pdf: readPdfBytes(result), book, theme });
     history.push({ round, midSentence: turns.pages.length, steerable: turns.summary.steerable, ms: Math.round(result.compileMs + result.evalMs), pages: result.pages, contentPages: result.contentPages, steers: steers.length });
+    onProgress({ round, midSentence: turns.pages.length });
     if (!best || turns.pages.length < best.turns.pages.length) best = { result, turns, steers: [...steers] };
     let fresh = turns.pages
       .filter((t) => t.sentenceStart !== null && t.pushLines <= maxPushLines && !steers.some((s) => sameSteer(s, { section: t.section, block: t.block, at: t.sentenceStart })))

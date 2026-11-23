@@ -22,7 +22,7 @@ function madeUpChapters() {
   const dir = tempDir('rtpress-e2e-chapters-');
   for (let c = 1; c <= 10; c += 1) {
     const paragraphs = [{ text: `Chapter ${c}: Title ${c}` }];
-    for (let p = 0; p < 8; p += 1) paragraphs.push({ text: `“${sentence(c * 100 + p * 3)}${sentence(c * 100 + p * 3 + 1)}${sentence(c * 100 + p * 3 + 2)}”` });
+    for (let p = 0; p < 8; p += 1) paragraphs.push({ text: `“${(sentence(c * 100 + p * 3) + sentence(c * 100 + p * 3 + 1) + sentence(c * 100 + p * 3 + 2)).trim()}”` });
     writeDocx(dir, `Made Up - Chapter ${c}.docx`, paragraphs);
   }
   return dir;
@@ -68,6 +68,8 @@ const launch = (extra = {}) => electron.launch({
     await window.click('#build');
     await window.waitForSelector('#results-title:has-text("Ready to save")', { timeout: 60000 });
     assert.match(await window.textContent('#build-summary'), /all 11 checks passed/);
+    assert.match(await window.textContent('#build-summary'), /(No page turn splits a sentence|Page turns that split a sentence: \d+ before repair, \d+ after)/, 'the window says what the repair did');
+    assert.equal(await window.inputValue('#page-turns'), 'keep', 'page turns are repaired without adding pages unless the author says otherwise');
     assert.equal(await window.locator('#checks li.fail').count(), 0);
     assert.equal(await window.isEnabled('#export'), true);
 

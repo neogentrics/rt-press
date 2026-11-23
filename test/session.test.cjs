@@ -17,7 +17,7 @@ test.after(() => fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 
 const skip = !sources().every(({ from }) => fs.existsSync(from)) && 'run "npm install"';
 
 const sentence = (n) => `Sentence ${n} of the made-up story runs over the hill and down to the river, where the fox stops to drink. `;
-const chapterParagraphs = (title, start, count) => [{ text: title }, ...Array.from({ length: count }, (_, i) => ({ text: `“${sentence(start + i * 3)}${sentence(start + i * 3 + 1)}${sentence(start + i * 3 + 2)}”` }))];
+const chapterParagraphs = (title, start, count) => [{ text: title }, ...Array.from({ length: count }, (_, i) => ({ text: `“${(sentence(start + i * 3) + sentence(start + i * 3 + 1) + sentence(start + i * 3 + 2)).trim()}”` }))];
 
 function folderOfChapters(count, paragraphs = 4) {
   const dir = tempDir('rtpress-chapters-');
@@ -92,6 +92,7 @@ test('building a book that is long enough makes a file that passes every check, 
   const s = session();
   s.importFolder(folderOfChapters(10, 8));
   s.setDetails({ title: 'A Made-Up Book', author: 'A. Writer' });
+  s.setSettings({ page_turns: 'off' });
   const steps = [];
   const build = await s.build((step) => steps.push(step));
   assert.equal(build.ok, true, build.messages);
@@ -114,6 +115,7 @@ test('building a book that is long enough makes a file that passes every check, 
 test('a book that is too short for KDP is built and shown, but not saved', { skip }, async () => {
   const s = session();
   s.importFolder(folderOfChapters(2, 3));
+  s.setSettings({ page_turns: 'off' });
   const build = await s.build();
   assert.equal(build.ok, true, build.messages);
   assert.equal(build.ready, false);
@@ -135,9 +137,40 @@ test('building with no book, or with a pinned count that is too small, explains 
   assert.match(s.exportTo(path.join(scratch, 'none.pdf')).error, /no finished file/);
 });
 
+test('page turns can be repaired without adding a page, or with, and the repair never touches the book', { skip }, async () => {
+  const s = session();
+  s.importFolder(folderOfChapters(12, 20));
+  const before = JSON.stringify(s.book);
+  s.setSettings({ page_turns: 'off' });
+  const off = await s.build();
+  assert.equal(off.ok, true, off.messages);
+  assert.equal(off.repair, null, 'no repair was asked for');
+
+  s.setSettings({ page_turns: 'keep' });
+  const steps = [];
+  const kept = await s.build((step) => steps.push(step));
+  assert.equal(kept.ok, true, kept.messages);
+  assert.ok(steps.some((t) => /^Repairing page turns, round 1: \d+ split a sentence$/.test(t)), steps.join(' | '));
+  assert.ok(kept.repair.before >= 1, 'the made-up book has page turns inside sentences');
+  assert.ok(kept.repair.after < kept.repair.before, `${kept.repair.before} before, ${kept.repair.after} after`);
+  assert.equal(kept.repair.pagesAfter, kept.repair.pagesBefore, 'no page was added');
+  assert.equal(kept.pages, off.pages);
+  assert.equal(kept.ready, true, JSON.stringify(kept.checks.filter((c) => !c.ok)));
+  assert.ok(kept.repair.pushes >= 1);
+
+  s.setSettings({ page_turns: 'grow' });
+  const grown = await s.build();
+  assert.equal(grown.ok, true, grown.messages);
+  assert.ok(grown.repair.after <= kept.repair.after, 'allowed to add pages, it repairs at least as many');
+  assert.ok(grown.repair.pagesAfter >= grown.repair.pagesBefore);
+  assert.equal(JSON.stringify(s.book), before, 'the book is as it was');
+  assert.deepEqual(validateSettings(withDefaultSettings({ page_turns: 'sometimes' })).map((p) => p.path), ['page_turns']);
+});
+
 test('only one build runs at a time', { skip }, async () => {
   const s = session();
   s.importFolder(folderOfChapters(10, 8));
+  s.setSettings({ page_turns: 'off' });
   const [a, b] = await Promise.all([s.build(), s.build()]);
   assert.equal([a, b].filter((r) => r.reason === 'busy').length, 1);
 });
@@ -145,7 +178,7 @@ test('only one build runs at a time', { skip }, async () => {
 test('choosing hardcover and a pinned count holds that page count', { skip }, async () => {
   const s = session();
   s.importFolder(folderOfChapters(12, 20));
-  const set = s.setSettings({ format: 'hardcover', paper: 'black-cream', pin_pages: 100 });
+  const set = s.setSettings({ format: 'hardcover', paper: 'black-cream', pin_pages: 100, page_turns: 'off' });
   assert.equal(set.error, undefined);
   const build = await s.build();
   assert.equal(build.ok, true, build.messages);

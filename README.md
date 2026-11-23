@@ -26,8 +26,8 @@ books.
 
 > **This is an alpha.** The typesetter was proved on a real book in step zero (see the
 > [results](docs/design/step-zero-results.md)), and this first app does the whole interior from start to finish for a book of
-> plain chapters. Page turns are not yet repaired, in-story documents and pictures are not there, and the type is EB Garamond
-> only. It's for trying, not for printing your book yet.
+> plain chapters. In-story documents and pictures are not there yet, and the type is EB Garamond only. It's for trying, not
+> for printing your book yet.
 
 <table>
 <tr>
@@ -63,17 +63,17 @@ When there is a release, it will be on the [Releases](https://github.com/neogent
 | **Bring in your chapters** | A folder of Word (.docx) files, one for each chapter, in order. Chapter titles are read from the files, curly quotes are set from the text around them, and quotation marks that don't pair are listed so you can check them |
 | **Every KDP trim** | Paperback and hardcover, with only the papers and page limits KDP offers for each size |
 | **Set like a book** | Mirrored margins, every chapter starting on a right-hand page, a drop cap, scene breaks, page numbers outside or centred, an optional title page and contents page, and a blank last page |
+| **No sentence split across a page turn** | Where a page ends in the middle of a sentence, the sentence starts on the next page instead, in rounds, and the book is set again each time. By default no page is added: a sentence is only moved where its chapter has room. Or let pages be added, or leave the pages as set. The repair never changes your words |
 | **Bleed done the KDP way** | 0.125 in on the top, bottom and outside edges, none at the spine, with the page boxes written |
 | **Pin the page count** | Keep a published page count, so an existing cover still fits |
 | **Check before you save** | Eleven checks on the finished file: page size, page boxes, fonts embedded and none Type 3, nothing transparent, page count, inside and outer margins, text size, file size, and no bookmarks, links or encryption |
 | **See it first** | The whole book as facing pages, in about a second |
-| **Fast** | A 128-page book is set, finished and checked in about a second |
+| **Fast** | A 128-page book is set, finished and checked in about a second. Repairing its page turns takes about half a minute |
 | **Your choices are kept** | The book, its details and your settings are saved, and are there when you open the app again |
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
 | **Works offline** | No account, no server, and your writing never leaves your computer |
 
-**Coming next:** repairing page turns so no sentence is split across them, themes, art and page frames, cover wraps, and
-chapters sent from RT Story Tracker. See the [roadmap](ROADMAP.md).
+**Coming next:** themes, art and page frames, cover wraps, and chapters sent from RT Story Tracker. See the [roadmap](ROADMAP.md).
 
 ## What it won't do
 
@@ -130,7 +130,7 @@ npm run test:e2e
 - `src/main/typeset`: the Typst source for a book and a theme, and the fonts.
 - `src/main/pdf`: reading and writing PDFs, and the finishing step that makes Typst's file ready for a printer.
 - `src/main/checks`: the checks, which read the finished PDF.
-- `src/main/steer`: finding the pages that split a sentence, and moving them, as a tested experiment not yet in the window.
+- `src/main/steer`: finding the pages that split a sentence, and the steers that move them. The build uses it.
 - `src/main/import`: Word chapters in.
 - `src/main/storage`: the only code that touches the encrypted project.
 - `src/renderer`: the window, bundled into `dist/renderer` by `npm run build:renderer`.

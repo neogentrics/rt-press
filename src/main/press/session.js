@@ -51,7 +51,7 @@ class Session {
 
   summary(build) {
     if (!build.ok) return { ok: false, reason: build.reason, messages: build.messages, problems: build.problems ?? [] };
-    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, builtAt: build.builtAt };
+    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, builtAt: build.builtAt };
   }
 
   // Reads the Word files in a folder as a new book. Returns the state, or { error }.

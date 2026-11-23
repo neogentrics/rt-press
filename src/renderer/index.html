@@ -57,6 +57,13 @@
           <label class="check"><input id="drop-cap" type="checkbox" /> Drop cap at the start of each chapter</label>
           <label class="check"><input id="title-page" type="checkbox" /> Title page</label>
           <label class="check"><input id="contents" type="checkbox" /> Contents page</label>
+          <label>Page turns
+            <select id="page-turns">
+              <option value="keep">Don't split a sentence across a page turn (no added pages)</option>
+              <option value="grow">Don't split a sentence (pages may be added)</option>
+              <option value="off">Leave the pages as set</option>
+            </select>
+          </label>
           <label>Pin the page count <input id="pin-pages" type="number" min="24" max="900" step="1" placeholder="Not pinned" /></label>
           <p id="limits" class="hint"></p>
           <p id="settings-error" class="problem" role="alert" hidden></p>

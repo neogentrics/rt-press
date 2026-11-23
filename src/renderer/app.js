@@ -38,6 +38,7 @@ function readSettings() {
     title_page: $('title-page').checked,
     contents: $('contents').checked,
     pin_pages: pin === '' ? null : Number(pin),
+    page_turns: $('page-turns').value,
   };
 }
 
@@ -77,6 +78,7 @@ function showSettings() {
   $('title-page').checked = s.title_page;
   $('contents').checked = s.contents;
   $('pin-pages').value = s.pin_pages ?? '';
+  $('page-turns').value = s.page_turns;
   const l = state.limits;
   set('limits', l ? `KDP takes ${l.min} to ${l.max} pages at this trim and paper.` : '');
 }
@@ -125,8 +127,10 @@ function showBuild(build) {
   const failed = build.checks.filter((c) => !c.ok);
   set('results-title', failed.length ? 'Not ready to save' : 'Ready to save');
   $('checks-box').open = failed.length > 0;
-  const seconds = ((build.timings.set + build.timings.preview + build.timings.check + build.timings.finish) / 1000).toFixed(1);
-  set('build-summary', `${build.pages} pages, ${failed.length ? `${failed.length} of ${build.checks.length} checks failed` : `all ${build.checks.length} checks passed`}. Built in ${seconds} s.`);
+  const seconds = ((build.timings.set + build.timings.preview + build.timings.check + build.timings.finish + (build.timings.repair ?? 0)) / 1000).toFixed(1);
+  const r = build.repair;
+  const turns = !r ? '' : r.after === 0 ? ' No page turn splits a sentence.' : ` Page turns that split a sentence: ${r.before} before repair, ${r.after} after${r.pagesAfter > r.pagesBefore ? `, with ${r.pagesAfter - r.pagesBefore} page${r.pagesAfter - r.pagesBefore === 1 ? '' : 's'} added` : ', with no page added'}.`;
+  set('build-summary', `${build.pages} pages, ${failed.length ? `${failed.length} of ${build.checks.length} checks failed` : `all ${build.checks.length} checks passed`}. Built in ${seconds} s.${turns}`);
   $('checks').replaceChildren(...build.checks.map((c) => {
     const li = document.createElement('li');
     li.className = c.ok ? 'pass' : 'fail';
@@ -258,7 +262,7 @@ function wire() {
     fillPapers($('paper').value);
     saveSettings();
   });
-  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages']) $(id).addEventListener('change', saveSettings);
+  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages', 'page-turns']) $(id).addEventListener('change', saveSettings);
   $('first').addEventListener('click', () => go(0));
   $('prev').addEventListener('click', () => go(spread - 1));
   $('next').addEventListener('click', () => go(spread + 1));
