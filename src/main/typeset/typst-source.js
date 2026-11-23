@@ -78,9 +78,20 @@ function wordTokens(content, skip = 0) {
 // The part of the document that is the same for every book.
 
 const PREAMBLE = `
-#let para(body, indent: true) = {
+#let para(body, indent: true, id: none) = {
   set par(first-line-indent: (amount: if indent { INDENT } else { 0pt }, all: true))
-  par(body)
+  par(if id == none { body } else { [#metadata(id)#body] })
+}
+
+// A paragraph's text, with the id it was given between two control marks, so that a measuring pass can say which block it is.
+#let plain(c) = {
+  if type(c) == str { c }
+  else if c.func() == metadata { "\u{1}" + str(c.value) + "\u{1}" }
+  else if c.has("text") { c.text }
+  else if c.has("body") { plain(c.body) }
+  else if c.has("children") { c.children.map(plain).join() }
+  else if c == [ ] { " " }
+  else { "" }
 }
 
 // A paragraph or block with its own look. \`o\` holds the look; spacing is added as plain space so that it is kept at the top
@@ -146,11 +157,50 @@ function lookCode(look) {
   return `(align: ${align}, justify: ${look.align === 'justify'}, size: ${pt(look.size)}, font: ${look.font}, italic: ${look.italic}, fill: ${color(look.color)}, before: ${pt(look.before)}, after: ${pt(look.after)}, indent: ${inch(look.indent)}, tracking: ${pt(look.tracking)}, pitch: ${pt(look.pitch)})`;
 }
 
+// Cuts a paragraph's runs at the given character offsets (counted over its text, a hard break counting as one). Returns one
+// list of runs per piece; the space where a cut falls goes with neither piece.
+function splitContent(content, cuts) {
+  const pieces = [[]];
+  let seen = 0;
+  let cutIndex = 0;
+  for (const node of content) {
+    if (node.type !== 'text') {
+      pieces.at(-1).push(node);
+      seen += 1;
+      continue;
+    }
+    let rest = node.text;
+    while (cutIndex < cuts.length && cuts[cutIndex] < seen + [...rest].length) {
+      const chars = [...rest];
+      const here = Math.max(0, cuts[cutIndex] - seen);
+      const before = chars.slice(0, here).join('');
+      if (before) pieces.at(-1).push({ ...node, text: before });
+      seen += here;
+      rest = chars.slice(here).join('');
+      pieces.push([]);
+      cutIndex += 1;
+    }
+    if (rest) pieces.at(-1).push({ ...node, text: rest });
+    seen += [...rest].length;
+  }
+  // The space between two sentences goes with neither.
+  pieces.forEach((piece, k) => {
+    if (k > 0 && piece[0]?.type === 'text') piece[0] = { ...piece[0], text: piece[0].text.replace(/^\s+/u, '') };
+    if (k < pieces.length - 1 && piece.at(-1)?.type === 'text') piece[piece.length - 1] = { ...piece.at(-1), text: piece.at(-1).text.replace(/\s+$/u, '') };
+  });
+  return pieces.map((piece) => piece.filter((n) => n.type !== 'text' || n.text !== ''));
+}
+
 // Generates the Typst source for a book. Returns { source, units, notes }.
 //   fontMap       { 'Book Antiqua': 'EB Garamond' }: the family each name in the theme is set in here
 //   bleed_in      bleed on every edge (Typst adds it on all four; the finishing step takes the inside edge back off)
+//   trace         add what a measuring pass needs: an id on each paragraph, and a record of where every paragraph and every
+//                 line of text landed (read afterwards with `typst eval`)
+//   steers        changes to how the pages fall that leave the book alone:
+//                   { type: 'push', section, block, at }          starts the sentence at character `at` of that block on a new page
+//                   { type: 'tighten', section, block, tracking_pt }   sets that block with its letters closer (or looser, if positive)
 //   targetPages   pin the page count (a printed spine is sized for it); the book is padded with blank pages to reach it
-function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, bleed_in = 0 }) {
+function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, bleed_in = 0, trace = false, steers = [] }) {
   const bookProblems = validateBook(book);
   if (bookProblems.length) throw new Error(`The book is not valid: ${bookProblems.map((p) => `${p.path} ${p.message}`).join('; ')}`);
   const theme = withDefaults(given);
@@ -187,6 +237,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   out.push(`#set par(justify: ${theme.body.justify}, leading: 0pt, spacing: 0pt, first-line-indent: (amount: ${inch(theme.body.first_line_indent_in)}, all: true))`);
   out.push('#set block(spacing: 0pt)');
   out.push('#set smartquote(enabled: false)');
+  if (trace) out.push('#set par.line(numbering: n => context [#metadata((page: here().page(), y: here().position().y.pt())) <line>], number-clearance: 0pt)');
   out.push(preamble);
 
   // --- looks, as Typst values ---
@@ -207,11 +258,33 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
 
   // --- paragraphs ---
   // `first` is whether the paragraph opens a run of text (no indent), as the owner's script treats it.
+  const blockIds = new Map();
+  const idArg = (section, node, suffix = '') => (trace ? `, id: ${str(`${section.id}#${blockIds.get(node)}${suffix}`)}` : '');
   function paragraph(node, first, section) {
     const role = roleOf(node.attrs?.role);
     if (role) return `#styled(${role})[${inlineMarkup(node.content)}]`;
     if (node.attrs?.role) notes.push(`role "${node.attrs.role}" has no look in the theme; it is set as body text`);
-    return `#para(indent: ${!first})[${inlineMarkup(node.content)}]`;
+    const tighten = steers.find((x) => x.type === 'tighten' && x.section === section.id && x.block === blockIds.get(node));
+    const inner = inlineMarkup(node.content);
+    return `#para(indent: ${!first}${idArg(section, node)})[${tighten ? `#text(tracking: ${pt(tighten.tracking_pt)})[${inner}]` : inner}]`;
+  }
+
+  // A paragraph cut where a steer says, with a new page at each cut. The part before a cut is ended with a justified break, so
+  // its last line is as full as any other.
+  function steered(node, first, section) {
+    const cuts = steers.filter((x) => x.type === 'push' && x.section === section.id && x.block === blockIds.get(node)).map((x) => x.at).sort((a, b) => a - b);
+    if (!cuts.length) return null;
+    const pieces = splitContent(node.content, cuts);
+    const out = [];
+    pieces.forEach((piece, k) => {
+      if (k > 0) out.push('#pagebreak(weak: true)');
+      if (!piece.length) return;
+      const last = k === pieces.length - 1;
+      const tail = last ? '' : '#linebreak(justify: true)';
+      const indent = k === 0 ? !first : false;
+      out.push(`#para(indent: ${indent}${idArg(section, node, k ? `.${k}` : '')})[${inlineMarkup(piece)}${tail}]`);
+    });
+    return out.join('\n\n');
   }
 
   function dropCapped(node) {
@@ -227,6 +300,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
     const lines = [];
     let first = true;
     let didDrop = false;
+    section.document.content.forEach((block, index) => blockIds.set(block, index));
     for (const block of section.document.content) {
       if (block.type === 'horizontalRule') {
         lines.push(`#styled(${sceneLook})[${run(theme.sceneBreak.text)}]`);
@@ -244,7 +318,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
           lines.push(capped);
           didDrop = true;
         } else {
-          lines.push(paragraph(block, first, section));
+          lines.push(steered(block, first, section) ?? paragraph(block, first, section));
           if (dropCap && !didDrop && first) didDrop = true;
         }
         first = false;
@@ -299,6 +373,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   // --- the end: a blank even page, or the page count that is pinned ---
   out.push(`#context [#metadata(here().page()) <content-end>]`);
   out.push(`#context [#metadata(counter(page).final().first()) <total-pages>]`);
+  if (trace) out.push('#context [#metadata(query(par).map(p => (page: p.location().page(), y: p.location().position().y.pt(), text: plain(p.body)))) <paras>]');
   out.push(`#context {
   let n = query(<content-end>).first().value
   ${targetPages ? `let blanks = ${targetPages} - n` : `let blanks = if calc.odd(n) { 1 } else { 2 }`}
@@ -311,4 +386,4 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   return { source: `${out.join('\n\n')}\n`, units, notes: [...new Set(notes)], fontFamilies: [...used] };
 }
 
-module.exports = { generateTypst, str };
+module.exports = { generateTypst, splitContent, str };

@@ -1,8 +1,10 @@
 'use strict';
 // A made-up book for tests: plain sentences, a few of each kind of section. It has nothing to do with any real book.
-const sentence = 'The fox ran over the hill and down to the river, where it stopped to drink. ';
+// Every sentence is different, so a line can be found in its paragraph by its words.
+let counter = 0;
+const sentence = () => `Sentence ${(counter += 1)} of the made-up story runs over the hill and down to the river, where the fox stops to drink and looks about. `;
 const text = (words, marks) => ({ type: 'text', text: words, ...(marks ? { marks } : {}) });
-const paragraph = (n, extra = []) => ({ type: 'paragraph', content: [text(`“${sentence.repeat(n)}”`), ...extra] });
+const paragraph = (n, extra = []) => ({ type: 'paragraph', content: [text(`“${Array.from({ length: n }, sentence).join('')}”`), ...extra] });
 const chapter = (i, paragraphs = [3, 6, 4, 9, 9, 9]) => ({
   type: 'chapter',
   id: `chapter-${i}`,
