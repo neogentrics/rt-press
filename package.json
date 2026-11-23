@@ -17,6 +17,7 @@
     "fflate": "^0.8.3"
   },
   "devDependencies": {
+    "@fontsource/eb-garamond": "^5.3.0",
     "electron": "^45.2.2",
     "electron-builder": "^26.18.0",
     "esbuild": "^0.28.2",
@@ -31,7 +32,8 @@
     "dist:mac": "npm run build:renderer && electron-builder --mac dmg --arm64 --x64 --publish never",
     "dist:linux": "npm run build:renderer && electron-builder --linux AppImage deb --x64 --publish never",
     "fetch:typst": "node scripts/fetch-typst.mjs",
-    "fetch:typst:current": "node scripts/fetch-typst.mjs --current"
+    "fetch:typst:current": "node scripts/fetch-typst.mjs --current",
+    "fonts:stand-in": "node scripts/prepare-fonts.mjs"
   },
   "build": {
     "appId": "com.recontowers.press",

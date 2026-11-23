@@ -34,3 +34,12 @@ test('a theme from a newer version, or not a theme, is refused', () => {
   assert.match(validateTheme({ ...DEFAULT_THEME, format: 2 })[0].message, /format 2/);
   assert.deepEqual(validateTheme(null), [{ path: '', message: 'a theme is an object' }]);
 });
+
+test('roles, part and matter titles are checked, and what a role leaves out is fine', () => {
+  const ok = withDefaults({ roles: { Quote: { align: 'center', size_pt: 12, font: 'title', italic: true }, Plain: {} }, part: { caption: '◆' }, title: { uppercase: true } });
+  assert.deepEqual(validateTheme(ok), []);
+  const bad = withDefaults({ roles: { A: { align: 'right', font: 'mono', size_pt: 1, color: 'red', space_before_pt: -1, line_pt: 999, italic: 'yes' }, B: null }, matterTitle: { size_pt: 0 }, part: { caption: 3 }, title: { uppercase: 'yes' } });
+  const found = new Set(validateTheme(bad).map((p) => p.path));
+  for (const path of ['roles.A.align', 'roles.A.font', 'roles.A.size_pt', 'roles.A.color', 'roles.A.space_before_pt', 'roles.A.line_pt', 'roles.A.italic', 'roles.B', 'matterTitle.size_pt', 'part.caption', 'title.uppercase']) assert.ok(found.has(path), `${path} is reported`);
+  assert.equal(DEFAULT_THEME.roles && Object.keys(DEFAULT_THEME.roles).length, 0, 'the default theme has no roles');
+});

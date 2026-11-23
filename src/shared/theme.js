@@ -11,6 +11,10 @@
 //   sceneBreak  what stands between two scenes
 //   document    an in-story document (a letter, a log, a sign)
 //   folio       the page number
+//   matterTitle the heading of front and back matter (Copyright, Dedication, ...)
+//   part        a part's own page: its title and the mark under it
+//   roles       a look for each role a paragraph may carry (see book-model.js): { align, size_pt, font, italic, color,
+//               space_before_pt, space_after_pt, first_line_indent_in, letter_spacing_pt, line_pt }; all optional
 const FORMAT = 1;
 
 const DEFAULT_THEME = Object.freeze({
@@ -20,15 +24,20 @@ const DEFAULT_THEME = Object.freeze({
   margins: { inside_in: 0.875, outside_in: 0.625, top_in: 0.875, bottom_in: 0.875 },
   fonts: { body: 'Libertinus Serif', title: 'Libertinus Serif', ornament: 'Libertinus Serif', dropcap: 'Libertinus Serif' },
   body: { size_pt: 11, line_height: 1.3, first_line_indent_in: 0.25, justify: true, hyphenate: true },
-  title: { size_pt: 20, color: '#000000', space_before_pt: 96, space_after_pt: 30, letter_spacing_pt: 0 },
+  title: { size_pt: 20, color: '#000000', space_before_pt: 96, space_after_pt: 30, letter_spacing_pt: 0, uppercase: false },
   dropCap: { enabled: false, lines: 3, size_pt: 40, color: '#000000' },
   sceneBreak: { text: '* * *', size_pt: 11, color: '#000000', space_before_pt: 6, space_after_pt: 6 },
   document: { indent_in: 0.3, italic: true, space_before_pt: 6, space_after_pt: 6 },
   folio: { place: 'outside', text: '{n}', size_pt: 10 },
+  matterTitle: { size_pt: 24, space_before_pt: 120, space_after_pt: 24 },
+  part: { caption: '', size_pt: 24, space_before_pt: 190, space_after_pt: 0, caption_size_pt: 11, caption_color: '#000000', caption_space_before_pt: 14 },
+  roles: {},
   titlesOnRight: true,
   endOnBlankEven: true,
 });
 
+const ROLE_ALIGNS = ['left', 'center', 'justify'];
+const ROLE_FONTS = ['body', 'title', 'ornament'];
 const FOLIO_PLACES = ['outside', 'center'];
 const isNumber = (value, min, max) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
 const isColor = (value) => typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
@@ -38,7 +47,7 @@ const isText = (value) => typeof value === 'string' && value.trim() !== '';
 function withDefaults(theme) {
   const merged = { ...DEFAULT_THEME, ...theme };
   for (const [key, value] of Object.entries(DEFAULT_THEME)) {
-    if (value && typeof value === 'object') merged[key] = { ...value, ...(theme?.[key] ?? {}) };
+    if (key !== 'roles' && value && typeof value === 'object') merged[key] = { ...value, ...(theme?.[key] ?? {}) };
   }
   return merged;
 }
@@ -68,6 +77,34 @@ function validateTheme(theme) {
   need('title.space_before_pt', isNumber(theme.title?.space_before_pt, 0, 400), 'space before a title is 0 to 400 points');
   need('title.space_after_pt', isNumber(theme.title?.space_after_pt, 0, 400), 'space after a title is 0 to 400 points');
   need('title.letter_spacing_pt', isNumber(theme.title?.letter_spacing_pt, 0, 20), 'letter spacing is 0 to 20 points');
+  need('title.uppercase', typeof theme.title?.uppercase === 'boolean', 'uppercase is on or off');
+  need('matterTitle.size_pt', isNumber(theme.matterTitle?.size_pt, 6, 72), 'a matter title is 6 to 72 points');
+  need('matterTitle.space_before_pt', isNumber(theme.matterTitle?.space_before_pt, 0, 400), 'space before is 0 to 400 points');
+  need('matterTitle.space_after_pt', isNumber(theme.matterTitle?.space_after_pt, 0, 400), 'space after is 0 to 400 points');
+  need('part.caption', typeof theme.part?.caption === 'string', 'a caption is text (it may be empty)');
+  need('part.size_pt', isNumber(theme.part?.size_pt, 6, 72), 'a part title is 6 to 72 points');
+  need('part.space_before_pt', isNumber(theme.part?.space_before_pt, 0, 400), 'space before is 0 to 400 points');
+  need('part.space_after_pt', isNumber(theme.part?.space_after_pt, 0, 400), 'space after is 0 to 400 points');
+  need('part.caption_size_pt', isNumber(theme.part?.caption_size_pt, 4, 48), 'a caption is 4 to 48 points');
+  need('part.caption_color', isColor(theme.part?.caption_color), 'a colour is #rrggbb');
+  need('part.caption_space_before_pt', isNumber(theme.part?.caption_space_before_pt, 0, 400), 'space is 0 to 400 points');
+  need('roles', theme.roles && typeof theme.roles === 'object' && !Array.isArray(theme.roles), 'roles is a set of looks, one per role name');
+  for (const [name, look] of Object.entries(theme.roles ?? {})) {
+    const at = `roles.${name}`;
+    if (!look || typeof look !== 'object') {
+      problems.push({ path: at, message: 'a role look is an object' });
+      continue;
+    }
+    need(`${at}.align`, look.align === undefined || ROLE_ALIGNS.includes(look.align), `align is ${ROLE_ALIGNS.join(', ')}`);
+    need(`${at}.font`, look.font === undefined || ROLE_FONTS.includes(look.font), `font is ${ROLE_FONTS.join(', ')}`);
+    need(`${at}.size_pt`, look.size_pt === undefined || isNumber(look.size_pt, 4, 72), 'size is 4 to 72 points');
+    need(`${at}.italic`, look.italic === undefined || typeof look.italic === 'boolean', 'italic is on or off');
+    need(`${at}.color`, look.color === undefined || isColor(look.color), 'a colour is #rrggbb');
+    for (const key of ['space_before_pt', 'space_after_pt']) need(`${at}.${key}`, look[key] === undefined || isNumber(look[key], 0, 400), 'space is 0 to 400 points');
+    need(`${at}.first_line_indent_in`, look.first_line_indent_in === undefined || isNumber(look.first_line_indent_in, 0, 2), 'indent is 0 to 2 inches');
+    need(`${at}.letter_spacing_pt`, look.letter_spacing_pt === undefined || isNumber(look.letter_spacing_pt, 0, 20), 'letter spacing is 0 to 20 points');
+    need(`${at}.line_pt`, look.line_pt === undefined || isNumber(look.line_pt, 4, 144), 'a line is 4 to 144 points');
+  }
   need('dropCap.enabled', typeof theme.dropCap?.enabled === 'boolean', 'a drop cap is on or off');
   need('dropCap.lines', Number.isInteger(theme.dropCap?.lines) && theme.dropCap.lines >= 2 && theme.dropCap.lines <= 6, 'a drop cap spans 2 to 6 lines');
   need('dropCap.size_pt', isNumber(theme.dropCap?.size_pt, 8, 200), 'a drop cap is 8 to 200 points');

@@ -82,6 +82,14 @@ function run(file, args, { timeoutMs, outputFile = null, maxOutputBytes = Infini
   });
 }
 
+// Typst reads these to pick up packages and fonts from the user's account; a build must not depend on either.
+// They are removed, not blanked: an empty value is read as a folder with no name.
+function cleanEnv() {
+  const env = { ...process.env };
+  for (const name of ['TYPST_PACKAGE_PATH', 'TYPST_PACKAGE_CACHE_PATH', 'TYPST_FONT_PATHS', 'SOURCE_DATE_EPOCH', 'TYPST_ROOT']) delete env[name];
+  return env;
+}
+
 async function version(options = {}) {
   const result = await run(findTypst(options), ['--version'], { timeoutMs: 10 * 1000 });
   const found = /typst\s+(\d+\.\d+\.\d+)/i.exec(result.stdout);
@@ -107,11 +115,7 @@ async function compile({ input, output, root, fontPaths = [], systemFonts = fals
   args.push(...extraArgs, path.resolve(input), path.resolve(output));
 
   fs.rmSync(output, { force: true });
-  // Typst reads these to pick up packages and fonts from the user's account; a build must not depend on either.
-  // They are removed, not blanked: an empty value is read as a folder with no name.
-  const env = { ...process.env };
-  for (const name of ['TYPST_PACKAGE_PATH', 'TYPST_PACKAGE_CACHE_PATH', 'TYPST_FONT_PATHS', 'SOURCE_DATE_EPOCH']) delete env[name];
-  const result = await run(program, args, { timeoutMs: timeLimitMs, outputFile: output, maxOutputBytes, env });
+  const result = await run(program, args, { timeoutMs: timeLimitMs, outputFile: output, maxOutputBytes, env: cleanEnv() });
   const messages = [result.stdout, result.stderr].filter(Boolean).join('\n').trim();
 
   let reason = result.reason;
@@ -144,4 +148,30 @@ async function compile({ input, output, root, fontPaths = [], systemFonts = fals
   };
 }
 
-module.exports = { DEFAULT_OUTPUT_LIMIT, DEFAULT_TIME_LIMIT_MS, compile, findTypst, systemName, typstPath, version };
+// Asks a document a question: `expression` is Typst code evaluated in the document's own context, so it can read where things
+// landed (`query(<label>)`, `counter(page).final()`). Returns { ok, value, ms, messages }; the value is what the code gave,
+// read as JSON. The document is set again to answer, so this takes about as long as a compile.
+async function evaluate({ input, expression, root, fontPaths = [], systemFonts = false, inputs = {}, timeLimitMs = DEFAULT_TIME_LIMIT_MS, ...where } = {}) {
+  const program = findTypst(where);
+  const args = ['eval', '--root', root ?? path.dirname(path.resolve(input)), '--in', path.resolve(input)];
+  if (!systemFonts) args.push('--ignore-system-fonts');
+  for (const folder of fontPaths) args.push('--font-path', folder);
+  for (const [key, value] of Object.entries(inputs)) args.push('--input', `${key}=${value}`);
+  args.push(expression);
+  const result = await run(program, args, { timeoutMs: timeLimitMs, env: cleanEnv() });
+  let value = null;
+  let parsed = false;
+  if (!result.reason && !result.error && result.code === 0) {
+    try {
+      value = JSON.parse(result.stdout);
+      parsed = true;
+    } catch {
+      // Not JSON: reported below.
+    }
+  }
+  const ok = parsed;
+  const messages = [result.reason === 'timeout' ? `Typst did not answer in ${timeLimitMs / 1000} seconds and was stopped.` : '', result.error ? `Typst could not be started: ${result.error.message}` : '', ok ? '' : result.stdout, result.stderr].filter(Boolean).join('\n').trim();
+  return { ok, value, ms: result.ms, messages };
+}
+
+module.exports = { DEFAULT_OUTPUT_LIMIT, DEFAULT_TIME_LIMIT_MS, compile, evaluate, findTypst, systemName, typstPath, version };
