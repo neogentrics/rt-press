@@ -14,6 +14,7 @@ const chapter = (i, paragraphs = [3, 6, 4, 9, 9, 9]) => ({
 const matter = (id, kind, placement, title, content = [], extra = {}) => ({ type: 'matter', id, kind, placement, title, document: { type: 'doc', content }, ...extra });
 
 function fakeBook({ chapters = 4 } = {}) {
+  counter = 0; // the same call always makes the same book
   return {
     format: 1,
     id: 'fake',
