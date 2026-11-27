@@ -94,6 +94,8 @@ defaults = [
     ('The step-zero book', 'One of your finished books, chosen with you at the start of step zero.'),
 ]
 openq = [
+    ("Where does the shared themes file live?", "You chose that themes change in all the apps together, and that a theme added in one is offered in all of them. The proposal is a small public repo, neogentrics/recon-theme, pinned by tag. It needs your yes before it's created. Press builds none of the theme work until it's settled."),
+    ("Should apps follow each other's theme?", "Changing the theme in one app would switch the linked apps too. It needs a small addition to App Link, so a protocol decision, made together with kinds. Nothing starts before you say go."),
     ("Should hello also return kinds?", "The suite proposes that every app says which document kinds it does something with, so a sender only offers an action the other app handles. It changes the App Link protocol for every app, so it needs your yes. Press builds nothing for it until you say yes, and then only in v1.7."),
 ]
 def dec(t, p, cls='decision'):

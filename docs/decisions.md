@@ -98,3 +98,17 @@ The suite proposes that `hello` also returns `kinds`, the values of `kind` an ap
 offers a kind-specific action when the other app handles it. An app that ignores `kind` returns an empty list, and a missing
 `kinds` means an older app. It's an addition to protocol version 1, so older apps keep working. It changes every app, so it
 needs the owner's yes before any app is changed. Press builds nothing for it until he says yes, and then only in v1.7.
+
+### One shared themes file
+
+The owner chose, on 27 November 2026, that themes change in all the apps together and that a theme added or uploaded in one
+app can be used in all of them. So Press takes in the suite's one shared themes file (tokens, themes, looks and the contrast
+tests) instead of keeping its own copy, and keeps themes it adds or loads in the shared folder for every app. Still open, and
+the owner's: where the shared file lives (the proposal is a small public repo, `neogentrics/recon-theme`, pinned by tag).
+Until it exists, RT Markdown Reader's files are the source. Press builds none of the theme work until the planning session says
+the location is settled.
+
+### Theme following between apps
+
+When the theme changes in one app, the linked apps switch too. It needs a small addition to App Link, so a protocol decision, made
+together with `kinds`. Not built, and nothing starts before the owner says go.
