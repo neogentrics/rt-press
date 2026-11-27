@@ -56,3 +56,25 @@ moved. Until v1.7, a refresh is a new send from RT Story Tracker.
 
 Interior designs, themes, frames, cover wraps and the finished print files. RT Author Desk records what was made and when;
 it never keeps a copy of the design.
+
+## The suite's rules Press follows
+
+From the shared plan, [app-suite.md](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-suite.md), as it stood
+on 18 November 2026. Where the two differ, that page wins.
+
+| Rule | What Press does | When |
+|---|---|---|
+| Installed list | Writes `installed/rt-press.json` on first run and after each update, and removes it on uninstall | v1.0 |
+| Apps status | The toolbar icon and panel, with the suite's exact wording, copied from RT Story Tracker's | v1.7 |
+| Updates and compatibility | Links by App Link version and accepted document kinds, never app version; *Update available* is a nudge; only an incompatible protocol blocks | v1.7 |
+| "Latest" version | Read from the suite's own versions file when the panel opens or the app starts, kept for a day, and nothing about the person is sent | v1.7 |
+| Look and feel | The frame matches RT Markdown Reader's: short menus and the command palette, the Help menu, Help Center and Tutorial, the About window, one Preferences window, the shared themes, an icon toolbar, self-update, accessibility checks, languages and plain wording. The print preview and layout screens get their own design inside it | v1.0 |
+| App theming | The window is built to the suite's theming file: the ten shared themes plus *Auto*, the shared colour tokens, the *Solid*, *Metallic* and *Glass* looks, and contrast tests on every theme with every look. These are the window's colours; Press's *book themes* (the printed pages) are a separate thing. Copied from RT Markdown Reader for now; the owner is deciding on one shared package | v1.0, before any interface work beyond step zero |
+| Research clips | Not accepted | — |
+| `kinds` in `hello` | Proposed by the suite, waiting for the owner's yes; Press returns its `kinds` once it's agreed | v1.7 |
+| Repo visibility | Public since 18 November 2026, so Press can be in the versions file and offered as a download ([decisions](../decisions.md#visibility-of-this-repo)) | v1.0 |
+
+## What Press can do over App Link today
+
+Nothing yet. It sends nothing and receives nothing, and no App Link code exists. The suite's table says the same. Receiving a
+book (`rtbook`) arrives in v1.7. When Press gains a capability, its report says so, so the table stays true.
