@@ -13,6 +13,7 @@ const pkg = require('../../package.json');
 const { TYPST_VERSION } = require('../../src/shared/typst-version');
 const { tempDir, writeDocx } = require('../helpers/docx.cjs');
 const { readPdf } = require('../../src/main/pdf/read');
+const measureContrast = require('./contrast.cjs');
 
 // Some editors and shells set ELECTRON_RUN_AS_NODE, which makes Electron start as plain Node and refuse a window.
 const { ELECTRON_RUN_AS_NODE: _ignored, ...environment } = process.env;
@@ -203,6 +204,35 @@ const unnamed = (window) => window.evaluate(() => [...document.querySelectorAll(
     const pdf = readPdf(fs.readFileSync(saved));
     assert.deepEqual(pdf.rect(pdf.pages()[0].inherited.MediaBox), [0, 0, 441, 666], 'the saved file is the finished one, 6.125 by 9.25 in');
     assert.ok(pdf.pages().length >= 24);
+
+    // Contrast, measured on the real text in light and in dark: the main window, then each of the frame's own windows.
+    for (const colorScheme of ['light', 'dark']) {
+      await window.emulateMedia({ colorScheme });
+      await window.evaluate(() => { document.getElementById('checks-box').open = true; });
+      const main = await window.evaluate(measureContrast);
+      assert.ok(main.measured > 60, `${colorScheme}: ${main.measured} pieces of text measured`);
+      assert.deepEqual(main.failures, [], `${colorScheme}: the window meets WCAG AA`);
+      for (const name of ['about', 'preferences', 'help-center', 'go-to', 'check-updates']) {
+        await command(window, name);
+        await visible(window, 'dialog[open]');
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        const dialog = await window.evaluate(measureContrast);
+        assert.ok(dialog.measured >= 3, `${colorScheme} ${name}: ${dialog.measured} measured`);
+        assert.deepEqual(dialog.failures, [], `${colorScheme}: ${name} meets WCAG AA`);
+        await window.keyboard.press('Escape');
+        await gone(window, 'dialog[open]');
+      }
+    }
+    await window.emulateMedia({ colorScheme: null });
+
+    // Everything can be reached with the keyboard.
+    await window.evaluate(() => document.activeElement?.blur());
+    const reached = new Set();
+    for (let press = 0; press < 90; press += 1) {
+      await window.keyboard.press('Tab');
+      reached.add(await window.evaluate(() => document.activeElement?.id || document.activeElement?.tagName));
+    }
+    for (const id of ['import', 'build', 'export', 'tb-goto', 'tb-prefs', 'tb-help', 'title', 'author', 'format', 'trim', 'paper', 'bleed', 'page-turns', 'pin-pages', 'next', 'last', 'goto']) assert.ok(reached.has(id), `Tab reaches #${id}: ${[...reached].join(' ')}`);
 
     assert.deepEqual(errors, [], 'the window reported no errors');
 
