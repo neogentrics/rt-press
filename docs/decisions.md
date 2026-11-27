@@ -51,16 +51,65 @@ GitHub Actions.
 ✅ **Approved 17 November 2026,** with the defaults below. The step-zero test book is a frameless 6 × 9 novel whose
 hardcover is pinned at 128 pages, because 1.0 makes no page frames.
 
+### 8. Alphas for testing
+
+✅ **Chosen 22 November 2026: CI creates alpha releases, as it does for the other apps.** On 18 November the owner said there
+would be no alpha and that he would wait for a working version. On 22 November he asked the build session to set up CI on
+GitHub to create alpha releases like the other apps' repos. The release workflow builds all three systems, runs the tests on
+each, and publishes a pre-release when a version tag is pushed. The first is `0.1.0-alpha.0` (23 November). Alphas are
+pre-releases and unsigned: Windows shows a SmartScreen warning and macOS asks to be opened from System Settings.
+
 ## Defaults, approved with the plan
 
 These follow the owner's existing books and the other apps. Any of them can still change.
 
 | # | Default | Why |
 |---|---|---|
-| 7 | KDP's numbers are hard rules; the house rules are a preset, on for the owner and offered to everyone | KDP's limits aren't a matter of taste; the house rules are. See [print rules](design/print-rules.md). |
-| 8 | Fonts: bundled open-licence fonts, plus any on the computer that allow embedding | A font that forbids embedding can't legally go in the PDF, so it's refused with a reason. |
-| 9 | A Press project is one encrypted file, stored the same way as RT Story Tracker's | A Press project holds the whole text of the book. |
-| 10 | A book arrives as an `.rtbook` file, by App Link or by opening it | No change to App Link is needed. See [working with the suite](design/working-with-the-suite.md). |
-| 11 | The owner's existing theme files are brought over by a private one-time converter, kept out of this repo | They name his books, and public files never do. |
-| 12 | The step-zero test book is one of the owner's finished books, chosen with him at the start of step zero | It has to be a book his script already builds, to compare against. |
-| 13 | Electron, plain JavaScript and the same build, test and release tools as RT Story Tracker | Shared code and one way of releasing for every app. |
+| 9 | KDP's numbers are hard rules; the house rules are a preset, on for the owner and offered to everyone | KDP's limits aren't a matter of taste; the house rules are. See [print rules](design/print-rules.md). |
+| 10 | Fonts: bundled open-licence fonts, plus any on the computer that allow embedding | A font that forbids embedding can't legally go in the PDF, so it's refused with a reason. |
+| 11 | A Press project is one encrypted file, stored the same way as RT Story Tracker's | A Press project holds the whole text of the book. |
+| 12 | A book arrives as an `.rtbook` file, by App Link or by opening it | No change to App Link is needed. See [working with the suite](design/working-with-the-suite.md). |
+| 13 | The owner's existing theme files are brought over by a private one-time converter, kept out of this repo | They name his books, and public files never do. |
+| 14 | The step-zero test book is one of the owner's finished books, chosen with him at the start of step zero | It has to be a book his script already builds, to compare against. |
+| 15 | Electron, plain JavaScript and the same build, test and release tools as RT Story Tracker | Shared code and one way of releasing for every app. |
+
+## Also chosen
+
+### Visibility of this repo
+
+✅ **Chosen 18 November 2026: public, from now.** A private repo can't be linked from the Bench page, listed in the suite's
+latest-versions file or offered as a store download, so the owner made it public rather than wait for a first release.
+Nothing private is in it: the test book and the owner's build script stay in a folder git ignores, and the history was
+checked for names, people and secrets first. The licence is still proprietary, as for RT Story Tracker.
+
+### Fonts for the test-book comparison
+
+✅ **Chosen 20 November 2026: open stand-in fonts for now.** The test book's own fonts (Book Antiqua, Felix Titling and
+Segoe UI Symbol) aren't on the build machine, and their licences generally tie them to Windows or Office. Step zero sets
+the book in open fonts, so its page count won't match the owner's build script's PDF exactly; what doesn't depend on the font
+is compared instead. If an exact comparison turns out to matter, it's revisited once M4's results are in: either the
+licensed fonts go on the build machine, or the comparison runs on the owner's own Windows computer.
+
+## Open, the owner's
+
+### App Link: say what an app does with each kind
+
+The suite proposes that `hello` also returns `kinds`, the values of `kind` an app does something with, so a sender only
+offers a kind-specific action when the other app handles it. An app that ignores `kind` returns an empty list, and a missing
+`kinds` means an older app. It's an addition to protocol version 1, so older apps keep working. It changes every app, so it
+needs the owner's yes before any app is changed. Press builds nothing for it until he says yes, and then only in v1.7.
+
+### One shared themes file
+
+✅ **Chosen 27 November 2026.** Themes change in all the apps together, and a theme added or uploaded in one app can be used in
+all of them. So Press takes in the suite's one shared themes file (tokens, themes, looks and the contrast tests) instead of
+keeping its own copy, and keeps themes it adds or loads in the shared folder for every app. The file lives in the private
+repo `neogentrics/recon-theme`. A script copies it into Press at a pinned tag and writes a `theme.lock` (a hash of the copied
+files); Press commits both, so building never needs access to the private repo, and a test fails if the copy was edited by
+hand or no longer matches the lock. The files move in after RT Markdown Reader's 3.13.x look update merges. Until then
+RT Markdown Reader's files are the source, and Press does no theme work until the planning session says go.
+
+### Theme following between apps
+
+When the theme changes in one app, the linked apps switch too. It needs a small addition to App Link, so a protocol decision, made
+together with `kinds`. Not built, and nothing starts before the owner says go.

@@ -27,7 +27,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 
 | Release | Theme | Status |
 |---|---|---|
-| [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | 🚧 Started |
+| [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | ✅ Built, and waiting for the owner's decision on its results |
 | [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | Planned |
 | [v1.1](#v11--page-frames-and-ornaments) | Page frames and ornaments | Planned |
 | [v1.2](#v12--art-on-the-page) | Art on the page | Planned |
@@ -39,6 +39,23 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v1.8](#v18--claude-and-ai) | Claude and AI | Planned |
 | [Later](#later--only-if-needed) | Only if needed | Ideas |
 | [Ongoing](#ongoing--polish--distribution) | Polish & distribution | Ongoing |
+
+## Where it stands
+
+As of 27 November 2026. Step zero is built on the `step-zero` branch ([pull request 8](https://github.com/neogentrics/rt-press/pull/8), still a draft), and an alpha was published from it.
+
+| Piece | State |
+|---|---|
+| The plan | ✅ Approved on 17 November, and the repo is public |
+| M1 An empty app, with encrypted storage | ✅ Committed, tests passing on all three systems |
+| M2 Typst inside the app | ✅ Committed, all six systems checked against GitHub's own digests |
+| M3 The test book comes in | ✅ Committed, and it matches the owner's build script on all 16 chapters |
+| M4 Set the pages | ✅ Committed, in open stand-in fonts (the owner's choice, 20 November) |
+| M5 The file KDP gets, and the checks | ✅ Committed: every check Press can make passes on the finished file. KDP's own previewer hasn't seen one yet. |
+| M6 Can the page be steered? | ✅ Passed, with limits |
+| The step-zero results | ✅ [Written](docs/design/step-zero-results.md): two gates passed, three need the owner |
+| Tests | ✅ Passing on Windows, Mac and Linux on the latest run, after the Windows storage bug was fixed |
+| An alpha | ✅ Published at the owner's request: the pre-release 0.1.0-alpha.0 (23 November), a window to import chapters, set the interior, check it, preview it and save the PDF, built by CI for Windows, Mac and Linux. Not yet opened by hand on Windows or Mac: CI ran the built app's window test there, and nothing is code-signed. |
 
 ## Step zero — Prove the typesetter
 
@@ -64,18 +81,26 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 | 🙋 Bring in a book | M | From RT Story Tracker in one step, or from Word, Markdown or EPUB files. A Story Tracker book stays read-only here; a book that came from files can have its words corrected here. |
 | 🙋 Every KDP trim size | S | All 16 paperback sizes, custom paperback sizes inside KDP's limits, and the 5 hardcover sizes, with or without bleed. |
 | 🙋 Margins from the page count | S | Mirrored margins, the inside margin set from the real page count, and the outside, top and bottom never under KDP's minimum. |
-| 🙋 Themes | L | A starter set of themes, each with fonts for titles, subtitles and body, sizes, spacing, drop caps, scene breaks, chapter openers and folios. Change anything and save it as your own. |
+| 🙋 Book themes | L | A starter set of book themes (the design of the printed pages, not the window's colours), each with fonts for titles, subtitles and body, sizes, spacing, drop caps, scene breaks, chapter openers and folios. Change anything and save it as your own. |
 | 🙋 Front and back matter | M | Title, copyright, dedication, acknowledgements, contents, a note to the reader, Parts, prologue, epilogue, appendices, a preview of the next book, also by, and stay connected, in the order you choose. |
 | 🙋 Titles on the right | S | Every title in the contents starts on a right-hand page, with a blank before it when needed. |
+| 🙋 Running heads | S | The author's name on left-hand pages and the book's title on right-hand pages, or the chapter's title instead, on or off in each book theme. None on chapter openers, Part pages or blank pages. |
 | 🙋 Page turns | L | No sentence split across a page turn, unless it's on your list of turns kept for suspense. A report lists what moved and anything that couldn't. |
 | 🙋 Even page bottoms | M | The text block holds a whole number of lines, and every full page ends on the same bottom line. |
 | 🙋 Pin the page count | S | Keep the published page count so an existing cover still fits, and end on a blank page with an even total. |
 | 🙋 Fonts you can trust | S | Bundled fonts plus any on the computer that allow embedding. A character missing from its font stops the build, so nothing falls back to another font. |
+| 🙋 Language and hyphenation | S | The book's language sets hyphenation and the quotation style, and hyphenation can be turned off. No hyphenated word is split across a page turn. |
 | 🙋 Checks before upload | M | KDP's rules for trim, page count, margins, bleed, fonts, picture resolution, links and blank pages. A broken rule is shown on the page it's on, and the file isn't written until it's fixed. |
 | Preview | M | The pages as they'll print, side by side as spreads, updating as you change the theme. |
+| Installed list | S | On first run and after each update, writes `installed/rt-press.json` (id, name, version, launch path, protocol) in the App Link folder, and removes it on uninstall, so the other apps can find Press. |
+| 🙋 Menus and Help | M | File, Edit, View and Help, each kept short, with less-used commands in submenus and every command runnable by name from the command palette (`Ctrl+K`). The Help menu in the suite's order: *Help Center* (`F1`), *Tutorial*, *Check for Updates…*, *About RT Press*. Guides are plain Markdown files in a `help` folder, and the tutorial offers a practice book. |
+| 🙋 About and Preferences | S | The suite's About window: icon, version, *Website*, *What's new in this version*, *Report a problem or suggest a feature*, *Source code*, the Electron, Chromium, Node and system versions with *Copy details*, and links to the licence and the open-source notices. One Preferences window (`Ctrl+,`) holds every setting. |
+| 🙋 App themes and the toolbar | M | The window is built to the suite's [theming file](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-theming.md), taken in from the suite's one shared themes file in the private repo `neogentrics/recon-theme`, not copied by hand: a script copies the files at a pinned tag and writes a `theme.lock` (a hash of them), Press commits both, so building never needs access, and a test fails if the copy differs from the lock (the files move in after RT Markdown Reader's 3.13.x look update merges, and until then RT Markdown Reader's files are the source): the ten shared themes (Paper, Night, Sepia, Mist, Forest, Dusk, Blue, Red, Yellow, High Contrast) plus *Auto*, the shared colour tokens, the *Solid*, *Metallic* and *Glass* looks, *Colour-safe* and *Customize Theme*. A theme made in *Customize Theme* or loaded from a file is kept once in the suite's shared folder, so every app offers it, and a theme that fails contrast is refused. One theme button on the main screen, also under *Preferences → Appearance* and *View → Look*. Contrast of every theme with every look is measured in the tests on all three systems. The page preview stays plain, since looks are for the window around it. An icon toolbar with a name on hover for each button. |
+| 🙋 Updates, access and languages | M | *Restart to update* where the system allows it, and a download link where it doesn't. Every button named, every theme at WCAG AA contrast, Windows high contrast, and everything doable from the keyboard, all checked by the tests. Spanish, French and German, and right-to-left layouts. |
 
 **Test:** lay out a book in each trim size, upload it to KDP's previewer, and it reports nothing. Change one word in RT
-Story Tracker, refresh, and only that page moves.
+Story Tracker, refresh, and only that page moves. The menus, Help, About and Preferences use RT Markdown
+Reader's wording, and every theme passes the contrast test. The print preview and the layout screens have their own design, inside that frame.
 
 ## v1.1 — Page frames and ornaments
 
@@ -99,6 +124,9 @@ Story Tracker, refresh, and only that page moves.
 | 🙋 Full-page art | M | A picture for each Part, maps, and art pages anywhere, with or without bleed. |
 | 🙋 Sketches on blank pages | S | Put a sketch on a left-hand page that would otherwise be blank. |
 | 🙋 In-story documents | M | Letters, notices and records set apart from the story, in their own font and box. |
+| Epigraphs | S | An epigraph, with its source, under a Part or chapter title. |
+| Verse and tables | M | Poetry kept line by line, with its indents, and tables set to the page width and never split badly across a turn. |
+| Footnotes and endnotes | M | Notes at the foot of the page or at the end of a chapter or the book, numbered and kept with the text they belong to. |
 | Pictures in the text | M | Pictures inside a chapter, from RT Story Tracker or the book's files, checked for print resolution. |
 
 **Test:** a book with Part art, a map and sketches passes the previewer, and every picture is at 300 dpi or better.
@@ -112,6 +140,8 @@ Story Tracker, refresh, and only that page moves.
 | 🙋 The template | M | The exact wrap for this book: back, spine and front with bleed, safe areas and the barcode space, as a file your illustrator can paint on. |
 | 🙋 Place the art | M | A full wrap or separate front and back art, fitted to the trim and bleed. |
 | 🙋 Set the type | M | Title, author, spine text and the back-cover blurb, in the book's fonts. |
+| Writing patterns check | S | The suite's Writing patterns check runs on the back-cover blurb, using the shared engine and the shared banned-phrase list, and shows what it finds before the blurb is set on the cover. A small version: it checks a short text, not a manuscript. Not built, and not to be started until the owner says. |
+| ISBN barcode | S | Make the ISBN barcode for the back cover from the edition's ISBN, or leave the space for KDP's own. Checked for size and quiet zone. Later, the ISBN can come from RT Author Desk. |
 | 🙋 The spine follows the book | S | When the page count changes, the spine resizes and the app tells you. |
 | Cover checks | S | Text inside the safe area, spine text only when the book is long enough for it, and the barcode space clear. |
 
@@ -153,11 +183,14 @@ Story Tracker, refresh, and only that page moves.
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 Refresh from RT Story Tracker | M | Bring in the latest text, keeping every layout choice, and see which pages changed. |
-| Find the other apps | S | The suite's installed list and Apps panel. |
+| Apps status | M | The suite's small toolbar icon with a coloured dot (green, amber, grey or off), opening a panel that lists every suite app with one state and a button: *Open*, *Link* or *Get it*. Finding an app never links it, and nothing is checked in the background. Copied from RT Story Tracker's panel, with the suite's exact wording. |
+| Updates and compatibility | S | Apps link by App Link version and the document kinds they accept, never by app version. The panel shows *Update available* with both numbers as a nudge, *Needs an update to link* only for an incompatible protocol, and *Couldn't check for updates* when offline. "Latest" comes from the suite's own versions file, kept for a day. |
 | Tell RT Author Desk | S | Record which files were made for which edition, and when. |
+| Say what it does with each kind | S | The suite's proposal: `hello` also returns `kinds`, the document kinds an app does something with, so a sender only offers an action the other app handles. For Press that is probably an empty list at first. Waiting for the owner's yes, because the protocol changes for every app. Not built. |
+| Theme following | S | Changing the theme, look or colour-safe option in one app tells the linked apps on the same computer, and they switch too. Only linked apps are told, no document text travels, and *Preferences → Appearance* can turn it off. It needs a small addition to App Link and so a protocol decision. Waiting for the owner. Not built. |
 | Send to RT Markdown Reader | S | Hand a document across for publishing, as the other apps do. |
 
-**Test:** change a chapter in RT Story Tracker, refresh, and the layout keeps every choice. RT Author Desk shows the new file.
+**Test:** change a chapter in RT Story Tracker, refresh, and the layout keeps every choice. RT Author Desk shows the new file. Press shows in the other apps' panels, and an older app on the same protocol still links.
 
 ## v1.8 — Claude and AI
 
@@ -166,7 +199,7 @@ An add-on, off until you turn it on, with your choice of service, including a mo
 | Feature | Size | Details |
 |---|:-:|---|
 | Picture descriptions | S | Draft the alt text an EPUB needs for each picture. |
-| Blurb drafts | S | Drafts of the back-cover blurb, from the book's description. |
+| Blurb drafts | S | Drafts of the back-cover blurb, from the book's description. Every draft goes through the Writing patterns check before it is shown. |
 | Explain a check | S | Plain words on why a check failed and what to do about it. |
 
 **Test:** with AI off, nothing reaches any service, and the app is complete.
@@ -177,6 +210,7 @@ An add-on, off until you turn it on, with your choice of service, including a mo
 |---|:-:|---|
 | Compare with the last upload | M | What changed on each page since the file that's on sale. |
 | Right-to-left books | L | KDP prints right to left for Hebrew, Yiddish and Japanese only. |
+| Index | L | An index built from terms you mark, with page numbers that follow the layout. |
 
 ## Ongoing — Polish & distribution
 

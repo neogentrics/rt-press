@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build docs/roadmap.html from ROADMAP.md, in the suite's roadmap layout.
 
-Usage: python3 scripts/roadmap-page.py <suite-layout.html> > docs/roadmap.html
+Usage: python3 scripts/roadmap-page.py docs/roadmap.html > /tmp/new.html, then copy it over docs/roadmap.html
 The layout file is any suite roadmap page; only its <style> block is reused, with Press's colours.
 """
 import html, re, sys
@@ -66,6 +66,12 @@ def rel_html(r, kind, opened=False):
 
 main = [r for r in releases if r['ver'] == 'Step zero' or r['ver'].startswith('v')]
 later = [r for r in releases if r['ver'] in ('Later', 'Ongoing')]
+sm = re.search(r'(?ms)^## Where it stands\n(.*?)(?=^## )', md)
+stand_lines = sm.group(1).splitlines() if sm else []
+stand_rows = [[c.strip() for c in l.strip('|').split('|')] for l in stand_lines if l.startswith('| ') and not l.startswith('| Piece') and not l.startswith('|---')]
+stand_html = ('<section id="stands" aria-labelledby="standh"><div class="section-head"><h2 id="standh">Where it stands</h2><p>As of 20 November 2026</p></div>'
+              '<div class="scroll"><table class="own"><thead><tr><th>Piece</th><th>State</th></tr></thead><tbody>'
+              + ''.join(f'<tr><td>{inline(a)}</td><td>{inline(b)}</td></tr>' for a, b in stand_rows) + '</tbody></table></div></section>')
 rail = ''.join(f'<a class="node {"here" if r["ver"] == "Step zero" else "plan"}" href="#{anchor(r["ver"])}" title="{html.escape(r["theme"])}">{short(r["ver"])}</a>' for r in main)
 
 decided = [
@@ -75,6 +81,10 @@ decided = [
     ('How far the covers go', 'Size, place and set type. A template for your illustrator, the art placed, the type set and checked. No painting tools.'),
     ('What 1.0 does', 'Interiors for KDP first. Frames in 1.1, art in 1.2, covers in 1.3 and 1.4, where Press replaces your build script.'),
     ('The plan', 'Approved on 17 November 2026.'),
+    ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs. The files move in after Reader's 3.13.x look update merges."),
+    ("Alphas for testing", "You asked on 22 November for CI to create alpha releases like the other apps. 0.1.0-alpha.0 is the first: a pre-release built by the release workflow, unsigned, for you to test."),
+    ("Fonts for the comparison", "Open stand-in fonts for now, since the test book's own fonts aren't on the build machine. The page count won't match your PDF exactly, so what doesn't depend on the font is compared. Revisited if an exact match turns out to matter."),
+    ('The repo is public', 'So the Bench page can link it, and the suite can list it. Nothing private is in it: your book and build script stay in a folder git ignores.'),
     ('Where it\'s built','On the Linux build machine, with Windows and Mac installers from GitHub Actions.'),
 ]
 defaults = [
@@ -83,6 +93,10 @@ defaults = [
     ('A book arrives as one file', 'An .rtbook file, by App Link or by opening it, so App Link needs no change. A locked project is never sent.'),
     ('Your existing themes', 'Brought over by a private one-time converter, kept out of the repo, because they name your books.'),
     ('The step-zero book', 'One of your finished books, chosen with you at the start of step zero.'),
+]
+openq = [
+    ("Should apps follow each other's theme?", "Changing the theme in one app would switch the linked apps too. It needs a small addition to App Link, so a protocol decision, made together with kinds. Nothing starts before you say go."),
+    ("Should hello also return kinds?", "The suite proposes that every app says which document kinds it does something with, so a sender only offers an action the other app handles. It changes the App Link protocol for every app, so it needs your yes. Press builds nothing for it until you say yes, and then only in v1.7."),
 ]
 def dec(t, p, cls='decision'):
     return f'<div class="{cls}"><h3>{html.escape(t)}</h3><p>{html.escape(p)}</p></div>'
@@ -98,18 +112,19 @@ page = f'''<!DOCTYPE html>
 <nav aria-label="Sections"><a class="lead" href="#now">Now</a><a href="#ideas">Our way</a><a href="#coming">Releases</a><a href="#owns">Who keeps what</a><a href="#later">Later</a><a href="#decisions">Decisions</a></nav></div></div>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
-<div class="kicker"><span class="pulse" aria-hidden="true"></span>Step zero has started</div>
-<h1 id="nowh">The plan is approved. Step zero has started.</h1>
-<p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer\'s rules before you upload.</p>
-<ul><li><b>Approved</b><span>On 17 November 2026, with the 5 defaults under Decisions.</span></li>
-<li><b>The test book</b><span>A frameless 6 × 9 novel, hardcover pinned at 128 pages, because 1.0 makes no page frames.</span></li>
-<li><b>Found so far</b><span>Typst writes the TrimBox and reports each chapter\'s page, but bleeds on both side edges, so Press trims the spine side.</span></li></ul>
+<div class="kicker"><span class="pulse" aria-hidden="true"></span>Step zero is built, and an alpha is out</div>
+<h1 id="nowh">The typesetter works, and the results are waiting for you.</h1>
+<p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
+<ul><li><b>What was found</b><span>Your book sets in about a second, every check Press can make passes on the file, and the page can be steered, with limits. Two gates passed.</span></li>
+<li><b>Needs you</b><span>Three gates are marked for you: page turns against your script, the same pages on Windows and Mac, and KDP's own previewer.</span></li>
+<li><b>An alpha is out</b><span>0.1.0-alpha.0, built when you asked for alpha releases, with installers for all three systems. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>
 <div class="glance">
 <div class="card next"><span class="label">First release</span><b><a href="#r-v10">v1.0: Interiors for KDP</a></b><p>Paperback and hardcover interiors with themes, page-turn repair, even page bottoms, a pinned page count and every check.</p></div>
 <div class="card ok"><span class="label">The goal</span><b><a href="#r-v14">v1.4: The hardcover case wrap</a></b><p>From here Press does everything your build script does, with nothing else installed.</p></div>
 <div class="card you"><span class="label">Needs care</span><b>The typesetter</b><p>You chose to bundle Typst, so step zero tests it on a real book before anything else is built.</p></div>
 </div>
+{stand_html}
 <section aria-labelledby="railh"><div class="section-head"><h2 id="railh">Every version</h2></div>
 <div class="rail"><div class="rail-group"><span class="rail-label">1.x</span><div class="rail-nodes">{rail}</div></div>
 <div class="key"><span><i class="k-now"></i>In progress</span><span><i class="k-plan"></i>Planned</span></div></div></section>
@@ -133,11 +148,11 @@ page = f'''<!DOCTYPE html>
 </tbody></table></div></section>
 <section id="later" aria-labelledby="laterh"><div class="section-head"><h2 id="laterh">Later and ongoing</h2></div>
 <div class="list">{"".join(rel_html(r, "idea") for r in later)}</div></section>
-<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan</p></div>
-<div class="decisions">{"".join(dec(t, p) for t, p in defaults)}
+<section id="decisions" aria-labelledby="dech"><div class="section-head"><h2 id="dech">Decisions</h2><p>{len(decided)} chosen by you, {len(defaults)} defaults approved with the plan{(', %d waiting for you' % len(openq)) if openq else ''}</p></div>
+<div class="decisions">{"".join(dec(t, p, "decision open") for t, p in openq)}{"".join(dec(t, p) for t, p in defaults)}
 <details class="more" open><summary>Chosen by you</summary><div class="inside">{"".join(dec(t, p) for t, p in decided)}</div></details></div>
 </section>
-<footer>From <a href="https://github.com/neogentrics/rt-press">the private repo</a>, plan approved 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
+<footer>From <a href="https://github.com/neogentrics/rt-press">the repo</a> (<a href="https://github.com/neogentrics/rt-press/issues">issues</a>, <a href="https://github.com/neogentrics/rt-press/pull/8">the step-zero pull request</a>), plan approved 17 November 2026. Part of the <a href="https://recontowers.com/projects/">Recon Towers</a> suite.</footer>
 </div>
 '''
 script = re.search(r'<script>.*?</script>', layout, re.S).group(0)
