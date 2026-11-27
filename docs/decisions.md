@@ -101,12 +101,13 @@ needs the owner's yes before any app is changed. Press builds nothing for it unt
 
 ### One shared themes file
 
-The owner chose, on 27 November 2026, that themes change in all the apps together and that a theme added or uploaded in one
-app can be used in all of them. So Press takes in the suite's one shared themes file (tokens, themes, looks and the contrast
-tests) instead of keeping its own copy, and keeps themes it adds or loads in the shared folder for every app. Still open, and
-the owner's: where the shared file lives (the proposal is a small public repo, `neogentrics/recon-theme`, pinned by tag).
-Until it exists, RT Markdown Reader's files are the source. Press builds none of the theme work until the planning session says
-the location is settled.
+✅ **Chosen 27 November 2026.** Themes change in all the apps together, and a theme added or uploaded in one app can be used in
+all of them. So Press takes in the suite's one shared themes file (tokens, themes, looks and the contrast tests) instead of
+keeping its own copy, and keeps themes it adds or loads in the shared folder for every app. The file lives in the private
+repo `neogentrics/recon-theme`. A script copies it into Press at a pinned tag and writes a `theme.lock` (a hash of the copied
+files); Press commits both, so building never needs access to the private repo, and a test fails if the copy was edited by
+hand or no longer matches the lock. The files move in after RT Markdown Reader's 3.13.x look update merges. Until then
+RT Markdown Reader's files are the source, and Press does no theme work until the planning session says go.
 
 ### Theme following between apps
 

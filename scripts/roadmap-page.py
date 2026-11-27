@@ -81,6 +81,7 @@ decided = [
     ('How far the covers go', 'Size, place and set type. A template for your illustrator, the art placed, the type set and checked. No painting tools.'),
     ('What 1.0 does', 'Interiors for KDP first. Frames in 1.1, art in 1.2, covers in 1.3 and 1.4, where Press replaces your build script.'),
     ('The plan', 'Approved on 17 November 2026.'),
+    ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs. The files move in after Reader's 3.13.x look update merges."),
     ("Alphas for testing", "You asked on 22 November for CI to create alpha releases like the other apps. 0.1.0-alpha.0 is the first: a pre-release built by the release workflow, unsigned, for you to test."),
     ("Fonts for the comparison", "Open stand-in fonts for now, since the test book's own fonts aren't on the build machine. The page count won't match your PDF exactly, so what doesn't depend on the font is compared. Revisited if an exact match turns out to matter."),
     ('The repo is public', 'So the Bench page can link it, and the suite can list it. Nothing private is in it: your book and build script stay in a folder git ignores.'),
@@ -94,7 +95,6 @@ defaults = [
     ('The step-zero book', 'One of your finished books, chosen with you at the start of step zero.'),
 ]
 openq = [
-    ("Where does the shared themes file live?", "You chose that themes change in all the apps together, and that a theme added in one is offered in all of them. The proposal is a small public repo, neogentrics/recon-theme, pinned by tag. It needs your yes before it's created. Press builds none of the theme work until it's settled."),
     ("Should apps follow each other's theme?", "Changing the theme in one app would switch the linked apps too. It needs a small addition to App Link, so a protocol decision, made together with kinds. Nothing starts before you say go."),
     ("Should hello also return kinds?", "The suite proposes that every app says which document kinds it does something with, so a sender only offers an action the other app handles. It changes the App Link protocol for every app, so it needs your yes. Press builds nothing for it until you say yes, and then only in v1.7."),
 ]
