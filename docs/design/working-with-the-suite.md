@@ -69,6 +69,7 @@ on 18 November 2026. Where the two differ, that page wins.
 | Updates and compatibility | Links by App Link version and accepted document kinds, never app version; *Update available* is a nudge; only an incompatible protocol blocks | v1.7 |
 | "Latest" version | Read from the suite's own versions file when the panel opens or the app starts, kept for a day, and nothing about the person is sent | v1.7 |
 | Look and feel | The frame matches RT Markdown Reader's: short menus and the command palette, the Help menu, Help Center and Tutorial, the About window, one Preferences window, the shared themes, an icon toolbar, self-update, accessibility checks, languages and plain wording. The print preview and layout screens get their own design inside it | v1.0 |
+| App theming | The window is built to the suite's theming file: the ten shared themes plus *Auto*, the shared colour tokens, the *Solid*, *Metallic* and *Glass* looks, and contrast tests on every theme with every look. These are the window's colours; Press's *book themes* (the printed pages) are a separate thing. Copied from RT Markdown Reader for now; the owner is deciding on one shared package | v1.0, before any interface work beyond step zero |
 | Research clips | Not accepted | — |
 | `kinds` in `hello` | Proposed by the suite, waiting for the owner's yes; Press returns its `kinds` once it's agreed | v1.7 |
 | Repo visibility | Public since 18 November 2026, so Press can be in the versions file and offered as a download ([decisions](../decisions.md#visibility-of-this-repo)) | v1.0 |

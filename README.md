@@ -20,7 +20,7 @@ books.
 
 - **Lay out a book for print.** Every KDP trim size for paperback and hardcover, mirrored margins with the gutter set from
   the real page count, and front and back matter in the right order, with every title starting on a right-hand page.
-- **Make it look designed.** Themes with a font for titles, one for subtitles and one for the body, drop caps, ornaments,
+- **Make it look designed.** Book themes with a font for titles, one for subtitles and one for the body, drop caps, ornaments,
   scene breaks, running footers, page frames on every page, full-page Part art, maps, and sketches on blank left-hand pages.
 - **Take care of the page.** No sentence split across a page turn unless you want the suspense, every full page ending on
   the same bottom line, no dash starting a line, and a page count you can pin so an existing cover still fits.
