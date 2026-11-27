@@ -140,6 +140,7 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 | 🙋 The template | M | The exact wrap for this book: back, spine and front with bleed, safe areas and the barcode space, as a file your illustrator can paint on. |
 | 🙋 Place the art | M | A full wrap or separate front and back art, fitted to the trim and bleed. |
 | 🙋 Set the type | M | Title, author, spine text and the back-cover blurb, in the book's fonts. |
+| Writing patterns check | S | The suite's Writing patterns check runs on the back-cover blurb, using the shared engine and the shared banned-phrase list, and shows what it finds before the blurb is set on the cover. A small version: it checks a short text, not a manuscript. Not built, and not to be started until the owner says. |
 | ISBN barcode | S | Make the ISBN barcode for the back cover from the edition's ISBN, or leave the space for KDP's own. Checked for size and quiet zone. Later, the ISBN can come from RT Author Desk. |
 | 🙋 The spine follows the book | S | When the page count changes, the spine resizes and the app tells you. |
 | Cover checks | S | Text inside the safe area, spine text only when the book is long enough for it, and the barcode space clear. |
@@ -198,7 +199,7 @@ An add-on, off until you turn it on, with your choice of service, including a mo
 | Feature | Size | Details |
 |---|:-:|---|
 | Picture descriptions | S | Draft the alt text an EPUB needs for each picture. |
-| Blurb drafts | S | Drafts of the back-cover blurb, from the book's description. |
+| Blurb drafts | S | Drafts of the back-cover blurb, from the book's description. Every draft goes through the Writing patterns check before it is shown. |
 | Explain a check | S | Plain words on why a check failed and what to do about it. |
 
 **Test:** with AI off, nothing reaches any service, and the app is complete.
