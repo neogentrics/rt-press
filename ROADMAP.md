@@ -147,6 +147,7 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 | 🙋 Place the art | M | A full wrap or separate front and back art, fitted to the trim and bleed. |
 | 🙋 Set the type | M | Title, author, spine text and the back-cover blurb, in the book's fonts. |
 | Writing patterns check | S | The suite's Writing patterns check runs on the back-cover blurb, using the shared engine and the shared banned-phrase list, and shows what it finds before the blurb is set on the cover. A small version: it checks a short text, not a manuscript. Not built, and not to be started until the owner says. |
+| Use the listing description | S | Press asks RT Author Desk's Listing kit for the book's description over App Link, as a starting point for the blurb, and keeps the back-cover blurb as its own text. There is no temporary field in Press until then: it waits for Author Desk's Listing kit (Author Desk is setting a version target so it exists before v1.3) and for App Link's asking-for-facts addition. Not built. |
 | ISBN barcode | S | Make the ISBN barcode for the back cover from the edition's ISBN, or leave the space for KDP's own. Checked for size and quiet zone. Later, the ISBN can come from RT Author Desk. |
 | 🙋 The spine follows the book | S | When the page count changes, the spine resizes and the app tells you. |
 | Cover checks | S | Text inside the safe area, spine text only when the book is long enough for it, and the barcode space clear. |
@@ -174,13 +175,14 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 
 ## v1.6 — Every other format
 
-🙋 For authors who only use Press. Built from the same export code as RT Story Tracker, not a second copy of it.
+🙋 For authors who only use Press. Exports are built into every app that uses them, and the EPUB, Word and plain-PDF code is part of the suite's one shared code module (a private repo, not created yet; nothing moves in until the owner says go), not a copy. With the other apps' formats in that module, Press can export every file type, because it is the app used just before uploading to stores and sites.
 
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 EPUB | M | A store-ready EPUB, checked with EPUBCheck before it's saved. |
 | 🙋 Word | S | Including a Kindle Word file: real headings, a linked contents page, and no frames, blank pages or page numbers. |
 | Plain formats | S | A plain print PDF, Markdown, HTML and plain text. |
+| Every file type | M | Every format the suite's apps can make, from the shared module: at least EPUB, Word, plain PDF, Markdown, HTML, plain text, RTF, OpenDocument and XML, so a book can be exported from Press in whatever form a store or site asks for. |
 
 **Test:** the EPUB passes EPUBCheck and KDP's previewer. The Kindle Word file builds its contents on Kindle.
 

@@ -82,6 +82,12 @@ latest-versions file or offered as a store download, so the owner made it public
 Nothing private is in it: the test book and the owner's build script stay in a folder git ignores, and the history was
 checked for names, people and secrets first. The licence is still proprietary, as for RT Story Tracker.
 
+### The icon
+
+✅ **Approved 27 November 2026: the unfolded book cover on a dark tile.** The owner rejected the first draft because it looked
+like the other apps' icons. The new one (`docs/brand/icon.svg`) shows a flat cover wrap with a CMYK-striped spine, crop marks
+and a barcode. It is the app's icon for 1.0.
+
 ### Fonts for the test-book comparison
 
 ✅ **Chosen 20 November 2026: open stand-in fonts for now.** The test book's own fonts (Book Antiqua, Felix Titling and
@@ -147,3 +153,18 @@ RT Markdown Reader's files are the source, and Press does no theme work until th
 
 When the theme changes in one app, the linked apps switch too. It needs a small addition to App Link, so a protocol decision, made
 together with `kinds`. Not built, and nothing starts before the owner says go.
+
+## Suite decisions, 27 November 2026
+
+### One shared code module
+
+✅ Every app works on its own, and the features they share come from one shared code module: a private repo that isn't
+created yet, and nothing moves into it until the owner says go. Press's EPUB, Word and plain-PDF export code is part of that
+module instead of a copy. Exports are built into every app that uses them, and with all the apps' formats together Press can
+export every file type, because it is the app used just before uploading to stores and sites. The v1.6 plan keeps that.
+
+### The blurb
+
+✅ No temporary description field in Press. It waits until RT Author Desk's Listing kit exists, then offers *Use the listing
+description* over App Link as a starting point. The back-cover blurb stays Press's own text. Author Desk has been asked to set
+a version target so its Listing kit exists before Press v1.3.
