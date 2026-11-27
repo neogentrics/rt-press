@@ -16,9 +16,11 @@ How RT Press fits with the other Recon Towers apps. The suite's rules are in RT 
 | Word | ✅ v1.6 | ✅ | ✅ |
 | Markdown, HTML, plain text | ✅ v1.6 | ✅ | ✅ |
 
-Every app can get a book out by itself ([decision 1](../decisions.md#1-which-app-keeps-which-export)). So that this isn't
-three copies of the same code, the EPUB, Word and plain-PDF code moves out of RT Story Tracker into one shared piece that
-all three use. That move is RT Story Tracker's to make, in its suite release; Press uses it from v1.6.
+Every app can get a book out by itself ([decision 1](../decisions.md#1-which-app-keeps-which-export)). Exports are built into
+every app that uses them, and the EPUB, Word and plain-PDF code is part of the suite's one shared code module: a private repo
+that isn't created yet, and nothing moves into it until the owner says go. Press uses it from v1.6 instead of keeping a copy.
+With the other apps' formats in the module, Press can export every file type, because it is the app used just before
+uploading to stores and sites.
 
 What can't be shared is the print engine: Story Tracker prints through Chromium and Press through Typst. What is shared is
 the layout data: trim sizes, the gutter table, the order of front and back matter, and the printer rules, so a book set up
@@ -48,7 +50,7 @@ moved. Until v1.7, a refresh is a new send from RT Story Tracker.
 | App | What | When |
 |---|---|---|
 | RT Story Tracker | *Send to RT Press* and the `.rtbook` export | Its suite release |
-| RT Story Tracker | The shared export code | Before Press v1.6 |
+| The suite | The shared code module (private repo, not created yet) with the export code in it | Before Press v1.6, when the owner says go |
 | RT Story Tracker | A way to mark in-story documents, so they arrive as documents and not as quotes | Before Press v1.2 |
 | RT Author Desk | A request to record a finished file against an edition | Before Press v1.7 |
 
