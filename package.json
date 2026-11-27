@@ -35,7 +35,9 @@
     "fetch:typst:current": "node scripts/fetch-typst.mjs --current",
     "fonts:stand-in": "node scripts/prepare-fonts.mjs",
     "icons": "node scripts/make-icons.mjs",
-    "locales": "node scripts/make-locales.mjs"
+    "locales": "node scripts/make-locales.mjs",
+    "screenshots": "npm run build:renderer && node scripts/screenshots.cjs",
+    "banner": "node scripts/make-banner.mjs"
   },
   "build": {
     "appId": "com.recontowers.press",
