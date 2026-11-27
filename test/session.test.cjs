@@ -115,6 +115,9 @@ test('building a book that is long enough makes a file that passes every check, 
   assert.ok(build.pages >= 24, `${build.pages} pages`);
   assert.equal(build.ready, true, JSON.stringify(build.checks.filter((c) => !c.ok)));
   assert.equal(build.previewReady, true);
+  assert.equal(s.hasBook && s.canSave, true, 'the menus can offer Build and Save');
+  const firstChapter = s.state().chapters[0].id;
+  assert.ok(build.startPages[firstChapter] >= 1 && build.startPages[firstChapter] % 2 === 1, 'each chapter says the page it starts on');
   assert.match(s.page(1), /^data:image\/png;base64,/);
   assert.equal(s.page(0), null);
   assert.equal(s.page(build.pages + 1), null);

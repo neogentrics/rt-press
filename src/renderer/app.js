@@ -1,24 +1,47 @@
-'use strict';
+// The window: the book beside, its interior settings, the build, its checks and its pages, inside the suite's frame (toolbar, Go
+// to, Help Center, tutorial, About, Preferences and updates). The menus live in the main process and send their commands here.
+import { openAbout } from './about.js';
+import { $, dialogOpen, h, toast } from './dom.js';
+import { createHelp } from './help-ui.js';
+import { createPalette } from './palette.js';
+import { openPreferences } from './prefs.js';
+import { createTour } from './tour.js';
+import { drawToolbar } from './toolbar.js';
+import { checkForUpdates, updateBar } from './updates.js';
 
-const $ = (id) => document.getElementById(id);
 const set = (id, text) => {
   $(id).textContent = text;
 };
 
 let state = null;
+let info = { version: '', platform: 'linux' };
+let update = { state: 'idle' };
+let storageProblem = '';
+let practising = false;
 let building = false;
 let spread = 0;
 let pageCount = 0;
 const pictures = new Map();
 
-// ---- the footer: what RT Press is made of ----
-async function showStatus() {
-  const status = await window.rtPress.status();
-  set('app-name', status.name);
-  set('app-version', status.version);
-  set('typst-version', status.typst.ok ? `Typst ${status.typst.version}` : `Not found: ${status.typst.error}`);
-  set('storage-state', status.storage.ok ? `Working (SQLite ${status.storage.sqlite}, ${status.storage.cipher})` : `Not working: ${status.storage.error ?? 'a check failed'}`);
-  set('update-state', status.updatesEnabled ? 'On' : 'Off until the first release');
+// ---- the bars above the page: the practice book, a storage problem, a new version ----
+function drawBars() {
+  const bars = [];
+  if (practising) {
+    bars.push(h('div', { class: 'bar practice', role: 'status' },
+      h('span', null, h('strong', null, 'A practice book.'), ' Nothing here is yours, and leaving puts everything back.'),
+      tour.running ? null : h('button', { type: 'button', id: 'practice-tour', onclick: () => tour.offer() }, 'Take the tour'),
+      h('button', { type: 'button', id: 'practice-leave', onclick: () => tour.finish() }, 'Leave it')));
+  }
+  if (storageProblem) bars.push(h('div', { class: 'bar problem', role: 'alert' }, h('span', null, `Encrypted storage is not working: ${storageProblem}`)));
+  const news = updateBar(update);
+  if (news) bars.push(news);
+  $('bars').replaceChildren(...bars);
+}
+
+// What can be used now. The menus are told the same by the main process.
+function syncControls() {
+  $('build').disabled = !state?.hasBook || building;
+  $('export').disabled = building || !(state?.build?.ok && state.build.ready && !state.build.stale);
 }
 
 // ---- reading the settings out of the window, and putting them back ----
@@ -91,7 +114,9 @@ function showBook() {
   const list = $('chapters');
   list.replaceChildren(...state.chapters.map((c) => {
     const li = document.createElement('li');
-    li.textContent = `${c.title || '(untitled)'}`;
+    li.id = `chapter-${c.id}`;
+    li.tabIndex = -1;
+    li.append(Object.assign(document.createElement('span'), { textContent: c.title || '(untitled)', translate: false }));
     const words = document.createElement('span');
     words.className = 'words';
     words.textContent = `${c.words.toLocaleString()} words`;
@@ -109,14 +134,14 @@ function showBook() {
   set('import-notes-summary', `Notes from the import (${notes.length})`);
   $('import-notes-list').replaceChildren(...notes.map((n) => Object.assign(document.createElement('li'), { textContent: n })));
   $('empty').hidden = state.hasBook;
-  $('build').disabled = !state.hasBook || building;
+  syncControls();
 }
 
 // ---- the result of a build ----
 function showBuild(build) {
   $('results').hidden = !build;
   $('preview').hidden = !build?.ok || !build.previewReady;
-  $('export').disabled = !(build?.ok && build.ready);
+  syncControls();
   if (!build) return;
   if (!build.ok) {
     set('results-title', 'The book could not be set');
@@ -210,18 +235,20 @@ async function saveSettings() {
   state = result;
   state.build = previous ? { ...previous, stale: true } : null;
   showSettings();
+  syncControls();
   if (previous) set('step', 'The settings changed. Build again to see the effect.');
 }
 
 async function saveDetails() {
   state = await window.rtPress.setDetails({ title: $('title').value, author: $('author').value });
   set('header-title', state.details.title);
+  syncControls();
 }
 
 async function build() {
+  if (!state?.hasBook || building) return;
   building = true;
-  $('build').disabled = true;
-  $('export').disabled = true;
+  syncControls();
   const stop = window.rtPress.onStep((text) => set('step', `${text}…`));
   try {
     const result = await window.rtPress.build();
@@ -233,11 +260,12 @@ async function build() {
   } finally {
     stop();
     building = false;
-    $('build').disabled = !state.hasBook;
+    syncControls();
   }
 }
 
 async function exportPdf() {
+  if ($('export').disabled) return;
   try {
     const result = await window.rtPress.exportPdf();
     if (result.cancelled) return;
@@ -247,10 +275,81 @@ async function exportPdf() {
   }
 }
 
+// ---- Go to: the chapters, and from there their pages ----
+function places() {
+  const starts = state?.build?.ok && !state.build.stale ? state.build.startPages ?? {} : {};
+  return (state?.chapters ?? []).map((c) => ({ kind: 'chapter', id: c.id, label: c.title || '(untitled)', page: starts[c.id], detail: starts[c.id] ? `Page ${starts[c.id]}` : 'Chapter' }));
+}
+
+function goToPlace(place) {
+  if (place.page && !$('preview').hidden) {
+    go(Math.floor(place.page / 2));
+    $('preview').scrollIntoView({ block: 'start' });
+    return;
+  }
+  const item = $(`chapter-${place.id}`);
+  item?.scrollIntoView({ block: 'center' });
+  item?.focus();
+  toast('Build the interior to go to its pages.');
+}
+
+// ---- the tutorial's side of the window ----
+const tour = createTour({
+  async enter() {
+    if (!practising) {
+      refresh(await window.rtPress.startPractice());
+      practising = true;
+      set('step', '');
+    }
+    drawBars();
+  },
+  async leave() {
+    if (practising) {
+      refresh(await window.rtPress.leavePractice());
+      practising = false;
+      set('step', '');
+    }
+    drawBars();
+  },
+  changed: () => drawBars(),
+});
+
+const openHelp = createHelp({ run: (command) => run(command) });
+const openPalette = createPalette({
+  platform: () => info.platform,
+  places,
+  commands: () => window.rtPress.commands(),
+  runCommand: (key) => window.rtPress.runCommand(key),
+  goToPlace,
+});
+
+// Every command, by the name the menus use.
+const COMMANDS = {
+  'import-chapters': importChapters,
+  build,
+  'save-pdf': exportPdf,
+  preferences: () => openPreferences({ run }),
+  'go-to': () => openPalette(''),
+  'command-palette': () => openPalette('>'),
+  'first-spread': () => go(0),
+  'previous-spread': () => go(spread - 1),
+  'next-spread': () => go(spread + 1),
+  'last-spread': () => go(spreadCount() - 1),
+  'help-center': () => openHelp(''),
+  tutorial: () => tour.offer(),
+  'check-updates': () => checkForUpdates(info.version),
+  about: openAbout,
+};
+// These open a window of their own, so they work while another is open; the rest wait until it is closed.
+const OVER_A_DIALOG = new Set(['preferences', 'go-to', 'command-palette', 'help-center', 'about', 'check-updates', 'tutorial']);
+
+function run(command) {
+  if (dialogOpen() && !OVER_A_DIALOG.has(command)) return;
+  COMMANDS[command]?.();
+}
+
 function wire() {
-  $('import').addEventListener('click', importChapters);
-  $('build').addEventListener('click', build);
-  $('export').addEventListener('click', exportPdf);
+  $('import-empty').addEventListener('click', () => run('import-chapters'));
   $('title').addEventListener('change', saveDetails);
   $('author').addEventListener('change', saveDetails);
   $('format').addEventListener('change', () => {
@@ -269,18 +368,29 @@ function wire() {
   $('last').addEventListener('click', () => go(spreadCount() - 1));
   $('goto').addEventListener('change', () => go(Math.floor(Number($('goto').value) / 2)));
   document.addEventListener('keydown', (event) => {
-    if (event.target.matches('input, select, textarea') || $('preview').hidden) return;
+    if (event.target.matches('input, select, textarea') || $('preview').hidden || dialogOpen()) return;
     if (event.key === 'ArrowLeft') go(spread - 1);
     if (event.key === 'ArrowRight') go(spread + 1);
   });
+  window.rtPress.onCommand(run);
+  window.rtPress.onUpdate((next) => { update = next; drawBars(); });
 }
 
 async function start() {
   try {
+    const status = await window.rtPress.status();
+    info = { version: status.version, platform: status.platform };
+    update = status.update;
+    storageProblem = status.storage.ok ? '' : status.storage.error ?? 'a check failed';
+    drawToolbar({ platform: info.platform, run });
     wire();
-    await showStatus();
+    practising = await window.rtPress.inPractice();
     refresh(await window.rtPress.getState());
+    drawBars();
+    if (!status.typst.ok) toast(`The typesetter was not found: ${status.typst.error}`);
     document.body.dataset.state = 'ready';
+    // The tutorial is offered until it has been finished or refused; people who update from an older version are offered it too.
+    if ((await window.rtPress.appSettings()).tutorial.state === 'new') tour.offer();
   } catch (error) {
     set('step', `Could not start: ${error.message}`);
     document.body.dataset.state = 'error';

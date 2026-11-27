@@ -10,6 +10,7 @@ const out = join(root, 'dist', 'renderer');
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 cpSync(join(root, 'src/renderer/index.html'), join(out, 'index.html'));
+cpSync(join(root, 'build/icon.png'), join(out, 'icon.png')); // the About window and the welcome show it
 
 await build({
   entryPoints: {

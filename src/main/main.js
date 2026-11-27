@@ -1,40 +1,116 @@
 'use strict';
-const { app, BrowserWindow, dialog, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, clipboard, dialog, ipcMain, shell } = require('electron');
+const os = require('node:os');
 const path = require('node:path');
+const fs = require('node:fs');
+const { AppSettings } = require('./app-settings');
+const { readGuides } = require('./help');
+const { launchPathFor, sharedFolder, writeInstalled } = require('./installed');
+const { buildMenu, commandList, runCommand } = require('./menu');
 const { hardenWindow } = require('./security');
 const { storageSelfCheck } = require('./self-check');
 const typesetter = require('./typesetter');
-const { Updater } = require('./updater');
+const { RELEASES_URL, Updater } = require('./updater');
 const { Session } = require('./press/session');
 const { openStore } = require('./press/store');
+const practice = require('./press/practice');
 const { bundledFolder } = require('./typeset/stand-in-fonts');
+const { detailsText, osName } = require('../shared/about');
 
 // A test gets its own profile, so it can never touch an author's files.
 if (process.env.RTPRESS_USER_DATA) app.setPath('userData', process.env.RTPRESS_USER_DATA);
 
 let mainWindow = null;
+let appSettings = null;
 let session = null;
+let ownBook = null; // the person's own session, set aside while the tutorial's practice book is open
 let sessionError = null;
+let commands = new Map();
+
+const resourcesPath = () => (app.isPackaged ? process.resourcesPath : null);
+const send = (channel, value) => mainWindow?.webContents.send(channel, value);
+
+// Looks for newer versions in the installed app only, and by itself only while the setting says so.
+const updater = new Updater((status) => {
+  send('press:update', status);
+  rebuildMenu();
+}, { autoCheck: () => appSettings?.values.autoUpdate !== false });
 
 // The author's book lives in the app's own folder, in an encrypted project; the fonts and the typesetter come with the app.
+function openBook(folder, workDir) {
+  return new Session({ store: openStore(folder), workDir, fontFolder: bundledFolder({ resourcesPath: resourcesPath() }), resourcesPath: resourcesPath() });
+}
+
 function startSession() {
   try {
-    const resourcesPath = app.isPackaged ? process.resourcesPath : null;
     const userData = app.getPath('userData');
-    session = new Session({ store: openStore(path.join(userData, 'projects', 'main')), workDir: path.join(userData, 'work'), fontFolder: bundledFolder({ resourcesPath }), resourcesPath });
+    session = openBook(path.join(userData, 'projects', 'main'), path.join(userData, 'work'));
   } catch (error) {
     sessionError = error;
   }
 }
 
+// The practice book is a project of its own, made fresh and thrown away, so the tutorial can't touch the person's book.
+const practiceFolder = () => path.join(app.getPath('userData'), 'practice');
+const clearPractice = () => fs.rmSync(practiceFolder(), { recursive: true, force: true, maxRetries: 5 });
+
+function startPractice() {
+  if (ownBook) return session.state();
+  if (session.building) throw new Error('Wait for the build to finish.');
+  clearPractice();
+  const sample = openBook(path.join(practiceFolder(), 'project'), path.join(practiceFolder(), 'work'));
+  sample.loadBook(practice.practiceBook(), practice.DETAILS);
+  ownBook = session;
+  session = sample;
+  return session.state();
+}
+
+function leavePractice() {
+  if (!ownBook) return session.state();
+  if (session.building) throw new Error('Wait for the build to finish.');
+  session.close();
+  session = ownBook;
+  ownBook = null;
+  clearPractice();
+  return session.state();
+}
+
+// What the menus need to know about the book: whether there is one, and whether there is a file to save.
+const menuState = () => ({ hasBook: Boolean(session?.hasBook), building: Boolean(session?.building), canSave: Boolean(session?.canSave), update: updater.status });
+
+function rebuildMenu() {
+  if (!app.isReady()) return;
+  commands = buildMenu({
+    send: (id) => send('press:command', id),
+    actions: { installUpdate: () => updater.installNow() },
+    state: menuState(),
+    version: app.getVersion(),
+  });
+}
+
+// Only the app's own page may ask anything.
+const fromApp = (event) => Boolean(event.senderFrame?.url?.startsWith('file:'));
+
 // One handler for each question the window can ask. A failure is an answer, not a crash.
-function answer(channel, fn) {
-  ipcMain.handle(channel, async (_event, ...args) => {
+function handle(channel, fn) {
+  ipcMain.handle(channel, async (event, ...args) => {
     try {
-      if (!session) throw new Error(`RT Press could not open its storage: ${sessionError?.message ?? 'unknown error'}`);
+      if (!fromApp(event)) throw new Error('That request did not come from RT Press.');
       return { ok: true, value: await fn(...args) };
     } catch (error) {
       return { ok: false, error: error.message };
+    }
+  });
+}
+
+// A question about the book needs the book's storage, and may change what the menus can do.
+function handleBook(channel, fn) {
+  handle(channel, async (...args) => {
+    if (!session) throw new Error(`RT Press could not open its storage: ${sessionError?.message ?? 'unknown error'}`);
+    try {
+      return await fn(...args);
+    } finally {
+      rebuildMenu();
     }
   });
 }
@@ -51,19 +127,26 @@ const pickSave = async (suggested) => {
   return canceled ? null : filePath;
 };
 
-function registerPress() {
-  answer('press:state', () => session.state());
-  answer('press:import', async () => {
+function registerBook() {
+  handleBook('press:state', () => session.state());
+  handleBook('press:import', async () => {
     const folder = await pickFolder();
     if (!folder) return { cancelled: true, state: session.state() };
     const result = session.importFolder(folder);
     return result.error ? { error: result.error, state: session.state() } : { state: result };
   });
-  answer('press:details', (details) => session.setDetails(details ?? {}));
-  answer('press:settings', (settings) => session.setSettings(settings ?? {}));
-  answer('press:build', () => session.build((text) => mainWindow?.webContents.send('press:step', text)));
-  answer('press:page', (number) => session.page(number));
-  answer('press:export', async () => {
+  handleBook('press:details', (details) => session.setDetails(details ?? {}));
+  handleBook('press:settings', (settings) => session.setSettings(settings ?? {}));
+  handleBook('press:build', () => {
+    const building = session.build((text) => send('press:step', text));
+    rebuildMenu(); // Build is off while one is running
+    return building;
+  });
+  handle('press:page', (number) => session?.page(number) ?? null);
+  handle('press:in-practice', () => Boolean(ownBook));
+  handleBook('press:practice-start', () => startPractice());
+  handleBook('press:practice-leave', () => leavePractice());
+  handleBook('press:export', async () => {
     const title = (session.state().details.title || 'interior').replace(/[^\p{L}\p{N} _-]+/gu, '').trim() || 'interior';
     const file = await pickSave(path.join(app.getPath('documents'), `${title} - interior.pdf`));
     if (!file) return { cancelled: true };
@@ -71,34 +154,68 @@ function registerPress() {
   });
 }
 
-// Updates stay off until RT Press has a first release to find. Turn this on in the release that publishes one.
-const updater = new Updater((status) => mainWindow?.webContents.send('update:status', status), { enabled: false });
-
 // The version the program itself reports, so the window can't say Typst is here when it isn't.
 async function typstStatus() {
   try {
-    const { version } = await typesetter.version({ resourcesPath: app.isPackaged ? process.resourcesPath : null });
+    const { version } = await typesetter.version({ resourcesPath: resourcesPath() });
     return { ok: true, version };
   } catch (error) {
     return { ok: false, error: error.message };
   }
 }
 
-async function status() {
-  let storage;
-  try {
-    storage = storageSelfCheck();
-  } catch (error) {
-    storage = { ok: false, error: error.message };
-  }
+async function aboutDetails() {
+  const typst = await typstStatus();
   return {
-    name: app.getName(),
     version: app.getVersion(),
-    typst: await typstStatus(),
-    storage,
-    update: updater.status,
-    updatesEnabled: updater.enabled,
+    portable: false,
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+    node: process.versions.node,
+    typst: typst.ok ? typst.version : 'missing',
+    os: osName(process.platform, os.release(), process.arch),
+    year: new Date().getFullYear(),
+    bookFolder: path.join(app.getPath('userData'), 'projects', 'main'),
   };
+}
+
+function registerFrame() {
+  handle('app:status', async () => {
+    let storage;
+    try {
+      storage = storageSelfCheck();
+    } catch (error) {
+      storage = { ok: false, error: error.message };
+    }
+    return { name: app.getName(), version: app.getVersion(), platform: process.platform, typst: await typstStatus(), storage, update: updater.status };
+  });
+  handle('press:help', () => readGuides());
+  handle('press:app-settings', () => appSettings.values);
+  handle('press:save-app-settings', (changes) => appSettings.save(changes));
+  handle('press:commands', () => commandList(commands));
+  handle('press:run-command', (key) => runCommand(commands, key));
+  handle('press:about', aboutDetails);
+  handle('press:copy-details', async () => {
+    clipboard.writeText(detailsText(await aboutDetails()));
+    return true;
+  });
+  handle('press:check-updates', () => updater.check());
+  handle('press:install-update', () => updater.installNow());
+  handle('press:open-releases', () => {
+    shell.openExternal(updater.status.url ?? RELEASES_URL);
+    return true;
+  });
+}
+
+// Says RT Press is installed, so the other Recon Towers apps can find it. A test names a pretend place to start it from.
+function recordInstalled() {
+  const launch = (!app.isPackaged && process.env.RTPRESS_INSTALLED_LAUNCH) || (app.isPackaged ? launchPathFor({ execPath: process.execPath, appImage: process.env.APPIMAGE }) : null);
+  if (!launch) return;
+  try {
+    writeInstalled(sharedFolder({ home: app.getPath('home'), packaged: app.isPackaged }), { version: app.getVersion(), launch });
+  } catch {
+    // The other apps won't find Press; nothing else depends on it.
+  }
 }
 
 function createWindow() {
@@ -134,17 +251,15 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.whenReady().then(() => {
-    ipcMain.handle('app:status', async () => {
-      try {
-        return { ok: true, value: await status() };
-      } catch (error) {
-        return { ok: false, error: error.message };
-      }
-    });
     app.setName('RT Press');
+    appSettings = new AppSettings(app.getPath('userData'));
+    clearPractice(); // one left behind by a tutorial that was never closed
     startSession();
-    registerPress();
+    registerFrame();
+    registerBook();
+    rebuildMenu();
     mainWindow = createWindow();
+    recordInstalled();
     updater.start();
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
@@ -154,10 +269,12 @@ if (!app.requestSingleInstanceLock()) {
   app.on('before-quit', () => {
     try {
       session?.close();
+      ownBook?.close();
     } catch {
       // Closing twice, or an already closed file, is not worth stopping the quit for.
     }
     session = null;
+    ownBook = null;
   });
 
   app.on('window-all-closed', () => {

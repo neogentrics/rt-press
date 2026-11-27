@@ -11,17 +11,16 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body data-state="loading">
-    <header class="top">
-      <h1 id="app-name">RT Press</h1>
-      <span class="tag">alpha</span>
-      <span id="header-title" class="header-title"></span>
+    <header id="top">
+      <h1 id="app-name" class="visually-hidden">RT Press</h1>
+      <div id="toolbar" class="toolbar" role="group" aria-label="Toolbar"></div>
+      <div id="bars"></div>
     </header>
 
     <div class="layout">
       <aside class="side" aria-label="Book and settings">
         <section id="book">
           <h2>Book</h2>
-          <button id="import" type="button">Import chapters…</button>
           <p id="import-summary" class="hint">Choose a folder of Word (.docx) chapters, one file for each chapter.</p>
           <label>Title <input id="title" type="text" maxlength="200" autocomplete="off" /></label>
           <label>Author <input id="author" type="text" maxlength="200" autocomplete="off" /></label>
@@ -57,11 +56,11 @@
           <label class="check"><input id="drop-cap" type="checkbox" /> Drop cap at the start of each chapter</label>
           <label class="check"><input id="title-page" type="checkbox" /> Title page</label>
           <label class="check"><input id="contents" type="checkbox" /> Contents page</label>
-          <label>Page turns
+          <label>Page turns that split a sentence
             <select id="page-turns">
-              <option value="keep">Don't split a sentence across a page turn (no added pages)</option>
-              <option value="grow">Don't split a sentence (pages may be added)</option>
-              <option value="off">Leave the pages as set</option>
+              <option value="keep">Mend, adding no pages</option>
+              <option value="grow">Mend, pages may be added</option>
+              <option value="off">Leave as set</option>
             </select>
           </label>
           <label>Pin the page count <input id="pin-pages" type="number" min="24" max="900" step="1" placeholder="Not pinned" /></label>
@@ -72,11 +71,7 @@
       </aside>
 
       <main class="main">
-        <div class="toolbar">
-          <button id="build" type="button" class="primary" disabled>Build the interior</button>
-          <button id="export" type="button" disabled>Save PDF…</button>
-          <span id="step" class="step" role="status" aria-live="polite"></span>
-        </div>
+        <p id="step" class="step" role="status" aria-live="polite"></p>
 
         <section id="results" hidden>
           <h2 id="results-title">Checks</h2>
@@ -102,22 +97,14 @@
           </div>
         </section>
 
-        <p id="empty" class="empty">Import your chapters to begin.</p>
+        <div id="empty" class="empty">
+          <p>Import your chapters to begin.</p>
+          <p><button type="button" id="import-empty" class="primary">Import Chapters…</button></p>
+        </div>
       </main>
     </div>
 
-    <footer class="about">
-      <dl>
-        <dt>Version</dt>
-        <dd id="app-version">…</dd>
-        <dt>Typesetter</dt>
-        <dd id="typst-version">…</dd>
-        <dt>Encrypted storage</dt>
-        <dd id="storage-state">…</dd>
-        <dt>Updates</dt>
-        <dd id="update-state">…</dd>
-      </dl>
-    </footer>
+    <div id="toast" role="status" aria-live="polite"></div>
     <script src="app.js"></script>
   </body>
 </html>

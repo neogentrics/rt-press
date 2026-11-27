@@ -34,6 +34,15 @@ class Session {
     this.building = false;
   }
 
+  // What the menus ask, without working out the whole state.
+  get hasBook() {
+    return Boolean(this.book?.sections?.some((s) => s.type === 'chapter'));
+  }
+
+  get canSave() {
+    return Boolean(this.last?.ok && this.last.ready);
+  }
+
   state() {
     const chapters = (this.book?.sections ?? []).filter((s) => s.type === 'chapter').map((s) => ({ id: s.id, title: s.title, words: countWords(textOfNode(s.document)) }));
     return {
@@ -51,7 +60,7 @@ class Session {
 
   summary(build) {
     if (!build.ok) return { ok: false, reason: build.reason, messages: build.messages, problems: build.problems ?? [] };
-    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, builtAt: build.builtAt };
+    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, builtAt: build.builtAt, startPages: Object.fromEntries((build.units ?? []).map((unit) => [unit.id, unit.page])) };
   }
 
   // Reads the Word files in a folder as a new book. Returns the state, or { error }.
@@ -81,6 +90,18 @@ class Session {
       quoteIssues: imported.reports.reduce((n, r) => n + r.quoteIssues.length, 0),
       quoteIssueFiles: imported.reports.filter((r) => r.quoteIssues.length).map((r) => ({ file: r.file, count: r.quoteIssues.length })).slice(0, SHOWN_ISSUES),
     };
+    this.last = null;
+    this.store.set('book', this.book);
+    this.store.set('details', this.details);
+    this.store.set('report', this.report);
+    return this.state();
+  }
+
+  // Puts a ready-made book in the project, as an import would: the tutorial's practice book comes in this way.
+  loadBook(book, details) {
+    this.book = book;
+    this.details = { title: details.title ?? book.title, author: details.author ?? '' };
+    this.report = null;
     this.last = null;
     this.store.set('book', this.book);
     this.store.set('details', this.details);
