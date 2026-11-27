@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build docs/roadmap.html from ROADMAP.md, in the suite's roadmap layout.
 
-Usage: python3 scripts/roadmap-page.py <suite-layout.html> > docs/roadmap.html
+Usage: python3 scripts/roadmap-page.py docs/roadmap.html > /tmp/new.html, then copy it over docs/roadmap.html
 The layout file is any suite roadmap page; only its <style> block is reused, with Press's colours.
 """
 import html, re, sys
@@ -94,6 +94,7 @@ defaults = [
     ('The step-zero book', 'One of your finished books, chosen with you at the start of step zero.'),
 ]
 openq = [
+    ("Was the 0.1.0-alpha.0 release your call?", "You told me on 18 November that there would be no alpha. A pre-release, 0.1.0-alpha.0, was published on 23 November by the release workflow when its tag was pushed, and I didn't do it. If you asked for it, say so and I'll record the decision; if not, say so and we'll look at what to do with it."),
     ("Should hello also return kinds?", "The suite proposes that every app says which document kinds it does something with, so a sender only offers an action the other app handles. It changes the App Link protocol for every app, so it needs your yes. Press builds nothing for it until you say yes, and then only in v1.7."),
 ]
 def dec(t, p, cls='decision'):
@@ -110,12 +111,12 @@ page = f'''<!DOCTYPE html>
 <nav aria-label="Sections"><a class="lead" href="#now">Now</a><a href="#ideas">Our way</a><a href="#coming">Releases</a><a href="#owns">Who keeps what</a><a href="#later">Later</a><a href="#decisions">Decisions</a></nav></div></div>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
-<div class="kicker"><span class="pulse" aria-hidden="true"></span>Step zero: three of six pieces built</div>
-<h1 id="nowh">The plan is approved, and the repo is public.</h1>
+<div class="kicker"><span class="pulse" aria-hidden="true"></span>Step zero is built, and an alpha is out</div>
+<h1 id="nowh">The typesetter works, and the results are waiting for you.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
-<ul><li><b>Built so far</b><span>The empty app, Typst inside it, and your test book imported: all 16 chapters, matching your build script exactly.</span></li>
-<li><b>Next: set the pages</b><span>Your book typeset by Press, in open stand-in fonts for now.</span></li>
-<li><b>Not green yet</b><span>The tests fail on Windows because of one storage bug. The fix is with the builder.</span></li></ul>
+<ul><li><b>What was found</b><span>Your book sets in about a second, every check Press can make passes on the file, and the page can be steered, with limits. Two gates passed.</span></li>
+<li><b>Needs you</b><span>Three gates are marked for you: page turns against your script, the same pages on Windows and Mac, and KDP's own previewer.</span></li>
+<li><b>An alpha is out</b><span>0.1.0-alpha.0, a pre-release with installers. You said no alpha, so I need to know it was your call.</span></li></ul>
 </section>
 <div class="glance">
 <div class="card next"><span class="label">First release</span><b><a href="#r-v10">v1.0: Interiors for KDP</a></b><p>Paperback and hardcover interiors with themes, page-turn repair, even page bottoms, a pinned page count and every check.</p></div>

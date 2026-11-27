@@ -27,7 +27,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 
 | Release | Theme | Status |
 |---|---|---|
-| [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | 🚧 Started |
+| [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | ✅ Built, and waiting for the owner's decision on its results |
 | [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | Planned |
 | [v1.1](#v11--page-frames-and-ornaments) | Page frames and ornaments | Planned |
 | [v1.2](#v12--art-on-the-page) | Art on the page | Planned |
@@ -42,18 +42,20 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 
 ## Where it stands
 
-As of 20 November 2026. The work is on the `step-zero` branch and in [pull request 8](https://github.com/neogentrics/rt-press/pull/8), a draft until step zero is done.
+As of 27 November 2026. Step zero is built on the `step-zero` branch ([pull request 8](https://github.com/neogentrics/rt-press/pull/8), still a draft), and an alpha was published from it.
 
 | Piece | State |
 |---|---|
 | The plan | ✅ Approved on 17 November, and the repo is public |
-| M1 An empty app, with encrypted storage | ✅ Committed (`e9724c2`), 13 tests |
-| M2 Typst inside the app | ✅ Committed (`87dccf3`), all six systems checked against GitHub's own digests, 25 tests |
-| M3 The test book comes in | ✅ Committed (`a33f72c`), 56 tests, and it matches the owner's build script on all 16 chapters |
-| Tests on Linux and Mac | ✅ Passing |
-| Tests on Windows | ❌ Failing: a storage bug that only Windows shows, found by the tests. The fix is with the builder. |
-| M4 Set the pages | 🚧 In progress, in open stand-in fonts (the owner's choice, 20 November) |
-| M5 The checks, and M6 steering the page | Not started |
+| M1 An empty app, with encrypted storage | ✅ Committed, tests passing on all three systems |
+| M2 Typst inside the app | ✅ Committed, all six systems checked against GitHub's own digests |
+| M3 The test book comes in | ✅ Committed, and it matches the owner's build script on all 16 chapters |
+| M4 Set the pages | ✅ Committed, in open stand-in fonts (the owner's choice, 20 November) |
+| M5 The file KDP gets, and the checks | ✅ Committed: every check Press can make passes on the finished file. KDP's own previewer hasn't seen one yet. |
+| M6 Can the page be steered? | ✅ Passed, with limits |
+| The step-zero results | ✅ [Written](docs/design/step-zero-results.md): two gates passed, three need the owner |
+| Tests | ✅ Passing on Windows, Mac and Linux on the latest run, after the Windows storage bug was fixed |
+| An alpha | A pre-release, 0.1.0-alpha.0, was published on 23 November: a window to import chapters, set the interior, check it, preview it and save the PDF, with installers for Windows, Mac and Linux |
 
 ## Step zero — Prove the typesetter
 
