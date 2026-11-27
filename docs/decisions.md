@@ -82,6 +82,12 @@ latest-versions file or offered as a store download, so the owner made it public
 Nothing private is in it: the test book and the owner's build script stay in a folder git ignores, and the history was
 checked for names, people and secrets first. The licence is still proprietary, as for RT Story Tracker.
 
+### The icon
+
+✅ **Approved 27 November 2026: the unfolded book cover on a dark tile.** The owner rejected the first draft because it looked
+like the other apps' icons. The new one (`docs/brand/icon.svg`) shows a flat cover wrap with a CMYK-striped spine, crop marks
+and a barcode. It is the app's icon for 1.0.
+
 ### Fonts for the test-book comparison
 
 ✅ **Chosen 20 November 2026: open stand-in fonts for now.** The test book's own fonts (Book Antiqua, Felix Titling and
