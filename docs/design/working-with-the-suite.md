@@ -70,4 +70,10 @@ on 18 November 2026. Where the two differ, that page wins.
 | "Latest" version | Read from the suite's own versions file when the panel opens or the app starts, kept for a day, and nothing about the person is sent | v1.7 |
 | Look and feel | The frame matches RT Markdown Reader's: short menus and the command palette, the Help menu, Help Center and Tutorial, the About window, one Preferences window, the shared themes, an icon toolbar, self-update, accessibility checks, languages and plain wording. The print preview and layout screens get their own design inside it | v1.0 |
 | Research clips | Not accepted | — |
+| `kinds` in `hello` | Proposed by the suite, waiting for the owner's yes; Press returns its `kinds` once it's agreed | v1.7 |
 | Repo visibility | Public since 18 November 2026, so Press can be in the versions file and offered as a download ([decisions](../decisions.md#visibility-of-this-repo)) | v1.0 |
+
+## What Press can do over App Link today
+
+Nothing yet. It sends nothing and receives nothing, and no App Link code exists. The suite's table says the same. Receiving a
+book (`rtbook`) arrives in v1.7. When Press gains a capability, its report says so, so the table stays true.

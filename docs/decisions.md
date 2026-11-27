@@ -86,3 +86,12 @@ Segoe UI Symbol) aren't on the build machine, and their licences generally tie t
 the book in open fonts, so its page count won't match the owner's build script's PDF exactly; what doesn't depend on the font
 is compared instead. If an exact comparison turns out to matter, it's revisited once M4's results are in: either the
 licensed fonts go on the build machine, or the comparison runs on the owner's own Windows computer.
+
+## Open, the owner's
+
+### App Link: say what an app does with each kind
+
+The suite proposes that `hello` also returns `kinds`, the values of `kind` an app does something with, so a sender only
+offers a kind-specific action when the other app handles it. An app that ignores `kind` returns an empty list, and a missing
+`kinds` means an older app. It's an addition to protocol version 1, so older apps keep working. It changes every app, so it
+needs the owner's yes before any app is changed. Press builds nothing for it until he says yes, and then only in v1.7.

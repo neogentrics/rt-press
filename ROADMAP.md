@@ -177,6 +177,7 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 | Apps status | M | The suite's small toolbar icon with a coloured dot (green, amber, grey or off), opening a panel that lists every suite app with one state and a button: *Open*, *Link* or *Get it*. Finding an app never links it, and nothing is checked in the background. Copied from RT Story Tracker's panel, with the suite's exact wording. |
 | Updates and compatibility | S | Apps link by App Link version and the document kinds they accept, never by app version. The panel shows *Update available* with both numbers as a nudge, *Needs an update to link* only for an incompatible protocol, and *Couldn't check for updates* when offline. "Latest" comes from the suite's own versions file, kept for a day. |
 | Tell RT Author Desk | S | Record which files were made for which edition, and when. |
+| Say what it does with each kind | S | The suite's proposal: `hello` also returns `kinds`, the document kinds an app does something with, so a sender only offers an action the other app handles. For Press that is probably an empty list at first. Waiting for the owner's yes, because the protocol changes for every app. Not built. |
 | Send to RT Markdown Reader | S | Hand a document across for publishing, as the other apps do. |
 
 **Test:** change a chapter in RT Story Tracker, refresh, and the layout keeps every choice. RT Author Desk shows the new file. Press shows in the other apps' panels, and an older app on the same protocol still links.
