@@ -24,7 +24,7 @@ export async function openAbout() {
           h('h2', { id: 'about-title', translate: 'no' }, 'RT Press'),
           h('p', { class: 'about-version', id: 'about-version' }, `Version ${info.version}${info.portable ? ' (portable)' : ''}`))),
       h('p', null, 'Designed print interiors, checked against your printer’s rules, on your own computer. Built by the Recon Towers Dev Department.'),
-      h('ul', { class: 'about-links' }, aboutLinks(info.version).map((link) => h('li', null, outside(link.url, link.label), h('span', null, link.about)))),
+      h('ul', { class: 'about-links' }, aboutLinks(info.version).map((link) => h('li', null, outside(link.url, link.label), h('span', { translate: link.key === 'source' ? 'no' : null }, link.about)))),
       h('p', { class: 'about-tech', id: 'about-tech', translate: 'no' }, `Electron ${info.electron} · Chromium ${info.chrome} · Node ${info.node} · Typst ${info.typst} · ${info.os}`),
       h('p', { class: 'about-tech' }, 'Your book is kept in ', h('span', { class: 'mono', translate: 'no' }, info.bookFolder), '.'),
       h('p', { class: 'about-legal' }, `© ${info.year} Recon Towers. All rights reserved.`, legalLinks().map((link) => [' · ', outside(link.url, link.label)])),

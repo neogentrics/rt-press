@@ -270,10 +270,68 @@ const unnamed = (window) => window.evaluate(() => [...document.querySelectorAll(
   // Once finished, it isn't offered again.
   app = await launch();
   try {
-    const { window } = await opened(app);
+    const { window, errors } = await opened(app);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     assert.equal(await window.locator('#tour-welcome').count(), 0);
     assert.equal(await window.locator('#chapters li').count(), 10);
+
+    // Spanish, chosen in Preferences: the menus and the window change at once, and nothing is left in English.
+    await command(window, 'preferences');
+    await window.selectOption('#pref-language', 'es');
+    await textIs(window, '#prefs-title', /^Preferencias$/);
+    await window.click('#prefs-done');
+    const spanish = await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items.map((i) => i.label.replace('&', '')).filter((l) => !['RT Press', 'Window'].includes(l)));
+    assert.deepEqual(spanish, ['Archivo', 'Edición', 'Ver', 'Ayuda']);
+    assert.equal(await window.getAttribute('html', 'lang'), 'es');
+    assert.equal(await window.getAttribute('#tb-prefs', 'aria-label'), 'Preferencias');
+    assert.match(await window.textContent('#settings'), /Interior.*Edición.*Tapa blanda.*Tamaño de corte/s);
+    assert.match(await window.textContent('#chapters'), /Title 1.*palabras/s, 'the person\'s own words are left alone');
+    await window.click('#build');
+    await window.waitForSelector('#results-title:has-text("Listo para guardar")', { timeout: 120000 });
+    await window.waitForFunction(() => document.getElementById('page-right').naturalWidth > 0);
+    for (const name of ['go-to', 'command-palette', 'about', 'preferences', 'help-center', 'check-updates', 'tutorial']) {
+      await command(window, name);
+      await visible(window, 'dialog[open]');
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      await window.keyboard.press('Escape');
+      await gone(window, 'dialog[open]');
+    }
+    await command(window, 'tutorial');
+    await window.click('#tour-start');
+    await visible(window, '#tour-card');
+    for (let step = 2; step <= 10; step += 1) {
+      await window.click('#tour-next');
+      await textIs(window, '#tour-count', new RegExp(`^Paso ${step} de 10$`));
+    }
+    await window.click('#tour-next');
+    await gone(window, '#tour-card');
+    assert.deepEqual(await window.evaluate(() => window.rtPressUntranslated()), [], 'nothing was left in English');
+
+    // A language written right to left would turn the window round, but never the book's pages.
+    await window.click('#build');
+    await window.waitForSelector('#results-title:has-text("Listo para guardar")', { timeout: 120000 });
+    await command(window, 'next-spread');
+    await window.waitForFunction(() => document.getElementById('page-left').naturalWidth > 0);
+    const sides = () => window.evaluate(() => {
+      const x = (selector) => Math.round(document.querySelector(selector).getBoundingClientRect().x);
+      return { book: x('.side'), pages: x('.main'), leftPage: x('#page-left'), rightPage: x('#page-right'), first: x('#import'), help: x('#tb-help') };
+    });
+    const ltr = await sides();
+    assert.ok(ltr.book < ltr.pages && ltr.first < ltr.help && ltr.leftPage < ltr.rightPage, JSON.stringify(ltr));
+    await window.evaluate(() => { document.documentElement.dir = 'rtl'; });
+    const rtl = await sides();
+    assert.ok(rtl.book > rtl.pages && rtl.first > rtl.help, `the window turned round: ${JSON.stringify(rtl)}`);
+    assert.ok(rtl.leftPage < rtl.rightPage, 'the printed pages keep their sides');
+    await window.evaluate(() => { document.documentElement.dir = 'ltr'; });
+
+    // And back to English.
+    await command(window, 'preferences');
+    await window.selectOption('#pref-language', 'en');
+    await textIs(window, '#prefs-title', /^Preferences$/);
+    await window.click('#prefs-done');
+    assert.equal(await window.getAttribute('#tb-prefs', 'aria-label'), 'Preferences');
+    assert.match(await window.textContent('#settings'), /Edition.*Paperback/s);
+    assert.deepEqual(errors, []);
   } finally {
     await app.close();
     fs.rmSync(base, { recursive: true, force: true, maxRetries: 5 });

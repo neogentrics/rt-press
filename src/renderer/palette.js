@@ -43,7 +43,7 @@ export function createPalette({ platform, places, commands, runCommand, goToPlac
       selected = Math.min(selected, Math.max(0, shown.length - 1));
       list.replaceChildren(...(shown.length
         ? shown.map(({ item, hits }, at) => h('li', { id: `palette-option-${at}`, role: 'option', class: 'palette-item', 'aria-selected': String(at === selected), onclick: () => choose(at) },
-          h('span', { class: 'pi-label', translate: item.kind === 'chapter' ? 'no' : null }, marked(item.label, hits)), h('span', { class: 'pi-detail' }, item.detail ?? '')))
+          h('span', { class: 'pi-label', translate: 'no' }, marked(item.label, hits)), h('span', { class: 'pi-detail', translate: item.kind === 'command' ? 'no' : null }, item.detail ?? '')))
         : [h('li', { class: 'palette-empty', role: 'option', 'aria-disabled': 'true', 'aria-selected': 'false' }, empty())]));
       input.setAttribute('aria-activedescendant', shown.length ? `palette-option-${selected}` : '');
       list.children[selected]?.scrollIntoView({ block: 'nearest' });

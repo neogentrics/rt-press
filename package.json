@@ -34,7 +34,8 @@
     "fetch:typst": "node scripts/fetch-typst.mjs",
     "fetch:typst:current": "node scripts/fetch-typst.mjs --current",
     "fonts:stand-in": "node scripts/prepare-fonts.mjs",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "locales": "node scripts/make-locales.mjs"
   },
   "build": {
     "appId": "com.recontowers.press",
@@ -47,6 +48,7 @@
     "files": [
       "src/main/**",
       "src/shared/**",
+      "src/locales/*.json",
       "dist/renderer/**",
       "build/icon.png",
       "help/**",
@@ -65,6 +67,7 @@
       "files": [
         "src/main/**",
         "src/shared/**",
+        "src/locales/*.json",
         "dist/renderer/**",
         "build/icon.png",
         "help/**",
@@ -119,6 +122,7 @@
       "files": [
         "src/main/**",
         "src/shared/**",
+        "src/locales/*.json",
         "dist/renderer/**",
         "build/icon.png",
         "help/**",
@@ -166,6 +170,7 @@
       "files": [
         "src/main/**",
         "src/shared/**",
+        "src/locales/*.json",
         "dist/renderer/**",
         "build/icon.png",
         "help/**",

@@ -3,6 +3,7 @@
 import { openAbout } from './about.js';
 import { $, dialogOpen, h, toast } from './dom.js';
 import { createHelp } from './help-ui.js';
+import { createUiTranslator } from './i18n-ui.js';
 import { createPalette } from './palette.js';
 import { openPreferences } from './prefs.js';
 import { createTour } from './tour.js';
@@ -12,6 +13,11 @@ import { checkForUpdates, updateBar } from './updates.js';
 const set = (id, text) => {
   $(id).textContent = text;
 };
+
+// The window's words in the chosen language. What it couldn't translate is kept where the tests can read it.
+const translator = createUiTranslator();
+window.rtPressUntranslated = () => [...translator.missing];
+const numbers = (n) => n.toLocaleString(translator.lang);
 
 let state = null;
 let info = { version: '', platform: 'linux' };
@@ -119,13 +125,13 @@ function showBook() {
     li.append(Object.assign(document.createElement('span'), { textContent: c.title || '(untitled)', translate: false }));
     const words = document.createElement('span');
     words.className = 'words';
-    words.textContent = `${c.words.toLocaleString()} words`;
+    words.textContent = `${numbers(c.words)} words`;
     li.append(' ', words);
     return li;
   }));
   const r = state.report;
   set('import-summary', state.hasBook
-    ? `${state.chapters.length} chapters, ${state.words.toLocaleString()} words${r ? ` (from “${r.folder}”)` : ''}.`
+    ? (r ? `${state.chapters.length} chapters, ${numbers(state.words)} words (from “${r.folder}”).` : `${state.chapters.length} chapters, ${numbers(state.words)} words.`)
     : 'Choose a folder of Word (.docx) chapters, one file for each chapter.');
   const notes = [];
   if (r?.warningCount) notes.push(...r.warnings);
@@ -154,8 +160,17 @@ function showBuild(build) {
   $('checks-box').open = failed.length > 0;
   const seconds = ((build.timings.set + build.timings.preview + build.timings.check + build.timings.finish + (build.timings.repair ?? 0)) / 1000).toFixed(1);
   const r = build.repair;
-  const turns = !r ? '' : r.after === 0 ? ' No page turn splits a sentence.' : ` Page turns that split a sentence: ${r.before} before repair, ${r.after} after${r.pagesAfter > r.pagesBefore ? `, with ${r.pagesAfter - r.pagesBefore} page${r.pagesAfter - r.pagesBefore === 1 ? '' : 's'} added` : ', with no page added'}.`;
-  set('build-summary', `${build.pages} pages, ${failed.length ? `${failed.length} of ${build.checks.length} checks failed` : `all ${build.checks.length} checks passed`}. Built in ${seconds} s.${turns}`);
+  const added = r ? r.pagesAfter - r.pagesBefore : 0;
+  const sentences = [
+    failed.length ? `${build.pages} pages, ${failed.length} of ${build.checks.length} checks failed.` : `${build.pages} pages, all ${build.checks.length} checks passed.`,
+    `Built in ${seconds} s.`,
+  ];
+  if (r && r.after === 0) sentences.push('No page turn splits a sentence.');
+  if (r && r.after > 0) {
+    sentences.push(`Page turns that split a sentence: ${r.before} before repair, ${r.after} after.`);
+    sentences.push(added > 0 ? `Pages added: ${added}.` : 'No page was added.');
+  }
+  $('build-summary').replaceChildren(...sentences.flatMap((sentence) => [h('span', null, sentence), ' ']));
   $('checks').replaceChildren(...build.checks.map((c) => {
     const li = document.createElement('li');
     li.className = c.ok ? 'pass' : 'fail';
@@ -163,7 +178,7 @@ function showBuild(build) {
     mark.className = 'mark';
     mark.textContent = c.ok ? '✔' : '✖';
     mark.setAttribute('aria-label', c.ok ? 'passed' : 'failed');
-    li.append(mark, ` ${c.title}: ${c.summary}`);
+    li.append(mark, ' ', h('span', null, c.title), ': ', ...(c.parts ?? [c.summary]).flatMap((part, i) => [i ? '; ' : '', h('span', null, part)]));
     return li;
   }));
   pageCount = build.pages;
@@ -227,7 +242,7 @@ async function saveSettings() {
   const result = await window.rtPress.setSettings(readSettings());
   if (result.error) {
     $('settings-error').hidden = false;
-    set('settings-error', result.error);
+    $('settings-error').replaceChildren(...(result.problems?.map((p) => p.message) ?? [result.error]).flatMap((message) => [h('span', null, message), ' ']));
     return;
   }
   $('settings-error').hidden = true;
@@ -328,7 +343,7 @@ const COMMANDS = {
   'import-chapters': importChapters,
   build,
   'save-pdf': exportPdf,
-  preferences: () => openPreferences({ run }),
+  preferences: () => openPreferences({ run, setLanguage: (code) => translator.setLanguage(code) }),
   'go-to': () => openPalette(''),
   'command-palette': () => openPalette('>'),
   'first-spread': () => go(0),
@@ -382,6 +397,7 @@ async function start() {
     info = { version: status.version, platform: status.platform };
     update = status.update;
     storageProblem = status.storage.ok ? '' : status.storage.error ?? 'a check failed';
+    translator.setLanguage((await window.rtPress.appSettings()).resolvedLanguage);
     drawToolbar({ platform: info.platform, run });
     wire();
     practising = await window.rtPress.inPractice();

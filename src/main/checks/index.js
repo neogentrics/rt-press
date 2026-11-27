@@ -2,6 +2,7 @@
 // Checks a finished PDF against the printer's rules. Every check reads the file itself (its page boxes, its fonts, where its
 // marks fall), never the settings that made it, so a check can't pass on a promise. Each gives one result:
 //   { id, title, ok, summary, pages }     `pages` lists the pages at fault (or the first few, when many are)
+// A result whose summary lists several findings also gives them one by one in `parts`, so each can be shown in its own words.
 // A file is ready when every result is ok.
 const { pageMarks } = require('../pdf/content');
 const { readPdf } = require('../pdf/read');
@@ -171,7 +172,7 @@ function runChecks(buffer, spec) {
   if (root.AcroForm !== undefined) extras.push('it has form fields');
   const annotated = pages.filter((p) => (doc.resolve(p.dict.Annots) ?? []).length).map((p) => p.number);
   if (annotated.length) extras.push(`links or annotations on pages ${list(annotated)}`);
-  results.push({ id: 'clean', title: 'No bookmarks, links, annotations or encryption', ok: extras.length === 0, pages: annotated, summary: extras.length ? extras.join('; ') : 'none of them' });
+  results.push({ id: 'clean', title: 'No bookmarks, links, annotations or encryption', ok: extras.length === 0, pages: annotated, summary: extras.length ? extras.join('; ') : 'none of them', ...(extras.length > 1 ? { parts: extras } : {}) });
 
   return { ok: results.every((r) => r.ok), results, pages: count };
 }

@@ -16,6 +16,7 @@ const { openStore } = require('./press/store');
 const practice = require('./press/practice');
 const { bundledFolder } = require('./typeset/stand-in-fonts');
 const { detailsText, osName } = require('../shared/about');
+const { createTranslator, pickLanguage, translateMenu } = require('../shared/i18n');
 
 // A test gets its own profile, so it can never touch an author's files.
 if (process.env.RTPRESS_USER_DATA) app.setPath('userData', process.env.RTPRESS_USER_DATA);
@@ -29,6 +30,11 @@ let commands = new Map();
 
 const resourcesPath = () => (app.isPackaged ? process.resourcesPath : null);
 const send = (channel, value) => mainWindow?.webContents.send(channel, value);
+
+// The language chosen, or the system's when it is one of ours; and the words in it.
+const language = () => pickLanguage(appSettings?.values.language, app.getLocale());
+const words = (text) => createTranslator(language())(text);
+const settingsForWindow = (values) => ({ ...values, resolvedLanguage: language() });
 
 // Looks for newer versions in the installed app only, and by itself only while the setting says so.
 const updater = new Updater((status) => {
@@ -81,6 +87,7 @@ const menuState = () => ({ hasBook: Boolean(session?.hasBook), building: Boolean
 function rebuildMenu() {
   if (!app.isReady()) return;
   commands = buildMenu({
+    translate: (template) => translateMenu(template, createTranslator(language())),
     send: (id) => send('press:command', id),
     actions: { installUpdate: () => updater.installNow() },
     state: menuState(),
@@ -118,12 +125,12 @@ function handleBook(channel, fn) {
 // A test sets these so no real dialog opens; they are not a setting a person has.
 const pickFolder = async () => {
   if (process.env.RTPRESS_TEST_PICK_FOLDER) return process.env.RTPRESS_TEST_PICK_FOLDER;
-  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, { title: 'Choose the folder of chapters', properties: ['openDirectory'] });
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, { title: words('Choose the folder of chapters'), properties: ['openDirectory'] });
   return canceled ? null : filePaths[0];
 };
 const pickSave = async (suggested) => {
   if (process.env.RTPRESS_TEST_SAVE_PATH) return process.env.RTPRESS_TEST_SAVE_PATH;
-  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, { title: 'Save the interior', defaultPath: suggested, filters: [{ name: 'PDF', extensions: ['pdf'] }] });
+  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, { title: words('Save the interior'), defaultPath: suggested, filters: [{ name: 'PDF', extensions: ['pdf'] }] });
   return canceled ? null : filePath;
 };
 
@@ -190,8 +197,12 @@ function registerFrame() {
     return { name: app.getName(), version: app.getVersion(), platform: process.platform, typst: await typstStatus(), storage, update: updater.status };
   });
   handle('press:help', () => readGuides());
-  handle('press:app-settings', () => appSettings.values);
-  handle('press:save-app-settings', (changes) => appSettings.save(changes));
+  handle('press:app-settings', () => settingsForWindow(appSettings.values));
+  handle('press:save-app-settings', (changes) => {
+    const values = settingsForWindow(appSettings.save(changes));
+    rebuildMenu(); // the menus are in the chosen language
+    return values;
+  });
   handle('press:commands', () => commandList(commands));
   handle('press:run-command', (key) => runCommand(commands, key));
   handle('press:about', aboutDetails);

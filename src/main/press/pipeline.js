@@ -107,7 +107,7 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
     units: raw.units,
     notes: raw.notes,
     repair,
-    checks: report.results.map(({ id, title, ok, summary, pages }) => ({ id, title, ok, summary, pages })),
+    checks: report.results.map(({ id, title, ok, summary, parts, pages }) => ({ id, title, ok, summary, parts, pages })),
     ready: report.ok,
     preview: pictures.ok ? { dir: previewDir, files: pictures.files } : null,
     previewMessages: pictures.ok ? '' : pictures.messages,

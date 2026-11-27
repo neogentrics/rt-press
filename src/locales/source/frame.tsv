@@ -1,0 +1,68 @@
+en	es	fr	de
+Done	Listo	Terminé	Fertig
+Close	Cerrar	Fermer	Schließen
+Next	Siguiente	Suivant	Weiter
+Back	Atrás	Retour	Zurück
+Later	Más tarde	Plus tard	Später
+OK	Aceptar	OK	OK
+Language	Idioma	Langue	Sprache
+General	General	Général	Allgemein
+Follow System	Igual que el sistema	Suivre le système	Wie System
+Website	Sitio web	Site web	Website
+What’s new in this version	Novedades de esta versión	Nouveautés de cette version	Neu in dieser Version
+Report a problem or suggest a feature	Informar de un problema o sugerir una función	Signaler un problème ou suggérer une fonction	Ein Problem melden oder eine Funktion vorschlagen
+Source code	Código fuente	Code source	Quellcode
+License	Licencia	Licence	Lizenz
+Open-source notices	Avisos de código abierto	Mentions open source	Open-Source-Hinweise
+Release notes on GitHub	Notas de la versión en GitHub	Notes de version sur GitHub	Versionshinweise auf GitHub
+GitHub issues	Incidencias en GitHub	Tickets GitHub	GitHub-Issues
+Copy Version Details	Copiar datos de la versión	Copier les détails de version	Versionsdetails kopieren
+Version {0}	Versión {0}	Version {0}	Version {0}
+Check for Updates	Buscar actualizaciones	Rechercher des mises à jour	Nach Updates suchen
+Open Download Page	Abrir la página de descarga	Ouvrir la page de téléchargement	Downloadseite öffnen
+Version {0} is available	La versión {0} está disponible	La version {0} est disponible	Version {0} ist verfügbar
+This copy can’t update itself. Download the new version from the Releases page.	Esta copia no puede actualizarse sola. Descargue la nueva versión desde la página de versiones.	Cette copie ne peut pas se mettre à jour seule. Téléchargez la nouvelle version depuis la page des versions.	Diese Kopie kann sich nicht selbst aktualisieren. Laden Sie die neue Version von der Versionsseite herunter.
+You’ll be asked to restart when it’s ready.	Se le pedirá que reinicie cuando esté lista.	On vous demandera de redémarrer quand elle sera prête.	Sie werden zum Neustart aufgefordert, sobald sie bereit ist.
+Couldn’t check for updates	No se pudo buscar actualizaciones	Impossible de rechercher des mises à jour	Updates konnten nicht gesucht werden
+Check your internet connection and try again.	Compruebe su conexión a internet y vuelva a intentarlo.	Vérifiez votre connexion internet et réessayez.	Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.
+Choose Help → Restart to Update, or it will install next time you quit.	Elija Ayuda → Reiniciar para actualizar, o se instalará la próxima vez que salga.	Choisissez Aide → Redémarrer pour mettre à jour, ou elle s’installera à la prochaine fermeture.	Wählen Sie Hilfe → Neu starten zum Aktualisieren, oder sie wird beim nächsten Beenden installiert.
+Restart to update	Reiniciar para actualizar	Redémarrer pour mettre à jour	Zum Aktualisieren neu starten
+You’re up to date	Está al día	Vous êtes à jour	Sie sind auf dem neuesten Stand
+Version {0} is ready to install	La versión {0} está lista para instalarse	La version {0} est prête à être installée	Version {0} ist bereit zur Installation
+Version {0} is downloading	Se está descargando la versión {0}	Téléchargement de la version {0}	Version {0} wird heruntergeladen
+RT Press {0} is the latest version.	RT Press {0} es la versión más reciente.	RT Press {0} est la dernière version.	RT Press {0} ist die neueste Version.
+Updates are looked for in the installed app. This copy was started from the source.	Las actualizaciones se buscan en la aplicación instalada. Esta copia se inició desde el código fuente.	Les mises à jour sont recherchées dans l’application installée. Cette copie a été lancée depuis le code source.	Nach Updates wird in der installierten App gesucht. Diese Kopie wurde aus dem Quellcode gestartet.
+Looking for a new version…	Buscando una versión nueva…	Recherche d’une nouvelle version…	Suche nach einer neuen Version…
+Updates	Actualizaciones	Mises à jour	Updates
+Look for new versions by itself	Buscar versiones nuevas automáticamente	Rechercher automatiquement les nouvelles versions	Automatisch nach neuen Versionen suchen
+About every six hours, while the app is open, it asks GitHub whether a newer version has been released. Nothing from your book goes with the question. Turn this off and the app contacts no one. Help, then Check for Updates, still works whenever you choose.	Aproximadamente cada seis horas, mientras la aplicación está abierta, pregunta a GitHub si hay una versión más reciente. Con la pregunta no se envía nada de su libro. Si lo desactiva, la aplicación no se comunica con nadie. Ayuda y luego Buscar actualizaciones sigue funcionando cuando usted quiera.	Environ toutes les six heures, tant que l’application est ouverte, elle demande à GitHub si une version plus récente est sortie. Rien de votre livre n’accompagne la demande. Désactivez cette option et l’application ne contacte personne. Aide, puis Rechercher des mises à jour, fonctionne toujours quand vous le voulez.	Etwa alle sechs Stunden fragt die geöffnete App bei GitHub nach, ob eine neuere Version erschienen ist. Aus Ihrem Buch wird dabei nichts mitgeschickt. Wenn Sie dies ausschalten, nimmt die App keinen Kontakt auf. Hilfe und dann Nach Updates suchen funktioniert weiterhin, wann immer Sie möchten.
+The app’s own words, in the menus and the windows. The guides in the Help Center are in English.	Los textos de la aplicación, en los menús y las ventanas. Las guías del Centro de ayuda están en inglés.	Les textes de l’application, dans les menus et les fenêtres. Les guides du Centre d’aide sont en anglais.	Die Texte der App in Menüs und Fenstern. Die Anleitungen im Hilfe-Center sind auf Englisch.
+A hands-on tour with a practice book. Your own book isn’t touched.	Una visita práctica con un libro de práctica. Su propio libro no se toca.	Une visite guidée pratique avec un livre d’entraînement. Votre propre livre reste intact.	Eine praktische Einführung mit einem Übungsbuch. Ihr eigenes Buch bleibt unberührt.
+Toolbar	Barra de herramientas	Barre d’outils	Symbolleiste
+Import Chapters… ({0})	Importar capítulos… ({0})	Importer des chapitres… ({0})	Kapitel importieren… ({0})
+Build the Interior ({0})	Componer el interior ({0})	Composer l’intérieur ({0})	Innenteil erstellen ({0})
+Save PDF… ({0})	Guardar PDF… ({0})	Enregistrer le PDF… ({0})	PDF speichern… ({0})
+Go to… ({0})	Ir a… ({0})	Atteindre… ({0})	Gehe zu… ({0})
+Preferences ({0})	Preferencias ({0})	Préférences ({0})	Einstellungen ({0})
+Help Center ({0})	Centro de ayuda ({0})	Centre d’aide ({0})	Hilfe-Center ({0})
+Go to	Ir a	Atteindre	Gehe zu
+Go to a chapter, or type > for a command	Vaya a un capítulo o escriba > para un comando	Allez à un chapitre, ou tapez > pour une commande	Zu einem Kapitel gehen, oder > für einen Befehl eingeben
+Go to a chapter, or type > for a command…	Vaya a un capítulo o escriba > para un comando…	Allez à un chapitre, ou tapez > pour une commande…	Zu einem Kapitel gehen, oder > für einen Befehl eingeben…
+Type to find a chapter · > for a command · ↑ ↓ Enter · Esc	Escriba para buscar un capítulo · > para un comando · ↑ ↓ Intro · Esc	Tapez pour trouver un chapitre · > pour une commande · ↑ ↓ Entrée · Échap	Tippen, um ein Kapitel zu finden · > für einen Befehl · ↑ ↓ Eingabe · Esc
+Matches	Coincidencias	Résultats	Treffer
+Loading commands…	Cargando comandos…	Chargement des commandes…	Befehle werden geladen…
+No matching commands.	Ningún comando coincide.	Aucune commande ne correspond.	Keine passenden Befehle.
+Nothing matches. Try fewer letters.	No hay coincidencias. Pruebe con menos letras.	Aucun résultat. Essayez avec moins de lettres.	Nichts gefunden. Versuchen Sie weniger Buchstaben.
+Import chapters to jump between them.	Importe capítulos para saltar entre ellos.	Importez des chapitres pour passer de l’un à l’autre.	Importieren Sie Kapitel, um zwischen ihnen zu springen.
+Chapter	Capítulo	Chapitre	Kapitel
+Page {0}	Página {0}	Page {0}	Seite {0}
+Build the interior to go to its pages.	Componga el interior para ir a sus páginas.	Composez l’intérieur pour accéder à ses pages.	Erstellen Sie den Innenteil, um zu seinen Seiten zu gehen.
+(opens in your browser)	(se abre en el navegador)	(s’ouvre dans votre navigateur)	(wird im Browser geöffnet)
+RT Press on Recon Towers	RT Press en Recon Towers	RT Press sur Recon Towers	RT Press bei Recon Towers
+Designed print interiors, checked against your printer’s rules, on your own computer. Built by the Recon Towers Dev Department.	Interiores diseñados para imprimir, comprobados según las reglas de su imprenta, en su propio ordenador. Creado por el Dev Department de Recon Towers.	Des intérieurs mis en page pour l’impression, vérifiés selon les règles de votre imprimeur, sur votre propre ordinateur. Conçu par le Dev Department de Recon Towers.	Gestaltete Innenteile für den Druck, geprüft nach den Regeln Ihrer Druckerei, auf Ihrem eigenen Computer. Entwickelt vom Dev Department von Recon Towers.
+Your book is kept in	Su libro se guarda en	Votre livre est conservé dans	Ihr Buch wird gespeichert in
+© {0} Recon Towers. All rights reserved.	© {0} Recon Towers. Todos los derechos reservados.	© {0} Recon Towers. Tous droits réservés.	© {0} Recon Towers. Alle Rechte vorbehalten.
+Version details copied. Paste them into a bug report.	Datos de la versión copiados. Péguelos en un informe de errores.	Détails de version copiés. Collez-les dans un rapport de bogue.	Versionsdetails kopiert. Fügen Sie sie in einen Fehlerbericht ein.
+Encrypted storage is not working: {0}	El almacenamiento cifrado no funciona: {0}	Le stockage chiffré ne fonctionne pas : {0}	Der verschlüsselte Speicher funktioniert nicht: {0}
+The typesetter was not found: {0}	No se encontró el componedor: {0}	Le compositeur est introuvable : {0}	Das Satzprogramm wurde nicht gefunden: {0}
+Could not start: {0}	No se pudo iniciar: {0}	Impossible de démarrer : {0}	Start nicht möglich: {0}
