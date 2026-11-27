@@ -142,6 +142,14 @@ const unnamed = (window) => window.evaluate(() => [...document.querySelectorAll(
     await window.press('#palette-input', 'Enter');
     await textIs(window, '#cap-right', new RegExp(`^Page ${startPage}$`));
     await command(window, 'command-palette');
+    await visible(window, '#palette-input');
+    // Closed and opened again before the closed one has finished going (seen on macOS): the new box must be the one that answers.
+    await window.evaluate(() => new Promise((resolve) => {
+      document.getElementById('palette').close();
+      document.getElementById('tb-goto').click();
+      setTimeout(resolve, 100);
+    }));
+    assert.deepEqual(await window.evaluate(() => [document.querySelectorAll('#palette').length, document.getElementById('palette').open]), [1, true]);
     await window.fill('#palette-input', '>pref');
     await textIs(window, '#palette-list li[aria-selected="true"] .pi-label', /^Preferences…$/);
     await window.press('#palette-input', 'Enter');

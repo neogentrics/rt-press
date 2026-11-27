@@ -5,8 +5,9 @@ import { $, h, openDialog } from './dom.js';
 
 export function createPalette({ platform, places, commands, runCommand, goToPlace }) {
   return async function open(initial = '') {
+    // Only a box that is open is reused: one just closed is still in the page until its close event has run.
     const already = $('palette');
-    if (already) {
+    if (already?.open) {
       const field = already.querySelector('input');
       field.value = initial;
       field.dispatchEvent(new Event('input'));

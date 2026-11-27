@@ -25,7 +25,11 @@ export function toast(text) {
 // A native dialog: the page behind can't be reached while it's open, Escape closes it and focus goes back where it was. A dialog
 // with the same id replaces the one that is open.
 export function openDialog({ id, label, labelledby, className = '', children, onClose }) {
-  $(id)?.close();
+  // Taken out of the page at once: close() hides a dialog now but says so (and the listener below removes it) a moment later, and
+  // until then it would still be found by its id.
+  const old = $(id);
+  old?.close();
+  old?.remove();
   const dialog = h('dialog', { id, class: className, 'aria-label': label, 'aria-labelledby': labelledby }, children);
   dialog.addEventListener('close', () => {
     dialog.remove();
