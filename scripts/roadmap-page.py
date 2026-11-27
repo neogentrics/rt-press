@@ -27,9 +27,9 @@ def inline(s):
     return s
 
 def anchor(ver):
-    return 'r-' + re.sub(r'[^a-z0-9]+', '-', ver.lower()).strip('-').replace('.', '')
+    return 'r-' + re.sub(r'[^a-z0-9]+', '-', ver.lower().replace('.', '')).strip('-')
 
-sections = re.split(r'^## ', md, flags=re.M)[1:]
+sections = re.split(r'^#{2,3} ', md, flags=re.M)[1:]
 releases = []
 for sec in sections:
     head, _, body = sec.partition('\n')
@@ -69,10 +69,31 @@ later = [r for r in releases if r['ver'] in ('Later', 'Ongoing')]
 sm = re.search(r'(?ms)^## Where it stands\n(.*?)(?=^## )', md)
 stand_lines = sm.group(1).splitlines() if sm else []
 stand_rows = [[c.strip() for c in l.strip('|').split('|')] for l in stand_lines if l.startswith('| ') and not l.startswith('| Piece') and not l.startswith('|---')]
-stand_html = ('<section id="stands" aria-labelledby="standh"><div class="section-head"><h2 id="standh">Where it stands</h2><p>As of 20 November 2026</p></div>'
+stand_html = ('<section id="stands" aria-labelledby="standh"><div class="section-head"><h2 id="standh">Where it stands</h2><p>As of 27 November 2026</p></div>'
               '<div class="scroll"><table class="own"><thead><tr><th>Piece</th><th>State</th></tr></thead><tbody>'
               + ''.join(f'<tr><td>{inline(a)}</td><td>{inline(b)}</td></tr>' for a, b in stand_rows) + '</tbody></table></div></section>')
-rail = ''.join(f'<a class="node {"here" if r["ver"] == "Step zero" else "plan"}" href="#{anchor(r["ver"])}" title="{html.escape(r["theme"])}">{short(r["ver"])}</a>' for r in main)
+def is_group(r):
+    return r['ver'].endswith('.x') and not r['rows']
+
+def major(r):
+    m = re.match(r'v(\d+)', r['ver'])
+    return m.group(1) if m else '1'
+
+rail_groups = {}
+for r in main:
+    if not is_group(r):
+        rail_groups.setdefault(major(r), []).append(r)
+rail = ''.join(
+    '<div class="rail-group"><span class="rail-label">' + k + '.x</span><div class="rail-nodes">'
+    + ''.join(f'<a class="node {"here" if r["ver"] == "Step zero" else "plan"}" href="#{anchor(r["ver"])}" title="{html.escape(r["theme"])}">{short(r["ver"])}</a>' for r in rs)
+    + '</div></div>' for k, rs in rail_groups.items())
+
+def group_html(r):
+    intro = f'<p class="relintro">{inline(r["intro"])}</p>' if r['intro'] else ''
+    return (f'<div class="relgroup" id="{anchor(r["ver"])}" style="margin:22px 0 6px"><h3 style="margin:0">{short(r["ver"])} · {inline(r["theme"])}</h3>{intro}</div>')
+
+def any_html(r, kind, opened=False):
+    return group_html(r) if is_group(r) else rel_html(r, kind, opened)
 
 decided = [
     ('Which app keeps which export', 'Press does all of it, for authors who don\'t use the other apps: designed interiors and covers, plus EPUB, Word and plain formats from v1.6. The three apps share one piece of export code instead of three copies.'),
@@ -81,6 +102,8 @@ decided = [
     ('How far the covers go', 'Size, place and set type. A template for your illustrator, the art placed, the type set and checked. No painting tools.'),
     ('What 1.0 does', 'Interiors for KDP first. Frames in 1.1, art in 1.2, covers in 1.3 and 1.4, where Press replaces your build script.'),
     ('The plan', 'Approved on 17 November 2026.'),
+    ('One major version per platform', 'KDP is version 1 and everything added for it is a 1.x release. Each new platform makes the next major version: Lulu 2.x, IngramSpark 3.x, Barnes & Noble Press 4.x, Google Play Books 5.x. Inside one, x.0 is its rules and interiors, x.1 its paperback cover, x.2 its hardcover, x.3 what only it has. Chosen 27 November.'),
+    ('The icon', 'The unfolded book cover on a dark tile, with a striped spine, crop marks and a barcode. Approved 27 November.'),
     ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs. The files move in after Reader's 3.13.x look update merges."),
     ("Alphas for testing", "You asked on 22 November for CI to create alpha releases like the other apps. 0.1.0-alpha.0 is the first: a pre-release built by the release workflow, unsigned, for you to test."),
     ("Fonts for the comparison", "Open stand-in fonts for now, since the test book's own fonts aren't on the build machine. The page count won't match your PDF exactly, so what doesn't depend on the font is compared. Revisited if an exact match turns out to matter."),
@@ -126,7 +149,7 @@ page = f'''<!DOCTYPE html>
 </div>
 {stand_html}
 <section aria-labelledby="railh"><div class="section-head"><h2 id="railh">Every version</h2></div>
-<div class="rail"><div class="rail-group"><span class="rail-label">1.x</span><div class="rail-nodes">{rail}</div></div>
+<div class="rail">{rail}
 <div class="key"><span><i class="k-now"></i>In progress</span><span><i class="k-plan"></i>Planned</span></div></div></section>
 <section id="ideas" aria-labelledby="ideash"><div class="section-head"><h2 id="ideash">Our own way of doing the job</h2><p>Three ideas the app is built around</p></div>
 <div class="ideas">
@@ -136,7 +159,7 @@ page = f'''<!DOCTYPE html>
 </div></section>
 <section id="coming" aria-labelledby="comingh"><div class="section-head"><h2 id="comingh">The releases</h2><p>Each one can be tested on its own</p></div>
 <div class="tools"><input type="search" id="q" placeholder="Search the roadmap" aria-label="Search the roadmap"><button type="button" id="all">Open all</button></div>
-<div class="list" id="list" style="margin-top:10px">{"".join(rel_html(r, "plan", r["ver"] == "Step zero") for r in main)}</div>
+<div class="list" id="list" style="margin-top:10px">{"".join(any_html(r, "plan", r["ver"] == "Step zero") for r in main)}</div>
 <p class="empty hide" id="none">Nothing matches that.</p></section>
 <section id="owns" aria-labelledby="ownsh"><div class="section-head"><h2 id="ownsh">Who keeps which export</h2><p>Every app can get a book out by itself, from shared code</p></div>
 <div class="scroll"><table class="own"><thead><tr><th>Export</th><th>RT Press</th><th>RT Story Tracker</th><th>RT Markdown Reader</th></tr></thead><tbody>

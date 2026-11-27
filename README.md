@@ -52,6 +52,7 @@ inside the app, so there's nothing else to install. See [typesetting](docs/desig
 | [Decisions](docs/decisions.md) | The owner's choices, and the defaults still open to change |
 | [Typesetting](docs/design/typesetting.md) | How pages are set, and what step zero has to prove |
 | [Print rules](docs/design/print-rules.md) | KDP's numbers, where each came from, and the house rules |
+| [Other platforms' print rules](docs/design/print-rules-other-platforms.md) | Lulu, IngramSpark, Barnes & Noble Press and Google Play Books, read from their own pages |
 | [Working with the suite](docs/design/working-with-the-suite.md) | Which app keeps which export, and how a book arrives |
 | [Step zero build brief](docs/design/step-zero-build.md) | What step zero builds, milestone by milestone, and how it's handed back |
 
