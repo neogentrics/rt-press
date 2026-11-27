@@ -51,10 +51,13 @@ GitHub Actions.
 ✅ **Approved 17 November 2026,** with the defaults below. The step-zero test book is a frameless 6 × 9 novel whose
 hardcover is pinned at 128 pages, because 1.0 makes no page frames.
 
-### 8. No alpha
+### 8. Alphas for testing
 
-✅ **Chosen 18 November 2026: no alpha. The owner tests the first working version.** Step zero ends with its results
-document, not a release, and v1.0 is the first thing he installs.
+✅ **Chosen 22 November 2026: CI creates alpha releases, as it does for the other apps.** On 18 November the owner said there
+would be no alpha and that he would wait for a working version. On 22 November he asked the build session to set up CI on
+GitHub to create alpha releases like the other apps' repos. The release workflow builds all three systems, runs the tests on
+each, and publishes a pre-release when a version tag is pushed. The first is `0.1.0-alpha.0` (23 November). Alphas are
+pre-releases and unsigned: Windows shows a SmartScreen warning and macOS asks to be opened from System Settings.
 
 ## Defaults, approved with the plan
 

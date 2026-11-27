@@ -55,7 +55,7 @@ As of 27 November 2026. Step zero is built on the `step-zero` branch ([pull requ
 | M6 Can the page be steered? | ✅ Passed, with limits |
 | The step-zero results | ✅ [Written](docs/design/step-zero-results.md): two gates passed, three need the owner |
 | Tests | ✅ Passing on Windows, Mac and Linux on the latest run, after the Windows storage bug was fixed |
-| An alpha | A pre-release, 0.1.0-alpha.0, was published on 23 November: a window to import chapters, set the interior, check it, preview it and save the PDF, with installers for Windows, Mac and Linux |
+| An alpha | ✅ Published at the owner's request: the pre-release 0.1.0-alpha.0 (23 November), a window to import chapters, set the interior, check it, preview it and save the PDF, built by CI for Windows, Mac and Linux. Not yet opened by hand on Windows or Mac: CI ran the built app's window test there, and nothing is code-signed. |
 
 ## Step zero — Prove the typesetter
 
