@@ -39,8 +39,10 @@ git checkout origin/main -- CLAUDE.md docs/design/v1-build.md docs/design/workin
 
 ## Milestones, in order
 
-**V1. An icon, and the installers wear it.** `docs/brand/icon.svg` is the owner's draft: a crimson rounded square, an open book
-spread and gold crop marks. Make `build/icon.png` (1024), `build/icon.ico` and `build/icon.icns` from it, use it for the window,
+**V1. An icon, and the installers wear it.** `docs/brand/icon.svg` is the owner's icon. The first draft (a book on a rounded
+square) was rejected for looking like the other apps', so it was redrawn on 27 November: an unfolded book cover on a dark tile
+with cut corners, with a spine that is a CMYK colour bar. Regenerate the icon files from the new SVG with your `npm run icons`
+and commit them. The owner may still ask for changes, so keep the step repeatable. Make `build/icon.png` (1024), `build/icon.ico` and `build/icon.icns` from it, use it for the window,
 the installers and the About window later, and keep the SVG as the source. Say how you made them, so it can be repeated.
 
 **V2. The suite's frame.** Menus (File, Edit, View, Help) kept short, the command palette (`Ctrl+K`), the Help menu in the suite's
