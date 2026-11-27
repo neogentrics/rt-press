@@ -109,6 +109,8 @@ function createWindow() {
     minHeight: 600,
     show: false,
     title: 'RT Press',
+    // Windows and Linux take the window's icon from here; macOS takes the app's own.
+    icon: path.join(__dirname, '..', '..', 'build', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

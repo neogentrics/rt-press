@@ -26,8 +26,8 @@ test('every platform lists the files that go in the app, because its own list re
     for (const pattern of shared) assert.ok(files.includes(pattern), `${key} lists ${pattern}`);
     assert.ok(files.includes('src/main/**') && files.includes('dist/renderer/**'));
   }
-  for (const pattern of shared) assert.equal(/^(test|vendor|docs|release)/.test(pattern), false, `${pattern} would put the tests, the downloads or the docs in the app`);
-  assert.ok(shared.every((p) => p.startsWith('!') || /^(src|dist|package\.json|LICENSE)/.test(p)), 'only what the app needs is named');
+  for (const pattern of shared) assert.equal(/^(test|vendor|docs|release|build\/(?!icon\.png$))/.test(pattern), false, `${pattern} would put the tests, the downloads or the docs in the app`);
+  assert.ok(shared.every((p) => p.startsWith('!') || p === 'build/icon.png' || /^(src|dist|package\.json|LICENSE)/.test(p)), 'only what the app needs is named');
 });
 
 test('the typesetter and the fonts are copied beside the app on every platform', () => {
