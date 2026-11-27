@@ -6,51 +6,16 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const zlib = require('node:zlib');
-const { ICNS_ENTRIES, ICO_SIZES, LINUX_SIZES, compileIconSizes, icns, ico } = require('../scripts/icon-formats.cjs');
+const { ICNS_ENTRIES, ICO_SIZES, LINUX_SIZES, MAC_CONTENT, contentFraction, drawIcons, icns, ico, padDrawing, readPng: decode } = require('../scripts/icon-formats.cjs');
 const pkg = require('../package.json');
 
 const root = path.join(__dirname, '..');
 const built = (name) => fs.readFileSync(path.join(root, 'build', name));
 
-// Reads an 8-bit RGBA PNG that isn't interlaced, which is what the icons are.
+// A picture with a way to ask for one pixel.
 function readPng(buffer) {
-  assert.equal(buffer.subarray(0, 8).toString('latin1'), '\x89PNG\r\n\x1a\n', 'a PNG');
-  let at = 8;
-  let header = null;
-  const data = [];
-  while (at < buffer.length) {
-    const length = buffer.readUInt32BE(at);
-    const type = buffer.toString('latin1', at + 4, at + 8);
-    const body = buffer.subarray(at + 8, at + 8 + length);
-    if (type === 'IHDR') header = { width: body.readUInt32BE(0), height: body.readUInt32BE(4), depth: body[8], colour: body[9], interlace: body[12] };
-    if (type === 'IDAT') data.push(body);
-    at += 12 + length;
-  }
-  assert.deepEqual([header.depth, header.colour, header.interlace], [8, 6, 0], '8-bit RGBA, not interlaced');
-  const raw = zlib.inflateSync(Buffer.concat(data));
-  const stride = header.width * 4;
-  const pixels = Buffer.alloc(stride * header.height);
-  for (let y = 0; y < header.height; y += 1) {
-    const filter = raw[y * (stride + 1)];
-    for (let x = 0; x < stride; x += 1) {
-      const value = raw[y * (stride + 1) + 1 + x];
-      const left = x >= 4 ? pixels[y * stride + x - 4] : 0;
-      const up = y > 0 ? pixels[(y - 1) * stride + x] : 0;
-      const corner = x >= 4 && y > 0 ? pixels[(y - 1) * stride + x - 4] : 0;
-      let guess = 0;
-      if (filter === 1) guess = left;
-      else if (filter === 2) guess = up;
-      else if (filter === 3) guess = (left + up) >> 1;
-      else if (filter === 4) {
-        const p = left + up - corner;
-        const [a, b, c] = [Math.abs(p - left), Math.abs(p - up), Math.abs(p - corner)];
-        guess = a <= b && a <= c ? left : b <= c ? up : corner;
-      }
-      pixels[y * stride + x] = (value + guess) & 255;
-    }
-  }
-  return { ...header, pixel: (x, y) => [...pixels.subarray(y * stride + x * 4, y * stride + x * 4 + 4)], pixels };
+  const picture = decode(buffer);
+  return { ...picture, pixel: (x, y) => [...picture.pixels.subarray((y * picture.width + x) * 4, (y * picture.width + x) * 4 + 4)] };
 }
 
 const icoEntries = (file) => Array.from({ length: file.readUInt16LE(4) }, (_, i) => {
@@ -72,8 +37,10 @@ test('icon.png is 1024 square, with clear corners and an opaque middle', () => {
   assert.deepEqual([png.width, png.height], [1024, 1024]);
   for (const [x, y] of [[0, 0], [1023, 0], [0, 1023], [1023, 1023]]) assert.equal(png.pixel(x, y)[3], 0, `corner ${x},${y} is clear`);
   assert.equal(png.pixel(512, 512)[3], 255);
-  const [r, g, b] = png.pixel(100, 512);
-  assert.ok(r > g * 2 && r > b * 2, 'the square is crimson');
+  const [r, g, b] = png.pixel(860, 700); // low on the right-hand panel, clear of its lettering
+  assert.ok(r > g * 2 && r > b * 2, 'the front cover is crimson');
+  const [tr, tg, tb] = png.pixel(512, 910);
+  assert.ok(Math.max(tr, tg, tb) < 90 && tb >= tr, 'the tile is dark');
 });
 
 test('Linux gets one file for each size its icon theme looks in, and none the theme would miss', () => {
@@ -96,12 +63,27 @@ test('icon.icns holds the sizes macOS names, including those for sharp screens',
   entries.forEach(({ type, png }, i) => assert.equal(readPng(png).width, ICNS_ENTRIES[i][1], type));
 });
 
+test('the Mac icon has the clear space macOS wants; the Windows and Linux icons fill their picture', () => {
+  const big = icnsEntries(built('icon.icns')).find((e) => e.type === 'ic10').png;
+  assert.ok(Math.abs(contentFraction(big) - MAC_CONTENT) < 0.004, `the Mac tile covers ${(contentFraction(big) * 100).toFixed(1)}% of its picture`);
+  for (const [label, png] of [['icon.png', built('icon.png')], ['icon.ico 256', icoEntries(built('icon.ico')).at(-1).png], ['icons/512x512.png', built('icons/512x512.png')]]) {
+    assert.ok(contentFraction(png) > 0.93, `${label} covers ${(contentFraction(png) * 100).toFixed(1)}%`);
+  }
+  for (const { type, png } of icnsEntries(built('icon.icns'))) assert.equal(readPng(png).pixel(0, 0)[3], 0, `${type} has a clear corner`);
+});
+
+test('padding a drawing widens only its outer viewBox', () => {
+  const svg = '<svg xmlns="x" viewBox="0 0 512 512"><svg viewBox="0 0 10 10"/></svg>';
+  assert.equal(padDrawing(svg, 1, 0.5), '<svg xmlns="x" viewBox="-256 -256 1024 1024"><svg viewBox="0 0 10 10"/></svg>');
+  assert.throws(() => padDrawing('<svg width="2"/>', 1, 0.5), /needs a viewBox/);
+  assert.throws(() => padDrawing('<svg viewBox="0 0 4 2"/>', 1, 0.5), /square/);
+});
+
 test('the committed icons are what the drawing gives (run "npm run icons" after changing it)', async (t) => {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-icon-test-'));
   t.after(() => fs.rmSync(work, { recursive: true, force: true, maxRetries: 5 }));
   fs.copyFileSync(path.join(root, 'docs', 'brand', 'icon.svg'), path.join(work, 'icon.svg'));
-  const sizes = [...new Set([1024, ...ICO_SIZES, ...LINUX_SIZES, ...ICNS_ENTRIES.map(([, size]) => size)])];
-  const drawn = await compileIconSizes(work, sizes);
+  const { full: drawn, mac } = await drawIcons(work);
   // Compared pixel by pixel with a little room, so another system's arithmetic isn't read as a change to the drawing.
   const same = (a, b, label) => {
     const [x, y] = [readPng(a), readPng(b)];
@@ -113,7 +95,7 @@ test('the committed icons are what the drawing gives (run "npm run icons" after 
   same(built('icon.png'), drawn.get(1024), 'icon.png');
   for (const size of LINUX_SIZES) same(built(`icons/${size}x${size}.png`), drawn.get(size), `icons/${size}x${size}.png`);
   for (const { size, png } of icoEntries(built('icon.ico'))) same(png, drawn.get(size), `icon.ico ${size}`);
-  icnsEntries(built('icon.icns')).forEach(({ type, png }, i) => same(png, drawn.get(ICNS_ENTRIES[i][1]), `icon.icns ${type}`));
+  icnsEntries(built('icon.icns')).forEach(({ type, png }, i) => same(png, mac.get(ICNS_ENTRIES[i][1]), `icon.icns ${type}`));
 });
 
 test('the two formats are written as their tables say', () => {

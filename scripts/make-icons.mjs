@@ -3,7 +3,8 @@
 //   build/icon.png    1024 by 1024, clear background (the window)
 //   build/icons/      Linux: 16 to 512 pixels, one file each, named by size
 //   build/icon.ico    Windows: 16, 24, 32, 48, 64, 128 and 256 pixels
-//   build/icon.icns   macOS: 16 to 1024 pixels, with the sizes for sharp screens
+//   build/icon.icns   macOS: 16 to 1024 pixels, with the sizes for sharp screens, and the clear space macOS wants round an
+//                     icon (the tile fills 824 of 1024). The other files fill their picture.
 //
 //   npm run icons
 //
@@ -17,7 +18,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
-const { compileIconSizes, ico, icns, ICO_SIZES, ICNS_ENTRIES, LINUX_SIZES } = require('./icon-formats.cjs');
+const { drawIcons, ico, icns, ICO_SIZES, ICNS_ENTRIES, LINUX_SIZES } = require('./icon-formats.cjs');
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const source = join(root, 'docs', 'brand', 'icon.svg');
@@ -25,16 +26,15 @@ const out = resolve(process.argv[2] ?? join(root, 'build'));
 
 const work = mkdtempSync(join(tmpdir(), 'rtpress-icons-'));
 try {
-  const sizes = [...new Set([1024, ...ICO_SIZES, ...LINUX_SIZES, ...ICNS_ENTRIES.map(([, size]) => size)])].sort((a, b) => a - b);
   copyFileSync(source, join(work, 'icon.svg'));
-  const pictures = await compileIconSizes(work, sizes);
+  const { full: pictures, mac } = await drawIcons(work);
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, 'icon.png'), pictures.get(1024));
   rmSync(join(out, 'icons'), { recursive: true, force: true });
   mkdirSync(join(out, 'icons'));
   for (const size of LINUX_SIZES) writeFileSync(join(out, 'icons', `${size}x${size}.png`), pictures.get(size));
   writeFileSync(join(out, 'icon.ico'), ico(ICO_SIZES.map((size) => [size, pictures.get(size)])));
-  writeFileSync(join(out, 'icon.icns'), icns(ICNS_ENTRIES.map(([type, size]) => [type, pictures.get(size)])));
+  writeFileSync(join(out, 'icon.icns'), icns(ICNS_ENTRIES.map(([type, size]) => [type, mac.get(size)])));
   console.log(`Icons are in ${out} (from ${source}, ${readFileSync(source).length} bytes)`);
 } finally {
   rmSync(work, { recursive: true, force: true });
