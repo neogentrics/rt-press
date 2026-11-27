@@ -84,10 +84,12 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 | 🙋 Book themes | L | A starter set of book themes (the design of the printed pages, not the window's colours), each with fonts for titles, subtitles and body, sizes, spacing, drop caps, scene breaks, chapter openers and folios. Change anything and save it as your own. |
 | 🙋 Front and back matter | M | Title, copyright, dedication, acknowledgements, contents, a note to the reader, Parts, prologue, epilogue, appendices, a preview of the next book, also by, and stay connected, in the order you choose. |
 | 🙋 Titles on the right | S | Every title in the contents starts on a right-hand page, with a blank before it when needed. |
+| 🙋 Running heads | S | The author's name on left-hand pages and the book's title on right-hand pages, or the chapter's title instead, on or off in each book theme. None on chapter openers, Part pages or blank pages. |
 | 🙋 Page turns | L | No sentence split across a page turn, unless it's on your list of turns kept for suspense. A report lists what moved and anything that couldn't. |
 | 🙋 Even page bottoms | M | The text block holds a whole number of lines, and every full page ends on the same bottom line. |
 | 🙋 Pin the page count | S | Keep the published page count so an existing cover still fits, and end on a blank page with an even total. |
 | 🙋 Fonts you can trust | S | Bundled fonts plus any on the computer that allow embedding. A character missing from its font stops the build, so nothing falls back to another font. |
+| 🙋 Language and hyphenation | S | The book's language sets hyphenation and the quotation style, and hyphenation can be turned off. No hyphenated word is split across a page turn. |
 | 🙋 Checks before upload | M | KDP's rules for trim, page count, margins, bleed, fonts, picture resolution, links and blank pages. A broken rule is shown on the page it's on, and the file isn't written until it's fixed. |
 | Preview | M | The pages as they'll print, side by side as spreads, updating as you change the theme. |
 | Installed list | S | On first run and after each update, writes `installed/rt-press.json` (id, name, version, launch path, protocol) in the App Link folder, and removes it on uninstall, so the other apps can find Press. |
@@ -122,6 +124,9 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 | 🙋 Full-page art | M | A picture for each Part, maps, and art pages anywhere, with or without bleed. |
 | 🙋 Sketches on blank pages | S | Put a sketch on a left-hand page that would otherwise be blank. |
 | 🙋 In-story documents | M | Letters, notices and records set apart from the story, in their own font and box. |
+| Epigraphs | S | An epigraph, with its source, under a Part or chapter title. |
+| Verse and tables | M | Poetry kept line by line, with its indents, and tables set to the page width and never split badly across a turn. |
+| Footnotes and endnotes | M | Notes at the foot of the page or at the end of a chapter or the book, numbered and kept with the text they belong to. |
 | Pictures in the text | M | Pictures inside a chapter, from RT Story Tracker or the book's files, checked for print resolution. |
 
 **Test:** a book with Part art, a map and sketches passes the previewer, and every picture is at 300 dpi or better.
@@ -135,6 +140,7 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 | 🙋 The template | M | The exact wrap for this book: back, spine and front with bleed, safe areas and the barcode space, as a file your illustrator can paint on. |
 | 🙋 Place the art | M | A full wrap or separate front and back art, fitted to the trim and bleed. |
 | 🙋 Set the type | M | Title, author, spine text and the back-cover blurb, in the book's fonts. |
+| ISBN barcode | S | Make the ISBN barcode for the back cover from the edition's ISBN, or leave the space for KDP's own. Checked for size and quiet zone. Later, the ISBN can come from RT Author Desk. |
 | 🙋 The spine follows the book | S | When the page count changes, the spine resizes and the app tells you. |
 | Cover checks | S | Text inside the safe area, spine text only when the book is long enough for it, and the barcode space clear. |
 
@@ -203,6 +209,7 @@ An add-on, off until you turn it on, with your choice of service, including a mo
 |---|:-:|---|
 | Compare with the last upload | M | What changed on each page since the file that's on sale. |
 | Right-to-left books | L | KDP prints right to left for Hebrew, Yiddish and Japanese only. |
+| Index | L | An index built from terms you mark, with page numbers that follow the layout. |
 
 ## Ongoing — Polish & distribution
 
