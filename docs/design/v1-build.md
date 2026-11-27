@@ -18,9 +18,9 @@ when a build is worth testing.
 
 ## Branch and ownership
 
-Work on a branch called `v1.0`, cut from `step-zero`. You may push it, and never `main`. The planning session owns the README,
-roadmap, decisions, `docs/` (except what a milestone says to write), `CLAUDE.md` and `.github/`, and will merge `step-zero` and
-`v1.0` into `main` and settle the conflicts. First, bring the planning files onto your branch:
+Work on a branch called `v1.0`, cut from `step-zero`. You may push it, and never `main`. Since 27 November the build session
+also keeps the README, roadmap, decisions and the rest of `docs/` true as it goes. `main` was merged into `v1.0` on 27
+November, so `v1.0` merges into `main` without conflicts. To bring newer planning files onto the branch:
 
 ```
 git fetch origin
@@ -39,13 +39,13 @@ git checkout origin/main -- CLAUDE.md docs/design/v1-build.md docs/design/workin
 
 ## Milestones, in order
 
-**V1. An icon, and the installers wear it.** `docs/brand/icon.svg` is the owner's icon. The first draft (a book on a rounded
+**V1. An icon, and the installers wear it.** ✅ *Done 27 November 2026.* `docs/brand/icon.svg` is the owner's icon. The first draft (a book on a rounded
 square) was rejected for looking like the other apps', so it was redrawn on 27 November: an unfolded book cover on a dark tile
 with cut corners, with a spine that is a CMYK colour bar. Regenerate the icon files from the new SVG with your `npm run icons`
 and commit them. The owner may still ask for changes, so keep the step repeatable. Make `build/icon.png` (1024), `build/icon.ico` and `build/icon.icns` from it, use it for the window,
 the installers and the About window later, and keep the SVG as the source. Say how you made them, so it can be repeated.
 
-**V2. The suite's frame.** Menus (File, Edit, View, Help) kept short, the command palette (`Ctrl+K`), the Help menu in the suite's
+**V2. The suite's frame.** ✅ *Done 27 November 2026, but for the themes and looks, which still wait.* Menus (File, Edit, View, Help) kept short, the command palette (`Ctrl+K`), the Help menu in the suite's
 order, a Help Center and Tutorial written as Markdown guides in a `help` folder, the About window, one Preferences window
 (`Ctrl+,`), the theme button on the main screen (the themes themselves wait: the suite's shared themes file isn't in its repo yet, so leave the theme work until the planning session says go), an icon toolbar with
 names on hover, *Restart to update*, the installed-list file, and Spanish, French and German with right-to-left layouts. Put
@@ -72,6 +72,9 @@ difference: that is the second gate.
 
 **V8. The beta.** Check the roadmap's v1.0 rows one by one and report any that isn't built. Update the README's screenshots from
 the made-up book. Then ask the owner for `1.0.0-beta.1`.
+
+V3 starts with a fault seen in today's page-turn repair: when a sentence is moved to the next page, the line left behind is
+justified even when it is short, so its words are stretched across the page.
 
 ## Handing it back
 

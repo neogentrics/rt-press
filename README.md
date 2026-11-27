@@ -24,19 +24,28 @@ Windows, Mac and Linux, with no account, no ads and nothing else to install.
 RT Press is part of the **Recon Towers** suite, built by its Dev Department. It was inspired by the owner writing his own
 books.
 
-> **This is an alpha.** The typesetter was proved on a real book in step zero (see the
-> [results](docs/design/step-zero-results.md)), and this first app does the whole interior from start to finish for a book of
-> plain chapters. In-story documents and pictures are not there yet, and the type is EB Garamond only. It's for trying, not
-> for printing your book yet.
+> **This is an alpha, on the way to 1.0.** The typesetter was proved on a real book in step zero (see the
+> [results](docs/design/step-zero-results.md)), and the app does the whole interior from start to finish for a book of plain
+> chapters. In-story documents and pictures are not there yet, the type is EB Garamond only, and a page-turn repair can
+> leave a short line stretched across the page. It's for trying, not for printing your book yet. What's left before 1.0 is
+> on the [roadmap](ROADMAP.md#where-it-stands).
 
 <table>
 <tr>
-<td width="50%"><img src="docs/screenshots/build.png" alt="The window after a build: the chapters and settings beside, and the book's pages as a spread"><br><b>Build.</b> Bring in your chapters, choose the edition, and see the book as facing pages.</td>
+<td width="50%"><img src="docs/screenshots/build.png" alt="The window after a build: the toolbar, the chapters and interior settings beside, and the book's pages as a spread"><br><b>Build.</b> Bring in your chapters, choose the edition, and see the book as facing pages.</td>
 <td width="50%"><img src="docs/screenshots/spread.png" alt="A chapter's first page, with its title and a drop cap, beside a blank left-hand page"><br><b>A chapter opens on the right.</b> A title, a drop cap, and a blank page where the book needs one.</td>
 </tr>
 <tr>
 <td><img src="docs/screenshots/checks-fail.png" alt="The checks for a book that is too short: the page count and the inside margin are marked as failed"><br><b>Checked, not hoped.</b> Every check reads the finished file. A book that breaks a rule can't be saved.</td>
 <td><img src="docs/screenshots/settings.png" alt="The settings: edition, trim size, paper, bleed, type size, page numbers, scene break and a pinned page count"><br><b>Only what KDP offers.</b> Pick a trim, and only the papers that come in it are listed.</td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/go-to.png" alt="The command box, listing every command with its menu and shortcut"><br><b>Go to anything.</b> <code>Ctrl+K</code> jumps to a chapter. Start with <code>&gt;</code> to run any command by name.</td>
+<td><img src="docs/screenshots/help.png" alt="The Help Center, with the tutorial, quick links, common questions and a list of guides"><br><b>Help.</b> Short guides you can search, from the Help menu or <code>F1</code>.</td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/tutorial.png" alt="The tutorial's first step, pointing at the chapters of a practice book"><br><b>A tour on a practice book.</b> Offered the first time, and never touching your own book.</td>
+<td></td>
 </tr>
 </table>
 
@@ -54,7 +63,11 @@ books.
 imports a book, sets it, checks it and saves it before anything is published.
 
 The builds aren't code-signed yet, so Windows may show a SmartScreen warning the first time (choose *More info*, then *Run
-anyway*), and macOS will ask you to open the app from *System Settings → Privacy & Security*. Updates are off in the alpha.
+anyway*), and macOS will ask you to open the app from *System Settings → Privacy & Security*.
+
+**The published 0.1.0-alpha.0 is older than this page.** It was built before the new icon, the menus, Help, the tutorial,
+Preferences and the languages, and it doesn't look for updates. Those are on the `v1.0` branch, and the next build
+will have them.
 
 To build it yourself, on Linux:
 
@@ -78,10 +91,17 @@ npm run dist:linux
 | **See it first** | The whole book as facing pages, in about a second |
 | **Fast** | A 128-page book is set, finished and checked in about a second. Repairing its page turns takes about half a minute |
 | **Your choices are kept** | The book, its details and your settings are saved, and are there when you open the app again |
+| **Menus, and every command by name** | File, Edit, View and Help, kept short, with an icon toolbar. `Ctrl+K` jumps to a chapter, and `>` there runs any command |
+| **Help and a tutorial** | A Help Center of searchable guides, and a hands-on tour on a practice book that can be put aside, picked up again, or refused |
+| **Your language** | The app's own words in English, Spanish, French or German, following your system or as you choose in Preferences. The guides are in English. The other three haven't been checked by a native speaker yet |
+| **Updates itself** | On Windows and the Linux AppImage it downloads a new version and offers *Restart to update*; on a Mac and the `.deb` it tells you where to get it. You can turn the check off |
+| **For everyone** | Every button is named, the text meets WCAG AA contrast in light and dark, and everything can be reached from the keyboard, all checked by the tests |
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
-| **Works offline** | No account, no server, and your writing never leaves your computer |
+| **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
-**Coming next:** themes, art and page frames, cover wraps, and chapters sent from RT Story Tracker. See the [roadmap](ROADMAP.md).
+**Coming next, for 1.0:** page turns as good as the owner's own build script, every trim size with custom sizes, book themes
+with front and back matter and more fonts, books from Markdown and EPUB, and every KDP rule shown on the page it's on. The
+window's own themes come when the suite's shared themes file is ready. See the [roadmap](ROADMAP.md).
 
 ## What it won't do
 
@@ -131,9 +151,13 @@ npm run test:e2e
 `vendor/typst.lock.json`. The fonts are unpacked from `@fontsource` the first time they're needed, or with
 `npm run fonts:stand-in`.
 
+The icons are made from [docs/brand/icon.svg](docs/brand/icon.svg) by `npm run icons`, the screenshots on this page by
+`npm run screenshots` (with a made-up book; under `xvfb-run -a` on a machine with no screen), and the banner by
+`npm run banner`.
+
 ## How the code is laid out
 
-- `src/main`: everything that runs outside the window.
+- `src/main`: everything that runs outside the window, including the menus, app settings, updates and the suite's installed list.
 - `src/main/press`: the book, the settings and the build, from chapters to a checked file. It holds nothing of Electron's, so it can be tried on its own.
 - `src/main/typeset`: the Typst source for a book and a theme, and the fonts.
 - `src/main/pdf`: reading and writing PDFs, and the finishing step that makes Typst's file ready for a printer.
@@ -141,7 +165,9 @@ npm run test:e2e
 - `src/main/steer`: finding the pages that split a sentence, and the steers that move them. The build uses it.
 - `src/main/import`: Word chapters in.
 - `src/main/storage`: the only code that touches the encrypted project.
-- `src/renderer`: the window, bundled into `dist/renderer` by `npm run build:renderer`.
+- `src/renderer`: the window and the frame round it, bundled into `dist/renderer` by `npm run build:renderer`.
+- `src/locales`: the translations, made from the tables in `src/locales/source` by `npm run locales`.
+- `help`: the Help Center's guides, in Markdown.
 - `src/shared`: what both sides need, such as the book, the theme and KDP's numbers (`print-rules.js`).
 
 The plan behind it all is in the [roadmap](ROADMAP.md) and the [decisions](docs/decisions.md), with designs for

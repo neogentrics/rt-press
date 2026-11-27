@@ -90,6 +90,40 @@ the book in open fonts, so its page count won't match the owner's build script's
 is compared instead. If an exact comparison turns out to matter, it's revisited once M4's results are in: either the
 licensed fonts go on the build machine, or the comparison runs on the owner's own Windows computer.
 
+### From alpha to 1.0
+
+✅ **Chosen 27 November 2026.** The owner wants to move from the alpha to an official 1.0, through a beta
+([the build brief](design/v1-build.md)). A version tag, which publishes a build, is pushed only when he says so.
+
+### The icon
+
+✅ **Chosen 27 November 2026.** The first draft (a book on a rounded square) looked like the other apps' icons, so it was
+redrawn: an unfolded book cover on a dark tile with cut corners, with a spine that is a CMYK colour bar. On a Mac the tile
+fills 824 of 1024 pixels, as macOS draws every icon; on Windows and Linux it fills the picture. The drawing is
+[brand/icon.svg](brand/icon.svg) and `npm run icons` makes every icon file from it.
+
+### The build session keeps the plan
+
+✅ **Chosen 27 November 2026.** The session that builds RT Press now keeps the README, the roadmap, these decisions and the
+rest of `docs/` true as it goes, in place of a separate planning session writing them. The rules in `CLAUDE.md` stay: no
+release without the owner, and no private book in any file.
+
+### Decided while building V2
+
+Small choices made while building, each open to change:
+
+- **No theme button yet.** An empty button would be worse than none; it comes with the themes.
+- **Window colours until then** follow the system's light or dark, named by the suite's colour tokens, so the shared themes
+  only have to give those names their values.
+- **The guides are in English.** The app's own words are in four languages; the Help Center's guides are not translated.
+  The Spanish, French and German were written by Claude, apart from the labels shared with RT Markdown Reader, which use
+  Reader's. No native speaker has checked them.
+- **The tutorial uses a practice book** built into the app: made-up chapters, put in a project of their own that is thrown
+  away afterwards.
+- **The book's interior settings stay beside the book.** Preferences holds the app's settings; edition, trim and type belong
+  to each book.
+- **Updates are looked for by itself** every six hours unless turned off in Preferences, as the other apps do.
+
 ## Open, the owner's
 
 ### App Link: say what an app does with each kind

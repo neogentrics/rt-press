@@ -64,7 +64,7 @@ on 18 November 2026. Where the two differ, that page wins.
 
 | Rule | What Press does | When |
 |---|---|---|
-| Installed list | Writes `installed/rt-press.json` on first run and after each update, and removes it on uninstall | v1.0 |
+| Installed list | Writes `installed/rt-press.json` on first run and after each update. The Windows installer writes it too and removes it on uninstall; on a Mac and Linux the file stays after the app is deleted, and the other apps drop it because its program is gone | v1.0, built |
 | Apps status | The toolbar icon and panel, with the suite's exact wording, copied from RT Story Tracker's | v1.7 |
 | Updates and compatibility | Links by App Link version and accepted document kinds, never app version; *Update available* is a nudge; only an incompatible protocol blocks | v1.7 |
 | "Latest" version | Read from the suite's own versions file when the panel opens or the app starts, kept for a day, and nothing about the person is sent | v1.7 |
