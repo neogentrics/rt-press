@@ -104,7 +104,8 @@
       "createStartMenuShortcut": true,
       "shortcutName": "RT Press",
       "license": "LICENSE",
-      "artifactName": "RTPress-${version}-Setup.exe"
+      "artifactName": "RTPress-${version}-Setup.exe",
+      "include": "build/installer.nsh"
     },
     "mac": {
       "category": "public.app-category.productivity",
@@ -203,7 +204,8 @@
         "provider": "github",
         "owner": "neogentrics",
         "repo": "rt-press",
-        "releaseType": "release"
+        "releaseType": "release",
+        "channel": "latest"
       }
     ]
   },
