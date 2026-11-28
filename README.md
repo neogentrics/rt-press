@@ -26,9 +26,8 @@ books.
 
 > **This is an alpha, on the way to 1.0.** The typesetter was proved on a real book in step zero (see the
 > [results](docs/design/step-zero-results.md)), and the app does the whole interior from start to finish for a book of plain
-> chapters. In-story documents and pictures are not there yet, the type is EB Garamond only, page bottoms are not evened
-> up, and the page-turn repair still leaves more sentences split than the owner's own build script does. It's for trying,
-> not for printing your book yet. What's left before 1.0 is on the [roadmap](ROADMAP.md#where-it-stands).
+> chapters. In-story documents and pictures are not there yet, the type is EB Garamond only, and more pages are left
+> uneven at the foot than the owner's own build script leaves. It's for trying, not for printing your book yet. What's left before 1.0 is on the [roadmap](ROADMAP.md#where-it-stands).
 
 <table>
 <tr>
@@ -85,11 +84,12 @@ npm run dist:linux
 | **Every KDP trim** | Paperback and hardcover, with only the papers and page limits KDP offers for each size |
 | **Set like a book** | Mirrored margins, every chapter starting on a right-hand page, a drop cap, scene breaks, page numbers outside or centred, an optional title page and contents page, and a blank last page |
 | **No sentence split across a page turn** | Where a page ends in the middle of a sentence, the sentence starts on the next page instead, in rounds, and the book is set again each time. By default no page is added: a sentence is only moved where its chapter has room. Or let pages be added, as far as a pinned count allows, or leave the pages as set. What's left behind on a line ends short, like the end of a paragraph, unless it's nearly full already. The repair never changes your words |
+| **Even page bottoms** | Pages whose text carries on are brought to the same last line by sharing a little space between lines and paragraphs, without moving a word to another page. Pages that can't be done gently are left, and counted |
 | **Bleed done the KDP way** | 0.125 in on the top, bottom and outside edges, none at the spine, with the page boxes written |
 | **Pin the page count** | Keep a published page count, so an existing cover still fits |
 | **Check before you save** | Eleven checks on the finished file: page size, page boxes, fonts embedded and none Type 3, nothing transparent, page count, inside and outer margins, text size, file size, and no bookmarks, links or encryption |
 | **See it first** | The whole book as facing pages, in about a second |
-| **Fast** | A 128-page book is set, finished and checked in about a second. Repairing its page turns takes from about ten seconds to a minute and a half, by the choice made |
+| **Fast** | A 128-page book is set, finished and checked in about a second. Repairing its page turns takes from about ten seconds to two minutes, by the choice made |
 | **Your choices are kept** | The book, its details and your settings are saved, and are there when you open the app again |
 | **Menus, and every command by name** | File, Edit, View and Help, kept short, with an icon toolbar. `Ctrl+K` jumps to a chapter, and `>` there runs any command |
 | **Help and a tutorial** | A Help Center of searchable guides, and a hands-on tour on a practice book that can be put aside, picked up again, or refused |
@@ -99,7 +99,7 @@ npm run dist:linux
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
 | **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
-**Coming next, for 1.0:** page turns as good as the owner's own build script, every trim size with custom sizes, book themes
+**Coming next, for 1.0:** a list of sentences to leave split on purpose, a report of what the page repair moved and what it couldn't, every trim size with custom sizes, book themes
 with front and back matter and more fonts, books from Markdown and EPUB, and every KDP rule shown on the page it's on. The
 suite's window themes and looks come when its shared themes file is ready: the theme picker is built and waits for them. Until
 then the window follows your system's light or dark. See the [roadmap](ROADMAP.md).

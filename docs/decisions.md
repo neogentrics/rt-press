@@ -181,6 +181,26 @@ such lines.
 *Mend, adding no pages* means the book's page count: a round of moves is turned down if any section starts on a new page, or
 if the book gains a page at the end.
 
+### How the repair finds its moves, and evens the pages
+
+✅ The build session's choices, 27 November 2026, open to the owner. A round's moves are tried together, and when that doesn't
+fit, section by section, giving up one move at a time. This replaced a guess at the free lines on a section's last page, which
+was far too cautious: it overlooked the blank page that follows many chapters. Keeping the page count, a move may leave its
+page two lines short at most, the owner's script's own limit. Pages are then evened as the script does it, by sharing the spare
+space among the lines of whole paragraphs and before the paragraphs on the page, with at most 0.085 of the line pitch to a share.
+
+**A choice for the owner.** Fewer split sentences and more even pages pull against each other. Measured on the test book,
+adding no pages:
+
+| Rule | Split sentences left | Pages that carry on, on the bottom line |
+|---|---|---|
+| A move may leave a page 2 lines short (**what Press does**) | 26 | 54 of 84 |
+| 3 lines | 16 | 52 of 85 |
+| 3 lines, and only if the page can still be evened | 37 | 56 of 79 |
+| The owner's script's own output | 30 | 54 of 74 |
+
+The last of Press's three rules is the script's way of thinking, and leaves the fewest uneven pages.
+
 ### Theme following between apps
 
 When the theme changes in one app, the linked apps switch too. It needs a small addition to App Link, so a protocol decision, made

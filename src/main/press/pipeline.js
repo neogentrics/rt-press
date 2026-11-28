@@ -6,6 +6,7 @@ const path = require('node:path');
 const { runChecks } = require('../checks');
 const { finishPdf } = require('../pdf/finish');
 const { renderPages } = require('../typesetter');
+const { evenBottoms } = require('../steer/even');
 const { repairAll } = require('../steer/repair');
 const { generateTypst } = require('../typeset/typst-source');
 const { typesetBook } = require('../typeset/typeset-book');
@@ -51,18 +52,21 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
   // set without bleed (the pages fall the same) and gives back a list of steers; the book itself is never changed.
   let steers = [];
   let repair = null;
+  // A setting for measuring: where everything lands, without bleed (the pages fall the same).
+  const set = (list) => typesetBook({ ...common, workDir: path.join(workDir, 'repair'), output: path.join(workDir, 'repair.pdf'), steers: list, trace: true, bleed_in: 0, timestamp });
   if (settings.page_turns !== 'off') {
     const t0 = Date.now();
     onStep('Setting the pages');
-    const set = (list) => typesetBook({ ...common, workDir: path.join(workDir, 'repair'), output: path.join(workDir, 'repair.pdf'), steers: list, trace: true, bleed_in: 0, timestamp });
     const outcome = await repairAll({
       set,
       readPdfBytes: (r) => fs.readFileSync(r.output),
       book: toSet,
       theme,
       maxRounds: 4,
-      maxPushLines: 3,
-      budget: settings.page_turns === 'keep',
+      // Keeping the page count, a move may leave its page at most two lines short, which is the owner's script's limit. With pages
+      // allowed, three.
+      maxPushLines: settings.page_turns === 'keep' ? 2 : 3,
+      keepPages: settings.page_turns === 'keep',
       onProgress: ({ round, midSentence }) => onStep(`Repairing page turns, round ${round + 1}: ${midSentence} split a sentence`),
     });
     steers = outcome.steers;
@@ -71,6 +75,17 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
       repair = { mode: settings.page_turns, before: first.midSentence, after: outcome.turns.pages.length, pushes: steers.length, rounds: outcome.history.length - 1, pagesBefore: first.pages, pagesAfter: outcome.final.pages };
     }
     timings.repair = Date.now() - t0;
+  }
+
+  // Even page bottoms: after the repair, because moving a sentence is what leaves most pages short.
+  let even = null;
+  if (settings.even_bottoms) {
+    const t0 = Date.now();
+    onStep('Evening the page bottoms');
+    const outcome = await evenBottoms({ set: (air) => set([...steers, ...air]), theme });
+    steers = [...steers, ...outcome.steers];
+    even = outcome.report;
+    timings.even = Date.now() - t0;
   }
 
   onStep('Setting the pages');
@@ -107,6 +122,7 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
     units: raw.units,
     notes: raw.notes,
     repair,
+    even,
     checks: report.results.map(({ id, title, ok, summary, parts, pages }) => ({ id, title, ok, summary, parts, pages })),
     ready: report.ok,
     preview: pictures.ok ? { dir: previewDir, files: pictures.files } : null,

@@ -122,7 +122,7 @@ test('a line is spread to the full width only when its spaces need little more r
 
 test('the line left before a moved sentence stays short unless it is nearly full, and tracing moves nothing', { skip }, async () => {
   const book = fakeBook({ chapters: 3 });
-  const repaired = await repairAll({ set: (steers) => set({ steers }), readPdfBytes: readBytes, book, theme, budget: false, maxRounds: 4, maxPushLines: 3 });
+  const repaired = await repairAll({ set: (steers) => set({ steers }), readPdfBytes: readBytes, book, theme, keepPages: false, maxRounds: 4, maxPushLines: 3 });
   assert.ok(repaired.steers.length >= 1);
   // Set with every line left short, each says how far from full it is; those spread in the repair are the nearly full ones.
   const short = await set({ steers: repaired.steers.map(({ justify, ...s }) => s) });
@@ -157,7 +157,7 @@ test('a try that is turned down is never read in place of the one that was kept'
     return { ok: false, messages: 'refused by the test' };
   };
   for (const budget of [true, false]) {
-    const repaired = await repairAll({ set: write, readPdfBytes: (r) => { assert.equal(r.number, latest, 'read as soon as it was made'); return readBytes(r); }, book, theme, budget, maxRounds: 3, maxPushLines: 3 });
+    const repaired = await repairAll({ set: write, readPdfBytes: (r) => { assert.equal(r.number, latest, 'read as soon as it was made'); return readBytes(r); }, book, theme, keepPages: budget, maxRounds: 3, maxPushLines: 3 });
     assert.ok(repaired.steers.length >= 1, `budget ${budget}: the section that was let through is repaired`);
     assert.equal(new Set(repaired.steers.map((s) => s.section)).size, 1);
   }
@@ -166,7 +166,7 @@ test('a try that is turned down is never read in place of the one that was kept'
 
 test('keeping the page count, no round that adds a page is accepted, even at the end of the book where no section start would show it', { skip }, async () => {
   for (const book of [fakeBook({ chapters: 3 }), shaped(WITH_ROOM), shaped(TIGHT)]) {
-    const repaired = await repairAll({ set: (steers) => set({ book, steers }), readPdfBytes: readBytes, book, theme, budget: true, maxRounds: 4, maxPushLines: 3 });
+    const repaired = await repairAll({ set: (steers) => set({ book, steers }), readPdfBytes: readBytes, book, theme, keepPages: true, maxRounds: 4, maxPushLines: 3 });
     assert.deepEqual([...new Set(repaired.history.map((h) => h.pages))], [repaired.history[0].pages], JSON.stringify(repaired.history));
     assert.equal(repaired.final.pages, repaired.history[0].pages);
   }
@@ -175,7 +175,7 @@ test('keeping the page count, no round that adds a page is accepted, even at the
 test('allowed to add pages but held to a pinned count, the repair keeps the moves that fit', { skip }, async () => {
   const book = shaped(TIGHT);
   const targetPages = (await set({ book })).pages + 4;
-  const repaired = await repairAll({ set: (steers) => set({ book, steers, targetPages }), readPdfBytes: readBytes, book, theme, budget: false, maxRounds: 4, maxPushLines: 3 });
+  const repaired = await repairAll({ set: (steers) => set({ book, steers, targetPages }), readPdfBytes: readBytes, book, theme, keepPages: false, maxRounds: 4, maxPushLines: 3 });
   assert.ok(repaired.steers.length >= 1, JSON.stringify(repaired.history));
   assert.equal(repaired.final.pages, targetPages);
   assert.ok(repaired.turns.pages.length < repaired.history[0].midSentence);

@@ -199,6 +199,8 @@ function splitContent(content, cuts) {
 //   steers        changes to how the pages fall that leave the book alone:
 //                   { type: 'push', section, block, at }          starts the sentence at character `at` of that block on a new page
 //                   { type: 'tighten', section, block, tracking_pt }   sets that block with its letters closer (or looser, if positive)
+//                   { type: 'feather', id, gap_pt, leading_pt }        gives one paragraph (or one piece of a cut one) a little
+//                                                                      more space before it and between its lines
 //   targetPages   pin the page count (a printed spine is sized for it); the book is padded with blank pages to reach it
 function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, bleed_in = 0, trace = false, steers = [] }) {
   const bookProblems = validateBook(book);
@@ -259,14 +261,23 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   // --- paragraphs ---
   // `first` is whether the paragraph opens a run of text (no indent), as the owner's script treats it.
   const blockIds = new Map();
-  const idArg = (section, node, suffix = '') => (trace ? `, id: ${str(`${section.id}#${blockIds.get(node)}${suffix}`)}` : '');
+  const paraId = (section, node, suffix = '') => `${section.id}#${blockIds.get(node)}${suffix}`;
+  const idArg = (section, node, suffix = '') => (trace ? `, id: ${str(paraId(section, node, suffix))}` : '');
+  const feathers = new Map(steers.filter((x) => x.type === 'feather').map((x) => [x.id, x]));
+  // A little air for one paragraph, so that its page ends on the same line as the others.
+  const feathered = (id, code) => {
+    const air = feathers.get(id);
+    if (!air) return code;
+    const gap = air.gap_pt > 0 ? `#v(${pt(air.gap_pt)})\n` : '';
+    return gap + (air.leading_pt > 0 ? `#[\n#set par(leading: ${pt(air.leading_pt)})\n${code}\n]` : code);
+  };
   function paragraph(node, first, section) {
     const role = roleOf(node.attrs?.role);
     if (role) return `#styled(${role})[${inlineMarkup(node.content)}]`;
     if (node.attrs?.role) notes.push(`role "${node.attrs.role}" has no look in the theme; it is set as body text`);
     const tighten = steers.find((x) => x.type === 'tighten' && x.section === section.id && x.block === blockIds.get(node));
     const inner = inlineMarkup(node.content);
-    return `#para(indent: ${!first}${idArg(section, node)})[${tighten ? `#text(tracking: ${pt(tighten.tracking_pt)})[${inner}]` : inner}]`;
+    return feathered(paraId(section, node), `#para(indent: ${!first}${idArg(section, node)})[${tighten ? `#text(tracking: ${pt(tighten.tracking_pt)})[${inner}]` : inner}]`);
   }
 
   // A paragraph cut where a steer says, with a new page at each cut. The line left before a cut ends as a paragraph's last line
@@ -288,7 +299,8 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
         if (cut.justify) tail += '#linebreak(justify: true)';
       }
       const indent = k === 0 ? !first : false;
-      out.push(`#para(indent: ${indent}${idArg(section, node, k ? `.${k}` : '')})[${inlineMarkup(piece)}${tail}]`);
+      const suffix = k ? `.${k}` : '';
+      out.push(feathered(paraId(section, node, suffix), `#para(indent: ${indent}${idArg(section, node, suffix)})[${inlineMarkup(piece)}${tail}]`));
     });
     return out.join('\n\n');
   }

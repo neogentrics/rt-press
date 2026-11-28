@@ -35,3 +35,6 @@ Pages {0} of {1}	Páginas {0} de {1}	Pages {0} sur {1}	Seiten {0} von {1}
 Go to page	Ir a la página	Aller à la page	Zu Seite
 Left-hand page	Página izquierda	Page de gauche	Linke Seite
 Right-hand page	Página derecha	Page de droite	Rechte Seite
+Evening the page bottoms…	Igualando el pie de las páginas…	Égalisation du bas des pages…	Seitenenden werden angeglichen…
+Every page that carries on ends on the same line.	Todas las páginas que continúan terminan en la misma línea.	Toutes les pages qui se poursuivent finissent sur la même ligne.	Alle weiterlaufenden Seiten enden auf derselben Zeile.
+Pages that carry on but end above or below the bottom line: {0} of {1}.	Páginas que continúan pero terminan por encima o por debajo de la última línea: {0} de {1}.	Pages qui se poursuivent mais finissent au-dessus ou au-dessous de la dernière ligne : {0} sur {1}.	Weiterlaufende Seiten, die über oder unter der letzten Zeile enden: {0} von {1}.

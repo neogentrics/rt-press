@@ -79,6 +79,7 @@ function readSettings() {
     contents: $('contents').checked,
     pin_pages: pin === '' ? null : Number(pin),
     page_turns: $('page-turns').value,
+    even_bottoms: $('even-bottoms').checked,
   };
 }
 
@@ -119,6 +120,7 @@ function showSettings() {
   $('contents').checked = s.contents;
   $('pin-pages').value = s.pin_pages ?? '';
   $('page-turns').value = s.page_turns;
+  $('even-bottoms').checked = s.even_bottoms;
   const l = state.limits;
   set('limits', l ? `KDP takes ${l.min} to ${l.max} pages at this trim and paper.` : '');
 }
@@ -169,7 +171,7 @@ function showBuild(build) {
   const failed = build.checks.filter((c) => !c.ok);
   set('results-title', failed.length ? 'Not ready to save' : 'Ready to save');
   $('checks-box').open = failed.length > 0;
-  const seconds = ((build.timings.set + build.timings.preview + build.timings.check + build.timings.finish + (build.timings.repair ?? 0)) / 1000).toFixed(1);
+  const seconds = ((build.timings.set + build.timings.preview + build.timings.check + build.timings.finish + (build.timings.repair ?? 0) + (build.timings.even ?? 0)) / 1000).toFixed(1);
   const r = build.repair;
   const added = r ? r.pagesAfter - r.pagesBefore : 0;
   const sentences = [
@@ -181,6 +183,8 @@ function showBuild(build) {
     sentences.push(`Page turns that split a sentence: ${r.before} before repair, ${r.after} after.`);
     sentences.push(added > 0 ? `Pages added: ${added}.` : 'No page was added.');
   }
+  const uneven = build.even ? build.even.running - build.even.onLine : 0;
+  if (build.even?.running > 0) sentences.push(uneven ? `Pages that carry on but end above or below the bottom line: ${uneven} of ${build.even.running}.` : 'Every page that carries on ends on the same line.');
   $('build-summary').replaceChildren(...sentences.flatMap((sentence) => [h('span', null, sentence), ' ']));
   $('checks').replaceChildren(...build.checks.map((c) => {
     const li = document.createElement('li');
@@ -387,7 +391,7 @@ function wire() {
     fillPapers($('paper').value);
     saveSettings();
   });
-  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages', 'page-turns']) $(id).addEventListener('change', saveSettings);
+  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages', 'page-turns', 'even-bottoms']) $(id).addEventListener('change', saveSettings);
   $('first').addEventListener('click', () => go(0));
   $('prev').addEventListener('click', () => go(spread - 1));
   $('next').addEventListener('click', () => go(spread + 1));

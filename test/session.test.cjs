@@ -111,7 +111,7 @@ test('building a book that is long enough makes a file that passes every check, 
   const steps = [];
   const build = await s.build((step) => steps.push(step));
   assert.equal(build.ok, true, build.messages);
-  assert.deepEqual(steps, ['Setting the pages', 'Finishing the file', 'Checking the file', 'Making the preview']);
+  assert.deepEqual(steps, ['Evening the page bottoms', 'Setting the pages', 'Finishing the file', 'Checking the file', 'Making the preview']);
   assert.ok(build.pages >= 24, `${build.pages} pages`);
   assert.equal(build.ready, true, JSON.stringify(build.checks.filter((c) => !c.ok)));
   assert.equal(build.previewReady, true);
@@ -175,6 +175,13 @@ test('page turns can be repaired without adding a page, or with, and the repair 
   assert.equal(kept.pages, off.pages);
   assert.equal(kept.ready, true, JSON.stringify(kept.checks.filter((c) => !c.ok)));
   assert.ok(kept.repair.pushes >= 1);
+  assert.ok(kept.even.running >= kept.even.onLine && kept.even.onLine >= 1, 'even page bottoms are on unless turned off, and reported');
+  assert.equal(off.even.running >= off.even.onLine, true);
+  s.setSettings({ even_bottoms: false });
+  const ragged = await s.build();
+  assert.equal(ragged.even, null, 'turned off, nothing is evened and nothing is reported');
+  assert.equal(ragged.pages, kept.pages);
+  s.setSettings({ even_bottoms: true });
 
   s.setSettings({ page_turns: 'grow' });
   const grown = await s.build();

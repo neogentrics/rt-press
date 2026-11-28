@@ -142,7 +142,7 @@ page = f'''<!DOCTYPE html>
 <h1 id="nowh">The icon and the suite's frame are done. Page quality is under way.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
 <ul><li><b>Done</b><span>V1 and V2 of 8: the new icon, and menus, Help, the tutorial, About, Preferences, updates and three more languages. The theme picker is built; the colours wait for the shared themes file.</span></li>
-<li><b>Now</b><span>V3: page turns as good as your script and even page bottoms. The stretched short line is fixed. Page turns are still behind your script, and page bottoms are not evened yet.</span></li>
+<li><b>Now</b><span>V3: page turns and even page bottoms. On the test book Press leaves fewer split sentences than your script, and more uneven pages. The keep list and the report of what moved are still to build. One choice is yours: fewer split sentences or more even pages.</span></li>
 <li><b>An alpha is out</b><span>0.1.0-alpha.0, from before V1. No new build is published until you ask for one. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>
 <div class="glance">

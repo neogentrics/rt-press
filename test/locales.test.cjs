@@ -114,7 +114,7 @@ test('every message the build and the session can give is translated', () => {
   }
   assert.ok(found.size >= 8, [...found].join(' | '));
   // The build's steps are shown with an ellipsis after them.
-  const strings = [...found].map((s) => (/^(Setting|Finishing|Checking|Making|Repairing)/.test(s) ? `${s.replace('round X: X', 'round 1: 2')}…` : s));
+  const strings = [...found].map((s) => (/^(Setting|Evening|Finishing|Checking|Making|Repairing)/.test(s) ? `${s.replace('round X: X', 'round 1: 2')}…` : s));
   covered(strings, 'build and session');
 });
 

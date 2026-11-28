@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   contents: false,
   pin_pages: null,
   page_turns: 'keep',
+  even_bottoms: true,
 });
 
 // What to do about a page that ends in the middle of a sentence: nothing, move the sentence to the next page only where the
@@ -72,6 +73,7 @@ function validateSettings(settings) {
   need('title_page', typeof settings.title_page === 'boolean', 'the title page is on or off');
   need('contents', typeof settings.contents === 'boolean', 'the contents page is on or off');
   need('pin_pages', settings.pin_pages === null || (Number.isInteger(settings.pin_pages) && settings.pin_pages >= 24 && settings.pin_pages <= 900), 'a pinned page count is a whole number from 24 to 900, or empty');
+  need('even_bottoms', typeof settings.even_bottoms === 'boolean', 'evening the page bottoms is on or off');
   need('page_turns', PAGE_TURNS.includes(settings.page_turns), 'page turns are left alone, repaired without adding pages, or repaired allowing extra pages');
   return problems;
 }
