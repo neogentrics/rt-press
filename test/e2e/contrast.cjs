@@ -30,8 +30,11 @@ function collect() {
     for (let node = element; node && node !== document.body; node = node.parentElement) {
       const style = getComputedStyle(node);
       if (style.overflowX !== 'visible' || style.overflowY !== 'visible') {
+        // What shows through a scrolling box stops inside its border (and short of its scroll bar), so a half-hidden line is
+        // never measured against the border.
         const outer = node.getBoundingClientRect();
-        [left, top, right, bottom] = [Math.max(left, outer.left), Math.max(top, outer.top), Math.min(right, outer.right), Math.min(bottom, outer.bottom)];
+        const [x, y] = [outer.left + node.clientLeft, outer.top + node.clientTop];
+        [left, top, right, bottom] = [Math.max(left, x), Math.max(top, y), Math.min(right, x + node.clientWidth), Math.min(bottom, y + node.clientHeight)];
       }
       if (node.matches('dialog, [popover]')) break;
     }

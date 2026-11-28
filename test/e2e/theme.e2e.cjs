@@ -19,6 +19,20 @@ function themesCopy(name) {
   return folder;
 }
 
+// The system's settings the window answers to, all set here, because the test machines' own differ (a Mac in CI may ask for less
+// transparency, which rightly turns Glass off). Returns a way to change them; what isn't named goes back to the plain value.
+async function systemSettings(window) {
+  const session = await window.context().newCDPSession(window);
+  const system = ({ scheme = 'light', contrast = 'no-preference', transparency = 'no-preference', forced = 'none' } = {}) => session.send('Emulation.setEmulatedMedia', {
+    features: Object.entries({ 'prefers-color-scheme': scheme, 'prefers-contrast': contrast, 'prefers-reduced-transparency': transparency, 'forced-colors': forced, 'prefers-reduced-motion': 'reduce' }).map(([name, value]) => ({ name, value })),
+  });
+  await system();
+  return system;
+}
+
+// A small screen, as on a laptop or a test machine: the dialogs scroll, and half-hidden text is measured too.
+const smallWindow = (app) => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setContentSize(1024, 620));
+
 const onRoot = (window) => window.evaluate(() => ({ theme: document.documentElement.getAttribute('data-theme'), look: document.documentElement.getAttribute('data-surface'), colors: document.documentElement.getAttribute('data-colors') }));
 const rootIs = async (window, theme, look, colors = null) => {
   await window.waitForFunction(([t, l, c]) => ['data-theme', 'data-surface', 'data-colors'].every((name, i) => document.documentElement.getAttribute(name) === [t, l, c][i]), [theme, look, colors], { timeout: 5000 }).catch(() => {});
@@ -85,18 +99,18 @@ async function fixtureThemes(chapters) {
   let app = await launch(own);
   try {
     const { window, errors } = await opened(app);
-    await window.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
-    const features = await window.context().newCDPSession(window);
-    const ask = (contrast, transparency) => features.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }, { name: 'prefers-reduced-motion', value: 'reduce' }, { name: 'prefers-contrast', value: contrast }, { name: 'prefers-reduced-transparency', value: transparency }] });
+    // Said in the log, so a difference between the test machines can be seen there.
+    console.log(`themes: this machine itself asks for ${await window.evaluate(() => ['(prefers-reduced-transparency: reduce)', '(prefers-contrast: more)', '(forced-colors: active)'].filter((q) => matchMedia(q).matches).join(', ') || 'none of less transparency, more contrast or forced colours')}`);
+    const system = await systemSettings(window);
     await visible(window, '#tour-welcome');
     await window.click('#tour-not-now');
 
     // Auto follows the system: Paper in light, Night in dark.
     await rootIs(window, 'light', 'solid');
-    await window.emulateMedia({ colorScheme: 'dark' });
+    await system({ scheme: 'dark' });
     await rootIs(window, 'dark', 'solid');
     assert.equal(await window.evaluate(() => getComputedStyle(document.documentElement).colorScheme), 'dark', 'the system\'s own parts follow the theme');
-    await window.emulateMedia({ colorScheme: 'light' });
+    await system();
     await rootIs(window, 'light', 'solid');
     await withBook(window);
 
@@ -145,23 +159,26 @@ async function fixtureThemes(chapters) {
     await rootIs(window, 'contrast', 'solid');
     await command(window, 'theme-light');
     await rootIs(window, 'light', 'glass');
-    await ask('more', 'no-preference');
+    await system({ contrast: 'more' });
     await rootIs(window, 'light', 'solid');
-    await ask('no-preference', 'reduce');
+    await system({ transparency: 'reduce' });
     await rootIs(window, 'light', 'solid');
     await command(window, 'look-metallic');
     await rootIs(window, 'light', 'metallic'); // less transparency has nothing against brushed metal
-    await ask('no-preference', 'no-preference');
-    await features.detach();
-    await window.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce', forcedColors: 'active' });
+    await system({ forced: 'active' });
     await rootIs(window, 'light', 'solid');
-    await window.emulateMedia({ forcedColors: 'none' });
+    await system();
     await rootIs(window, 'light', 'metallic');
 
     // Contrast, on the real text, in every theme with every look. The theme that can't be read is left for last, and must fail.
     const readable = await matrix(app, window, offered, { except: ['unreadable'] });
     assert.deepEqual(readable.short, [], 'every readable theme meets WCAG AA with every look');
     assert.equal(readable.combinations, 3 * 3 * 2);
+    // And again on a small screen, where the dialogs scroll.
+    await smallWindow(app);
+    const small = await matrix(app, window, { ...offered, themes: offered.themes.filter((t) => ['light', 'dark'].includes(t.id)) });
+    assert.deepEqual(small.short, [], 'and on a small screen');
+
     await command(window, 'theme-unreadable');
     await command(window, 'look-metallic');
     await rootIs(window, 'unreadable', 'metallic', (await checked(app, 'color-safe')) ? 'safe' : null);
@@ -229,7 +246,7 @@ async function suiteThemes(chapters) {
   const app = await launch({ RTPRESS_TEST_PICK_FOLDER: chapters, RTPRESS_USER_DATA: path.join(base, 'suite-profile') });
   try {
     const { window, errors } = await opened(app);
-    await window.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+    await systemSettings(window);
     await visible(window, '#tour-welcome');
     await window.click('#tour-not-now');
     await withBook(window);
