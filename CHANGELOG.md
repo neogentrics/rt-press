@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-Work toward 1.0.0, on the `v1.0` branch. Not yet on `main`.
+Work toward 1.0.0. Nothing here is a release yet.
 
 ### Added
 - **An icon of its own**: an unfolded book cover, with a striped spine, crop marks and a barcode.
@@ -17,6 +17,7 @@ Work toward 1.0.0, on the `v1.0` branch. Not yet on `main`.
 
 ### Changed
 - **Page repair**: the line before a moved sentence is left short, and three faults in the repair were fixed.
+- **Even page bottoms**, and a repair that finds many more moves.
 
 ## [0.1.0-alpha.0] - 2026-11-23
 
