@@ -38,3 +38,24 @@ Right-hand page	Página derecha	Page de droite	Rechte Seite
 Evening the page bottoms…	Igualando el pie de las páginas…	Égalisation du bas des pages…	Seitenenden werden angeglichen…
 Every page that carries on ends on the same line.	Todas las páginas que continúan terminan en la misma línea.	Toutes les pages qui se poursuivent finissent sur la même ligne.	Alle weiterlaufenden Seiten enden auf derselben Zeile.
 Pages that carry on but end above or below the bottom line: {0} of {1}.	Páginas que continúan pero terminan por encima o por debajo de la última línea: {0} de {1}.	Pages qui se poursuivent mais finissent au-dessus ou au-dessous de la dernière ligne : {0} sur {1}.	Weiterlaufende Seiten, die über oder unter der letzten Zeile enden: {0} von {1}.
+Page turn report	Informe de cambios de página	Rapport sur les tournes	Bericht zu den Seitenwechseln
+Keep split	Dejar cortada	Laisser coupée	Geteilt lassen
+Mend it again	Volver a arreglarla	La corriger à nouveau	Wieder verbessern
+Moving it would leave the page about {0} lines short.	Moverla dejaría la página unas {0} líneas corta.	La déplacer laisserait la page plus courte d’environ {0} lignes.	Beim Verschieben bliebe die Seite um etwa {0} Zeilen zu kurz.
+There is no room: moving it would add a page or move where a chapter starts.	No hay sitio: moverla añadiría una página o cambiaría dónde empieza un capítulo.	Il n’y a pas de place : la déplacer ajouterait une page ou changerait le début d’un chapitre.	Kein Platz: Das Verschieben würde eine Seite hinzufügen oder einen Kapitelanfang verlegen.
+There is no room within the pinned page count.	No hay sitio dentro del número de páginas fijado.	Il n’y a pas de place dans le nombre de pages figé.	Innerhalb der festgelegten Seitenzahl ist kein Platz.
+It isn’t in an ordinary paragraph: it is in a title, a document or the paragraph with the large first letter.	No está en un párrafo corriente: está en un título, un documento o el párrafo de la letra capital.	Elle n’est pas dans un paragraphe ordinaire : elle est dans un titre, un document ou le paragraphe à lettrine.	Er steht nicht in einem gewöhnlichen Absatz, sondern in einem Titel, einem Dokument oder im Absatz mit dem Initial.
+RT Press couldn’t find this line in its paragraph.	RT Press no encontró esta línea en su párrafo.	RT Press n’a pas retrouvé cette ligne dans son paragraphe.	RT Press konnte diese Zeile in ihrem Absatz nicht finden.
+It was moved, and is still split.	Se movió y sigue cortada.	Elle a été déplacée et reste coupée.	Er wurde verschoben und ist immer noch geteilt.
+The repair stopped before reaching it.	El arreglo terminó antes de llegar a ella.	La correction s’est arrêtée avant d’y arriver.	Die Verbesserung endete, bevor sie ihn erreichte.
+Still split: {0}	Siguen cortadas: {0}	Encore coupées : {0}	Noch geteilt: {0}
+Left split on purpose: {0}	Cortadas a propósito: {0}	Laissées coupées exprès : {0}	Absichtlich geteilt gelassen: {0}
+Left split on purpose: {0}.	Cortadas a propósito: {0}.	Laissées coupées exprès : {0}.	Absichtlich geteilt gelassen: {0}.
+No other page turn splits a sentence.	Ningún otro cambio de página corta una frase.	Aucune autre tourne ne coupe une phrase.	Kein anderer Seitenwechsel teilt einen Satz.
+Moved to the next page: {0}	Pasadas a la página siguiente: {0}	Passées à la page suivante : {0}	Auf die nächste Seite verschoben: {0}
+On your list, but at no page turn now: {0}	En su lista, pero ahora en ningún cambio de página: {0}	Dans votre liste, mais à aucune tourne pour le moment : {0}	Auf Ihrer Liste, aber derzeit an keinem Seitenwechsel: {0}
+Pages ending above or below the bottom line: {0}	Páginas que terminan por encima o por debajo de la última línea: {0}	Pages finissant au-dessus ou au-dessous de la dernière ligne : {0}	Seiten, die über oder unter der letzten Zeile enden: {0}
+Your list changed. Build again to see the effect.	Su lista ha cambiado. Vuelva a componer para ver el resultado.	Votre liste a changé. Composez à nouveau pour voir le résultat.	Ihre Liste wurde geändert. Erstellen Sie erneut, um die Wirkung zu sehen.
+That isn’t a sentence that can be kept.	Esa no es una frase que se pueda guardar.	Ce n’est pas une phrase que l’on peut garder.	Dieser Satz kann nicht gespeichert werden.
+The list of page turns to leave split is full.	La lista de cambios de página que dejar cortados está llena.	La liste des tournes à laisser coupées est pleine.	Die Liste der geteilt zu lassenden Seitenwechsel ist voll.
+A sentence on your list is left split wherever it falls on a page turn.	Una frase de su lista se deja cortada dondequiera que caiga en un cambio de página.	Une phrase de votre liste reste coupée partout où elle tombe sur une tourne.	Ein Satz auf Ihrer Liste bleibt überall geteilt, wo er auf einen Seitenwechsel fällt.

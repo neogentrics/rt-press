@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('rtPress', {
   importChapters: () => call('press:import'),
   setDetails: (details) => call('press:details', details),
   setSettings: (settings) => call('press:settings', settings),
+  setKept: (sentence, keep) => call('press:keep', sentence, keep),
   build: () => call('press:build'),
   getPage: (number) => call('press:page', number),
   exportPdf: () => call('press:export'),

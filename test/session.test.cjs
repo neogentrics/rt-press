@@ -192,6 +192,28 @@ test('page turns can be repaired without adding a page, or with, and the repair 
   assert.deepEqual(validateSettings(withDefaultSettings({ page_turns: 'sometimes' })).map((p) => p.path), ['page_turns']);
 });
 
+test('the keep list is the book\'s own, survives closing, and a sentence on it is left split', { skip }, async () => {
+  const folder = path.join(scratch, 'keep-project');
+  const open = () => new Session({ store: openStore(folder), workDir: path.join(scratch, 'keep-work'), fontFolder: prepare({ folder: path.join(scratch, 'fonts') }) });
+  let s = open();
+  s.importFolder(folderOfChapters(12, 20));
+  const first = await s.build();
+  assert.equal(first.ok, true, first.messages);
+  assert.deepEqual(s.state().keepList, []);
+  assert.ok(first.repair.moved.length >= 1);
+  const sentence = first.repair.moved[0].sentence;
+  assert.match(s.setKept('   ', true).error, /sentence that can be kept/);
+  assert.deepEqual(s.setKept(sentence, true).keepList, [sentence]);
+  s.close();
+  s = open();
+  assert.deepEqual(s.state().keepList, [sentence], 'it is still there when the book is opened again');
+  const second = await s.build();
+  assert.ok(second.repair.kept.some((k) => k.sentence === sentence), JSON.stringify(second.repair.kept));
+  assert.equal(second.repair.after, second.repair.left.length);
+  assert.deepEqual(s.setKept(sentence, false).keepList, []);
+  s.close();
+});
+
 test('only one build runs at a time', { skip }, async () => {
   const s = session();
   s.importFolder(folderOfChapters(10, 8));

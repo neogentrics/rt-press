@@ -163,10 +163,10 @@ page = f'''<!DOCTYPE html>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
 <div class="kicker"><span class="pulse" aria-hidden="true"></span>1.0 is being built</div>
-<h1 id="nowh">The icon and the suite's frame are done. Page quality is under way.</h1>
+<h1 id="nowh">The icon and the suite's frame are done. Page quality is built.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
 <ul><li><b>Done</b><span>V1 and V2 of 8: the new icon, and menus, Help, the tutorial, About, Preferences, updates and three more languages. The window has Auto, light and dark; the ten shared themes are in 1.1.</span></li>
-<li><b>Now</b><span>V3: page turns and even page bottoms. On the test book Press leaves fewer split sentences than your script, and more uneven pages. The keep list and the report of what moved are still to build. One choice is yours: fewer split sentences or more even pages.</span></li>
+<li><b>Now</b><span>V3 is built and waits for your judgement. On the test book Press leaves fewer split sentences than your script, and more uneven pages. One choice is yours: how hard the repair should try, against how even the pages stay.</span></li>
 <li><b>An alpha is out</b><span>0.1.0-alpha.0, from before V1. No new build is published until you ask for one. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>
 <div class="glance">

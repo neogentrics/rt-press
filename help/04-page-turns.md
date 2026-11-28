@@ -8,7 +8,24 @@ A sentence split across a page turn makes the reader stop mid-sentence to turn t
 - **Mend, pages may be added**: more turns can be mended, and the book may grow. If you have pinned the page count, it grows only as far as that count allows.
 - **Leave as set**: nothing is moved.
 
-The build says how many page turns split a sentence before the repair and after it. Some can't be moved, such as a turn in a chapter's first paragraph.
+The build says how many page turns split a sentence before the repair and after it. Only a page whose text carries on is counted: the last page of a chapter can't split a sentence. Some turns can't be mended, such as one in a chapter's first paragraph.
+
+## The page turn report
+
+After a build, open **Page turn report**, under the build's summary. It lists:
+
+- **Still split**: each page turn that still splits a sentence, and why it was left.
+- **Left split on purpose**: the ones on your list.
+- **Moved to the next page**: every sentence the repair moved, with the page it now starts.
+- Any sentence on your list that is at no page turn now, and the pages that end above or below the bottom line.
+
+Choose a page number to see that page.
+
+## Keeping a turn split
+
+A split can be worth keeping, when turning the page adds to the suspense. Choose **Keep split** beside the sentence, then build again. **Mend it again** takes it off your list.
+
+The list belongs to your book and is saved with it. It goes by the sentence's words, so it still works after you bring the chapters in again. If you change the sentence, add it again. A sentence that appears more than once is left split wherever it falls on a page turn.
 
 The repair never changes your words. It only decides which page a sentence starts on. A page that ends early is the cost of moving a sentence off it.
 

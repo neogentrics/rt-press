@@ -14,6 +14,8 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **Languages**: Spanish, French and German, and right-to-left layouts.
 - **Light, dark and Auto**: a theme button, *View → Theme* and *Preferences → Appearance* offer *Auto*, *Paper* and *Night*, the system's own light and dark. The loader and checks are ready for the suite's shared themes file; the ten shared themes and the looks come in 1.1.
 - **Tests for contrast and keyboard reach** in the window, on all three systems.
+- **A page turn report**: what the repair moved, what it couldn't and why, each with its page, and the pages that don't end on the bottom line.
+- **A keep list**: sentences left split across a page turn for suspense. It is saved with the book.
 - **Even page bottoms**, a new setting, on unless turned off: pages whose text carries on end on the same last line where that can be done gently, without moving a word to another page. The build says how many don't.
 
 ### Changed
@@ -25,6 +27,8 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **Pages allowed under a pinned count** now moves sentences. Before, nothing moved at all.
 - ***Adding no pages*** now notices a page added at the very end of the book.
 - **A turned-down try** can no longer be read in place of the one the repair kept, or leave it with no file to read.
+- **Hyphenated lines**: a page with a word broken near its foot could not be matched to the book, so its split sentence was never moved.
+- **The count of split sentences** no longer includes the last page of a chapter or other section, or a contents page, where nothing carries on overleaf.
 - **Faint placeholder text** in dark mode now meets the contrast minimum.
 
 ## [0.1.0-alpha.0] - 2026-11-23

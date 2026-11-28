@@ -180,6 +180,7 @@ function registerBook() {
   });
   handleBook('press:details', (details) => session.setDetails(details ?? {}));
   handleBook('press:settings', (settings) => session.setSettings(settings ?? {}));
+  handleBook('press:keep', (sentence, keep) => session.setKept(sentence, keep));
   handleBook('press:build', () => {
     const building = session.build((text) => send('press:step', text));
     rebuildMenu(); // Build is off while one is running

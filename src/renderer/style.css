@@ -343,6 +343,47 @@ details {
   color: var(--muted);
 }
 
+/* The page turn report: one sentence to a row, with where it is and what can be done about it. */
+#turns-report h3 {
+  margin: 0.8rem 0 0.2rem;
+  font-size: 0.9rem;
+}
+.turns {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+.turns li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.6rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.turns q,
+.turns .line {
+  flex: 1 1 100%;
+}
+.turns .where,
+.turns .why {
+  color: var(--muted);
+}
+.turns .why {
+  flex: 1;
+}
+.turns button.keep {
+  margin-inline-start: auto;
+  padding: 0.15rem 0.6rem;
+}
+.page-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.8rem;
+  font-size: 0.85rem;
+}
+
 /* ---- dialogs ---- */
 dialog {
   width: min(34rem, calc(100vw - 2rem));

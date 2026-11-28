@@ -1,6 +1,7 @@
 'use strict';
 // Where the page turns fall. A page turn is the line at the foot of a page and the line that follows it overleaf. It is a
-// problem when a sentence is split across it: the reader stops mid-sentence to turn the page. This reads where every line
+// problem when a sentence is split across it: the reader stops mid-sentence to turn the page. Only a page whose text carries
+// on can do that, so the last page of a section is never counted, and nor is a contents page. This reads where every line
 // landed (from the typesetter's own measurements, with the text of each line taken from the finished PDF) and lists the pages
 // that end mid-sentence, with the sentence each one cuts.
 const { readPdf } = require('../pdf/read');
@@ -8,6 +9,9 @@ const { textLines } = require('../pdf/text');
 const { textOfNode } = require('../../shared/book-model');
 
 const SENTENCE_END = /[.?!…][”’"')\]]*$/u;
+// What a line's text may hold that the book's doesn't, or may differ in: spaces, hyphens, and the soft hyphen that Typst writes
+// into the PDF where it breaks a word itself.
+const UNSURE = /[\s\u00AD\u2010-]/u;
 const BOUNDARY = /[.?!…][”’"')\]]*\s+(?=[“‘"'(\[]?[\p{Lu}\p{N}])/gu;
 const POINTS_PER_INCH = 72;
 const ID_MARK = '\u0001';
@@ -27,7 +31,7 @@ function ownerOf(paras, page, y) {
 // where they name several (a paragraph of repeated words), the place whose preceding text agrees with `seen` for the longest
 // stretch wins, and a tie is not guessed at. Returns the index in `text` just after the match, or -1.
 function locate(text, seen) {
-  const keep = (c) => c !== '-' && !/\s/u.test(c);
+  const keep = (c) => !UNSURE.test(c);
   const chars = [];
   const origin = [];
   [...text].forEach((c, i) => {
@@ -91,12 +95,20 @@ function cutLines({ result, pdf, theme }) {
 // The block's text as a steer counts it: characters in order, a hard break as one.
 const flat = (block) => textOfNode(block).replace(/\n/gu, ' ');
 
+// The whole of the sentence that begins at `start` and runs past `from`.
+function sentenceAt(text, start, from) {
+  for (const m of text.matchAll(BOUNDARY)) if (m.index >= from) return text.slice(start, m.index + m[0].trimEnd().length).trim();
+  return text.slice(start).trim();
+}
+
 // Every page that ends mid-sentence. Inputs:
 //   result   what typesetBook returned (with `trace` on)
 //   pdf      the PDF it wrote, as a Buffer
 //   book     the book model
 //   theme    the theme (with defaults)
-// Returns { pages: [{ page, section, block, lineText, sentenceStart, sentenceChars, pushLines, reason }], lastLines, summary }.
+// Returns { pages: [{ page, unit, title, section, block, lineText, sentence, sentenceStart, sentenceChars, pushLines, cause,
+// reason }], lastLines, summary }. `unit` and `title` name the section the page is in. `cause` is 'not-plain' or 'not-placed'
+// where the sentence couldn't be found, and `sentence` is then null.
 // `lastLines` maps each body page to the text of its last line, so two settings of a book can be compared page by page.
 function findMidSentenceTurns({ result, pdf, book, theme }) {
   if (!result.trace) throw new Error('The book was not set with tracing on, so there is nothing to read.');
@@ -109,6 +121,11 @@ function findMidSentenceTurns({ result, pdf, book, theme }) {
   const traced = new Map();
   for (const line of result.trace.lines) if (line.y > area.top - 2 && line.y < area.bottom + 2) traced.set(line.page, [...(traced.get(line.page) ?? []), line]);
   const paras = result.trace.paras;
+
+  const starts = new Set(result.units.map((u) => u.page));
+  const unitAt = (number) => result.units.reduce((found, u) => (u.page <= number ? u : found), null);
+  // Text carries on when the next page has some and no section begins there.
+  const carriesOn = (number) => traced.has(number + 1) && !starts.has(number + 1) && unitAt(number)?.kind !== 'contents';
 
   const turns = [];
   const lastLines = new Map();
@@ -124,12 +141,14 @@ function findMidSentenceTurns({ result, pdf, book, theme }) {
     const lastTraced = lines.reduce((a, b) => (b.y > a.y ? b : a));
     const ends = last.text.trim();
     lastLines.set(page.number, ends);
-    if (SENTENCE_END.test(ends)) continue;
+    if (SENTENCE_END.test(ends) || !carriesOn(page.number)) continue;
     const owner = ownerOf(paras, page.number, lastTraced.y);
     const id = owner ? idOf(owner.text) : null;
-    const entry = { page: page.number, section: null, block: null, lineText: ends, sentenceStart: null, sentenceChars: null, pushLines: null, reason: null };
+    const unit = unitAt(page.number);
+    const entry = { page: page.number, unit: unit?.id ?? null, title: unit?.title ?? '', section: null, block: null, lineText: ends, sentence: null, sentenceStart: null, sentenceChars: null, pushLines: null, cause: null, reason: null };
     const home = id ? byId.get(id.replace(/\.\d+$/, '')) : null;
     if (!home) {
+      entry.cause = 'not-plain';
       entry.reason = 'the line is not in a plain paragraph of the book (a title, a document or a drop-cap paragraph)';
     } else {
       entry.section = home.section.id;
@@ -137,13 +156,15 @@ function findMidSentenceTurns({ result, pdf, book, theme }) {
       const text = flat(home.block);
       // Where the page's last line ends in the paragraph: match the end of the page's text, as much of it as it takes to be
       // found in only one place (a line alone can repeat in a paragraph of repeated words).
-      const onPage = pageLines.map((l) => l.text.trim()).reduce((joined, line) => (joined.endsWith('-') ? joined.slice(0, -1) + line : `${joined} ${line}`), '').trim();
+      const onPage = pageLines.map((l) => l.text.trim()).reduce((joined, line) => (/[\u00AD-]$/u.test(joined) ? joined.slice(0, -1) + line : `${joined} ${line}`), '').trim();
       const end = locate(text, onPage);
       if (end < 0) {
+        entry.cause = 'not-placed';
         entry.reason = 'the line could not be placed in the paragraph';
       } else {
         let start = 0;
         for (const m of text.slice(0, end).matchAll(BOUNDARY)) start = m.index + m[0].length;
+        entry.sentence = sentenceAt(text, start, end - 1);
         entry.sentenceStart = start;
         entry.sentenceChars = end - start;
         const perLine = pageLines.reduce((n, l) => n + l.text.length, 0) / pageLines.length;
@@ -161,4 +182,4 @@ function findMidSentenceTurns({ result, pdf, book, theme }) {
   };
 }
 
-module.exports = { cutLines, findMidSentenceTurns, textArea };
+module.exports = { cutLines, findMidSentenceTurns, locate, textArea };

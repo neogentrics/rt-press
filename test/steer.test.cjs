@@ -9,7 +9,7 @@ const { typesetBook } = require('../src/main/typeset/typeset-book');
 const { STAND_INS, prepare, sources } = require('../src/main/typeset/stand-in-fonts');
 const { textLines } = require('../src/main/pdf/text');
 const { readPdf } = require('../src/main/pdf/read');
-const { cutLines, findMidSentenceTurns } = require('../src/main/steer/turns');
+const { cutLines, findMidSentenceTurns, locate } = require('../src/main/steer/turns');
 const { nearlyFull, repairAll, tryPush } = require('../src/main/steer/repair');
 const { chapter, fakeBook, fakeTheme, text } = require('./helpers/fake-book.cjs');
 const { withDefaults } = require('../src/shared/theme');
@@ -78,6 +78,30 @@ test('tracing reports every line and paragraph, and does not move anything', { s
   assert.ok(traced.trace.lines.length > 100);
   assert.ok(traced.trace.lines.every((l) => l.page >= 1 && l.y > 0));
   assert.ok(traced.trace.paras.some((p) => /^\u0001chapter-1#1\u0001/.test(p.text)), 'a paragraph says which block it is');
+});
+
+test('a line is found in its paragraph though the PDF writes a soft hyphen where the typesetter broke a word', () => {
+  const text = 'The lantern keeper walked home. Nobody remembered the extraordinary weather afterwards.';
+  const after = text.indexOf('extraor') + 'extraor'.length;
+  assert.equal(locate(text, 'The lantern keeper walked home. Nobody remembered the extraor\u00AD'), after);
+  assert.equal(locate(text, 'walked home. Nobody remem\u00ADbered the extraor\u00AD'), after, 'and one that was joined to the next line');
+});
+
+test('a last page that doesn\'t end a sentence is not a split one, because nothing carries on overleaf', { skip }, async () => {
+  const book = fakeBook({ chapters: 3 });
+  // Every chapter's last paragraph loses its full stop and closing quote.
+  for (const section of book.sections) {
+    if (section.type !== 'chapter') continue;
+    const last = section.document.content.at(-1).content.at(-1);
+    last.text = last.text.replace(/\.\s*”$/u, '');
+  }
+  const run = await set({ book });
+  const turns = findMidSentenceTurns({ result: run, pdf: fs.readFileSync(run.output), book, theme });
+  const starts = new Set(run.units.map((u) => u.page));
+  const withText = new Set(run.trace.lines.map((l) => l.page));
+  for (const t of turns.pages) assert.ok(withText.has(t.page + 1) && !starts.has(t.page + 1), `page ${t.page} is counted, but nothing carries on from it`);
+  const ends = [...turns.lastLines].filter(([page, last]) => !/[.?!…][”’]?$/u.test(last) && (starts.has(page + 1) || !withText.has(page + 1)));
+  assert.ok(ends.length >= 3, 'the made-up book does have sections that end without a full stop');
 });
 
 test('pages that end mid-sentence are found, with the sentence that is cut', { skip }, async () => {

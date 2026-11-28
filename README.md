@@ -44,7 +44,7 @@ books.
 </tr>
 <tr>
 <td><img src="docs/screenshots/tutorial.png" alt="The tutorial's first step, pointing at the chapters of a practice book"><br><b>A tour on a practice book.</b> Offered the first time, and never touching your own book.</td>
-<td></td>
+<td><img src="docs/screenshots/page-turns.png" alt="The page turn report: sentences left split on purpose and sentences moved to the next page, each with its page and a button"><br><b>Every move on record.</b> What was moved, what couldn't be, and a list of the turns you keep for suspense.</td>
 </tr>
 </table>
 
@@ -84,6 +84,7 @@ npm run dist:linux
 | **Every KDP trim** | Paperback and hardcover, with only the papers and page limits KDP offers for each size |
 | **Set like a book** | Mirrored margins, every chapter starting on a right-hand page, a drop cap, scene breaks, page numbers outside or centred, an optional title page and contents page, and a blank last page |
 | **No sentence split across a page turn** | Where a page ends in the middle of a sentence, the sentence starts on the next page instead, in rounds, and the book is set again each time. By default no page is added: a sentence is only moved where its chapter has room. Or let pages be added, as far as a pinned count allows, or leave the pages as set. What's left behind on a line ends short, like the end of a paragraph, unless it's nearly full already. The repair never changes your words |
+| **A report, and your keep list** | What was moved, what couldn't be and why, each with its page. Put a sentence on your list to leave it split for suspense |
 | **Even page bottoms** | Pages whose text carries on are brought to the same last line by sharing a little space between lines and paragraphs, without moving a word to another page. Pages that can't be done gently are left, and counted |
 | **Bleed done the KDP way** | 0.125 in on the top, bottom and outside edges, none at the spine, with the page boxes written |
 | **Pin the page count** | Keep a published page count, so an existing cover still fits |
@@ -100,7 +101,7 @@ npm run dist:linux
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
 | **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
-**Coming next, for 1.0:** a list of sentences to leave split on purpose, a report of what the page repair moved and what it couldn't, every trim size with custom sizes, book themes
+**Coming next, for 1.0:** every trim size with custom sizes, book themes
 with front and back matter and more fonts, books from Markdown and EPUB, and every KDP rule shown on the page it's on. The
 suite's ten shared window themes and its looks come in 1.1, and what takes them in is already built. See the [roadmap](ROADMAP.md).
 

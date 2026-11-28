@@ -75,7 +75,7 @@ the made-up book. Then ask the owner for `1.0.0-beta.1`.
 
 V3 started with a fault in the page-turn repair: when a sentence was moved to the next page, the line left behind was
 justified even when it was short, so its words were stretched across the page. ✅ Fixed on 27 November, with two other faults
-in the repair that the work turned up.
+in the repair that the work turned up. The keep list and the report followed, and two more faults: a page with a hyphenated word near its foot could never be repaired, and the last pages of sections were counted as splits.
 
 ## Handing it back
 

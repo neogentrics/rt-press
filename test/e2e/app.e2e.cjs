@@ -29,7 +29,7 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     assert.equal(await window.evaluate(() => typeof window.require), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => typeof window.process), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => Object.keys(window.rtPress).join()),
-      'status,getState,importChapters,setDetails,setSettings,build,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
+      'status,getState,importChapters,setDetails,setSettings,setKept,build,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
       'the window gets these calls and no more');
     const status = await window.evaluate(() => window.rtPress.status());
     assert.deepEqual([status.version, status.typst.version, status.storage.ok], [pkg.version, TYPST_VERSION, true], 'the bundled typesetter and the encrypted storage work');
@@ -179,6 +179,35 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     await window.click('#help-close');
     await gone(window, '#help');
 
+    // The page turn report: what moved, each with its page. A sentence kept split stays split at the next build.
+    const rebuild = async () => {
+      await window.click('#build');
+      await window.waitForFunction(() => !document.getElementById('export').disabled, null, { timeout: 120000 });
+    };
+    assert.equal(await window.isVisible('#turns-box'), true);
+    await window.click('#turns-box summary');
+    const moved = window.locator('#turns-moved li');
+    assert.ok(await moved.count() >= 1, 'the made-up book has sentences that were moved');
+    const sentence = await moved.first().locator('q').textContent();
+    const there = (await moved.first().locator('button.page').textContent()).replace('Page ', '');
+    await moved.first().locator('button.page').click();
+    await window.waitForFunction((n) => ['cap-left', 'cap-right'].some((id) => document.getElementById(id).textContent === `Page ${n}`), there);
+    assert.deepEqual(await unnamed(window), []);
+    await moved.first().locator('button.keep').click();
+    await textIs(window, '#step', /^Your list changed\. Build again/);
+    assert.equal(await window.isDisabled('#export'), true, 'a changed list needs a new build before saving');
+    assert.equal(await moved.first().locator('button.keep').textContent(), 'Mend it again');
+    assert.equal(await window.evaluate(() => document.activeElement?.textContent), 'Mend it again', 'the keyboard stays where it was');
+    await rebuild();
+    assert.match(await window.textContent('#build-summary'), /Left split on purpose: 1\./);
+    const kept = window.locator('#turns-kept li');
+    assert.equal(await kept.count(), 1);
+    assert.equal(await kept.locator('q').textContent(), sentence);
+    await kept.locator('button.keep').click();
+    await rebuild();
+    assert.equal(await window.locator('#turns-kept').count(), 0);
+    assert.deepEqual((await window.evaluate(() => window.rtPress.getState())).keepList, []);
+
     // A choice KDP doesn't allow can't be made: hardcover has no standard colour.
     await window.selectOption('#format', 'hardcover');
     assert.equal(await window.locator('#paper option[value="standard-colour"]').count(), 0);
@@ -196,7 +225,7 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     // Contrast, measured on the real text in light and in dark: the main window, then each of the frame's own windows.
     for (const colorScheme of ['light', 'dark']) {
       await window.emulateMedia({ colorScheme });
-      await window.evaluate(() => { document.getElementById('checks-box').open = true; });
+      await window.evaluate(() => { for (const id of ['checks-box', 'turns-box']) document.getElementById(id).open = true; });
       const main = await measureContrast(app, window);
       assert.ok(main.measured > 60, `${colorScheme}: ${main.measured} pieces of text measured`);
       assert.deepEqual(main.failures, [], `${colorScheme}: the window meets WCAG AA`);
@@ -312,6 +341,12 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     await window.click('#build');
     await window.waitForSelector('#results-title:has-text("Listo para guardar")', { timeout: 120000 });
     await window.waitForFunction(() => document.getElementById('page-right').naturalWidth > 0);
+    // The page turn report, in Spanish too, with a sentence put on the list.
+    await window.evaluate(() => { document.getElementById('turns-box').open = true; });
+    await window.locator('#turns-moved button.keep').first().click();
+    await textIs(window, '#step', /^Su lista ha cambiado/);
+    await window.locator('#turns-moved button.keep').first().click();
+    await textIs(window, '#turns-moved button.keep', /^Dejar cortada$/);
     for (const name of ['go-to', 'command-palette', 'about', 'preferences', 'help-center', 'check-updates', 'tutorial']) {
       await command(window, name);
       await visible(window, 'dialog[open]');

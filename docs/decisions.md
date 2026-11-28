@@ -214,16 +214,19 @@ page two lines short at most, the owner's script's own limit. Pages are then eve
 space among the lines of whole paragraphs and before the paragraphs on the page, with at most 0.085 of the line pitch to a share.
 
 **A choice for the owner.** Fewer split sentences and more even pages pull against each other. Measured on the test book,
-adding no pages:
+adding no pages. These figures replace the first ones given on 27 November, which counted the last pages of sections as splits
+and missed every page with a hyphenated word near its foot.
 
-| Rule | Split sentences left | Pages that carry on, on the bottom line |
-|---|---|---|
-| A move may leave a page 2 lines short (**what Press does**) | 26 | 54 of 84 |
-| 3 lines | 16 | 52 of 85 |
-| 3 lines, and only if the page can still be evened | 37 | 56 of 79 |
-| The owner's script's own output | 30 | 54 of 74 |
+| Rule | Pages splitting a sentence | Pages that carry on, on the bottom line | Pages not on it |
+|---|---|---|---|
+| A move may leave a page 2 lines short (**what Press does**) | 18 | 54 of 84 | 30 |
+| 3 lines | 6 | 51 of 85 | 34 |
+| 3 lines, and only if the page can still be evened | 27 | 56 of 79 | 23 |
+| The owner's script's own output | 26 | 54 of 74 | 20 |
 
-The last of Press's three rules is the script's way of thinking, and leaves the fewest uneven pages.
+The first row went through the app's own steps; the next two through a trial script with the same repair. The script's splits
+come from its PDF by a rule that gives 19 for the first row's PDF, against Press's own count of 18. The third rule comes
+closest to the script on both counts.
 
 ### Theme following between apps
 

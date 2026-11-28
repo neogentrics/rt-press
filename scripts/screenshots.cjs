@@ -16,10 +16,11 @@ const { ELECTRON_RUN_AS_NODE: _ignored, ...environment } = process.env;
 
 const TITLES = ['The Long Road', 'A Letter Arrives', 'The Harbour', 'Winter Market', 'The Tower', 'Lanterns', 'Orchard Gate', 'The Bridge', 'Stormwatch', 'Home Again', 'The Quiet Hill', 'Candlelight'];
 const WORDS = ['river', 'hill', 'lantern', 'harbour', 'orchard', 'storm', 'letter', 'bridge', 'garden', 'winter', 'market', 'tower', 'road', 'window', 'candle'];
+const MOODS = ['quiet', 'bright', 'cold', 'still', 'busy', 'empty', 'warm'];
 let count = 0;
 const sentence = () => {
   count += 1;
-  return `The ${WORDS[count % 15]} was quiet when ${WORDS[(count * 7) % 15]} came down to the ${WORDS[(count * 4) % 15]}, and nobody on the ${WORDS[(count * 11) % 15]} said a word about it. `;
+  return `The ${WORDS[count % 15]} was ${MOODS[Math.floor(count / 15) % 7]} when ${WORDS[(count * 7) % 15]} came down to the ${WORDS[(count * 4) % 15]}, and nobody on the ${WORDS[(count * 11) % 15]} said a word about it. `;
 };
 
 function madeUp(chapters, paragraphs) {
@@ -89,6 +90,20 @@ const built = (window, ready) => window.waitForSelector(`#results-title:has-text
     await window.waitForSelector('#tour-card');
     await settle();
     await shot(window, 'tutorial');
+  });
+  // The page turn report, with one sentence left split on purpose so that both kinds of row show.
+  await withApp(madeUp(12, 12), 'The Lantern Road', async (window) => {
+    const build = async () => {
+      await window.click('#build');
+      await window.waitForFunction(() => !document.getElementById('export').disabled, null, { timeout: 180000 });
+    };
+    await build();
+    await window.click('#turns-box summary');
+    await window.locator('#turns-moved button.keep').first().click();
+    await build();
+    await window.evaluate(() => { document.getElementById('turns-box').open = true; document.getElementById('results').scrollIntoView(); });
+    await settle();
+    await shot(window, 'page-turns');
   });
   await withApp(madeUp(2, 4), 'A Short Book', async (window) => {
     await window.click('#build');

@@ -33,7 +33,7 @@ function withFrontMatter(book, settings, details) {
 
 // Returns { ok, ... }. When it can't set the book, { ok: false, reason, messages }; otherwise the finished PDF and everything
 // the window shows: pages, the checks, the section start pages, the preview pictures, and how long each step took.
-async function buildBook({ book, settings: given, details = {}, workDir, fontFolder, resourcesPath = null, now = () => new Date(), onStep = () => {} }) {
+async function buildBook({ book, settings: given, details = {}, keep = [], workDir, fontFolder, resourcesPath = null, now = () => new Date(), onStep = () => {} }) {
   const settings = withDefaultSettings(given);
   const problems = validateSettings(settings);
   if (problems.length) return { ok: false, reason: 'settings', problems, messages: problems.map((p) => p.message).join('. ') };
@@ -67,12 +67,13 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
       // allowed, three.
       maxPushLines: settings.page_turns === 'keep' ? 2 : 3,
       keepPages: settings.page_turns === 'keep',
+      keep,
       onProgress: ({ round, midSentence }) => onStep(`Repairing page turns, round ${round + 1}: ${midSentence} split a sentence`),
     });
     steers = outcome.steers;
     const first = outcome.history[0];
     if (first?.midSentence !== undefined && outcome.turns) {
-      repair = { mode: settings.page_turns, before: first.midSentence, after: outcome.turns.pages.length, pushes: steers.length, rounds: outcome.history.length - 1, pagesBefore: first.pages, pagesAfter: outcome.final.pages };
+      repair = { mode: settings.page_turns, ...outcome.report, before: first.midSentence, after: outcome.report.left.length, pushes: steers.length, rounds: outcome.history.length - 1, pagesBefore: first.pages, pagesAfter: outcome.final.pages };
     }
     timings.repair = Date.now() - t0;
   }

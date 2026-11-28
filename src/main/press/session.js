@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { assembleBook, importChapters } = require('../import/book');
 const { countWords, textOfNode } = require('../../shared/book-model');
+const { changeKeepList } = require('../../shared/keep-list');
 const { buildBook } = require('./pipeline');
 const { choices, limitsFor, validateSettings, withDefaultSettings } = require('./settings');
 
@@ -30,6 +31,7 @@ class Session {
     this.details = store.get('details', { title: '', author: '' });
     this.settings = withDefaultSettings(store.get('settings'));
     this.report = store.get('report');
+    this.keep = store.get('keep_turns', []);
     this.last = null; // the last build, with its PDF
     this.building = false;
   }
@@ -52,6 +54,7 @@ class Session {
       words: chapters.reduce((n, c) => n + c.words, 0),
       report: this.report,
       settings: this.settings,
+      keepList: this.keep,
       choices: choices(),
       limits: limitsFor(this.settings),
       build: this.last ? this.summary(this.last) : null,
@@ -124,11 +127,22 @@ class Session {
     return this.state();
   }
 
+  // Puts a sentence on the list of page turns to leave split, or takes it off.
+  setKept(sentence, keep) {
+    try {
+      this.keep = changeKeepList(this.keep, sentence, Boolean(keep));
+    } catch (error) {
+      return { error: error.message };
+    }
+    this.store.set('keep_turns', this.keep);
+    return this.state();
+  }
+
   async build(onStep = () => {}) {
     if (this.building) return { ok: false, reason: 'busy', messages: 'A build is already running.' };
     this.building = true;
     try {
-      const result = await buildBook({ book: this.book, settings: this.settings, details: this.details, workDir: this.workDir, fontFolder: this.fontFolder, resourcesPath: this.resourcesPath, now: this.now, onStep });
+      const result = await buildBook({ book: this.book, settings: this.settings, details: this.details, keep: this.keep, workDir: this.workDir, fontFolder: this.fontFolder, resourcesPath: this.resourcesPath, now: this.now, onStep });
       this.last = { ...result, builtAt: this.now().toISOString() };
       return this.summary(this.last);
     } finally {

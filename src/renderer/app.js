@@ -2,6 +2,7 @@
 // to, Help Center, tutorial, About, Preferences and updates). The menus live in the main process and send their commands here.
 import { openAbout } from './about.js';
 import { createAppearance } from './appearance.js';
+import { turnsReport } from './turns-report.js';
 import { $, dialogOpen, h, toast } from './dom.js';
 import { createHelp } from './help-ui.js';
 import { createUiTranslator } from './i18n-ui.js';
@@ -166,6 +167,7 @@ function showBuild(build) {
     set('results-title', 'The book could not be set');
     set('build-summary', build.messages);
     $('checks').replaceChildren();
+    $('turns-box').hidden = true;
     return;
   }
   const failed = build.checks.filter((c) => !c.ok);
@@ -178,11 +180,12 @@ function showBuild(build) {
     failed.length ? `${build.pages} pages, ${failed.length} of ${build.checks.length} checks failed.` : `${build.pages} pages, all ${build.checks.length} checks passed.`,
     `Built in ${seconds} s.`,
   ];
-  if (r && r.after === 0) sentences.push('No page turn splits a sentence.');
+  if (r && r.after === 0) sentences.push(r.kept?.length ? 'No other page turn splits a sentence.' : 'No page turn splits a sentence.');
   if (r && r.after > 0) {
     sentences.push(`Page turns that split a sentence: ${r.before} before repair, ${r.after} after.`);
     sentences.push(added > 0 ? `Pages added: ${added}.` : 'No page was added.');
   }
+  if (r?.kept?.length) sentences.push(`Left split on purpose: ${r.kept.length}.`);
   const uneven = build.even ? build.even.running - build.even.onLine : 0;
   if (build.even?.running > 0) sentences.push(uneven ? `Pages that carry on but end above or below the bottom line: ${uneven} of ${build.even.running}.` : 'Every page that carries on ends on the same line.');
   $('build-summary').replaceChildren(...sentences.flatMap((sentence) => [h('span', null, sentence), ' ']));
@@ -196,10 +199,39 @@ function showBuild(build) {
     li.append(mark, ' ', h('span', null, c.title), ': ', ...(c.parts ?? [c.summary]).flatMap((part, i) => [i ? '; ' : '', h('span', null, part)]));
     return li;
   }));
+  drawTurnsReport(build);
   pageCount = build.pages;
   pictures.clear();
   spread = 0;
   if (build.previewReady) showSpread();
+}
+
+// ---- the page turn report, and the list of turns to leave split ----
+function drawTurnsReport(build) {
+  const box = $('turns-box');
+  box.hidden = !build.repair?.moved;
+  if (box.hidden) return;
+  const showPage = (number) => {
+    go(Math.floor(number / 2));
+    $('preview').scrollIntoView({ block: 'nearest' });
+  };
+  $('turns-report').replaceChildren(...turnsReport({ build, keepList: state.keepList ?? [], change: changeKept, showPage }));
+}
+
+async function changeKept(sentence, keep) {
+  const focused = [...$('turns-report').querySelectorAll('button.keep')].indexOf(document.activeElement);
+  const result = await window.rtPress.setKept(sentence, keep);
+  if (result.error) {
+    toast(result.error);
+    return;
+  }
+  state.keepList = result.keepList;
+  state.build = { ...state.build, stale: true };
+  drawTurnsReport(state.build);
+  // The keyboard stays where it was, though the list has been drawn again.
+  if (focused >= 0) [...$('turns-report').querySelectorAll('button.keep')][focused]?.focus();
+  syncControls();
+  set('step', 'Your list changed. Build again to see the effect.');
 }
 
 // ---- the preview: page 1 stands alone on the right, then facing pages ----
