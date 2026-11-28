@@ -20,6 +20,7 @@ Work toward 1.0.0. Nothing here is a release yet.
 
 ### Changed
 - **Page repair finds many more moves.** Adding no pages, a chapter can now use the blank page that followed it, and a move may leave its page two lines short at most.
+- **Electron 45.5.0**, from 45.4.1.
 - **Contrast is measured on the pixels** behind each piece of text and each icon, as in RT Markdown Reader.
 
 ### Fixed

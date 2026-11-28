@@ -8,7 +8,7 @@ own in `LICENSES.chromium.html`.
 |---|---|---|---|
 | Typst (the typesetter, ships with the app as a separate program) | 0.15.1 | Apache-2.0 | https://github.com/typst/typst |
 | EB Garamond (font, ships with the app) | 5.3.0 (`@fontsource/eb-garamond`) | SIL Open Font License 1.1 | https://github.com/octaviopardo/EBGaramond12 |
-| electron | 45.4.1 | MIT | https://github.com/electron/electron |
+| electron | 45.5.0 | MIT | https://github.com/electron/electron |
 | better-sqlite3-multiple-ciphers | 13.2.0 | MIT | https://github.com/m4heshd/better-sqlite3-multiple-ciphers |
 | fflate | 0.8.3 | MIT | https://github.com/101arrowz/fflate |
 | fast-xml-parser | 5.12.1 | MIT | https://github.com/NaturalIntelligence/fast-xml-parser |
