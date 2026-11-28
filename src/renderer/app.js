@@ -3,6 +3,7 @@
 import { openAbout } from './about.js';
 import { createAppearance } from './appearance.js';
 import { turnsReport } from './turns-report.js';
+import { pageRanges } from '../shared/page-ranges.js';
 import { PAPERS, isLargeTrim, pageLimits } from '../shared/print-rules.js';
 import { $, dialogOpen, h, openDialog, toast } from './dom.js';
 import { createHelp } from './help-ui.js';
@@ -264,6 +265,7 @@ async function deleteTheme() {
 // ---- the quick preview: once pages are showing, a change of design or of pages shows in them without a build ----
 let previewTimer = null;
 let previewWanted = false;
+let previewing = false;
 function schedulePreview() {
   if ($('preview').hidden) return;
   previewWanted = true;
@@ -272,16 +274,19 @@ function schedulePreview() {
 }
 
 async function quickPreview() {
-  if (!previewWanted || building) return;
+  // One at a time, and never beside a build, which shows its own pages.
+  if (!previewWanted || previewing || building) return;
   previewWanted = false;
-  building = true;
-  syncControls();
+  previewing = true;
   const note = $('preview-note');
   note.hidden = false;
   note.textContent = 'Updating the preview…';
   try {
     const result = await window.rtPress.preview();
-    if (result.ok) {
+    // A build started meanwhile, or a change made this one out of date: its pages are not shown.
+    if (building || result.reason === 'out-of-date' || result.reason === 'busy') {
+      if (result.reason === 'out-of-date' && !building) previewWanted = true;
+    } else if (result.ok) {
       pageCount = result.pages;
       pictures.clear();
       spread = Math.min(spread, spreadCount() - 1);
@@ -293,8 +298,7 @@ async function quickPreview() {
   } catch (error) {
     note.textContent = error.message;
   } finally {
-    building = false;
-    syncControls();
+    previewing = false;
     // Something changed while this one was being made.
     if (previewWanted) schedulePreview();
   }
@@ -338,6 +342,8 @@ function showBook() {
   $('subtitle').value = state.details.subtitle;
   $('author').value = state.details.author;
   $('pages-open').hidden = !state.hasBook;
+  $('source-note').hidden = !(state.hasBook && state.source === 'story-tracker');
+  set('source-note', 'This book came from RT Story Tracker. Change its words there, then open the new .rtbook file here to refresh it.');
   set('header-title', state.details.title);
   const list = $('chapters');
   list.replaceChildren(...state.chapters.map((c) => {
@@ -354,7 +360,7 @@ function showBook() {
   const r = state.report;
   set('import-summary', state.hasBook
     ? (r ? `${state.chapters.length} chapters, ${numbers(state.words)} words (from “${r.folder}”).` : `${state.chapters.length} chapters, ${numbers(state.words)} words.`)
-    : 'Choose a folder of Word (.docx) chapters, one file for each chapter.');
+    : 'Choose a folder of Word (.docx) chapters, one file for each chapter, or open a whole book: an .rtbook, Word, Markdown or EPUB file.');
   const notes = [];
   if (r?.warningCount) notes.push(...r.warnings);
   if (r?.quoteIssues) notes.push(`${r.quoteIssues} quotation marks look unpaired. They are set as written; check them in ${r.quoteIssueFiles.map((f) => `${f.file} (${f.count})`).join(', ')}.`);
@@ -375,6 +381,7 @@ function showBuild(build) {
   if (!build) return;
   if (!build.ok) {
     set('results-title', 'The book could not be set');
+    showRefresh(null);
     // Several reasons are shown one after another, each in the window's language.
     $('build-summary').replaceChildren(...(build.parts ?? [build.messages]).flatMap((part) => [h('span', null, part), ' ']));
     $('checks').replaceChildren();
@@ -413,6 +420,7 @@ function showBuild(build) {
     return li;
   }));
   drawTurnsReport(build);
+  showRefresh(build.refresh);
   pageCount = build.pages;
   pictures.clear();
   spread = 0;
@@ -487,15 +495,69 @@ function refresh(next) {
   showBuild(state.build);
 }
 
-async function importChapters() {
-  const result = await window.rtPress.importChapters();
+// Bringing a book in, from a folder of chapters or from one file. Where it would undo work done here, Press asks first.
+const ASKING = {
+  corrections: ['Replace your corrections?', 'You have corrected this book here. Bringing it in again takes the words as the file has them. The pages you added stay.', 'Replace'],
+  another: ['Replace this book?', 'This is a different book. The pages you wrote and the words you corrected in the book that is here will be gone. Your files are not changed.', 'Replace'],
+};
+
+function confirmReplace(kind) {
+  const [heading, words, go] = ASKING[kind];
+  return new Promise((resolve) => {
+    const yes = h('button', { type: 'button', class: 'primary', id: 'replace-yes' }, go);
+    const no = h('button', { type: 'button', id: 'replace-no' }, 'Cancel');
+    let answer = false;
+    const dialog = openDialog({
+      id: 'replace-book', labelledby: 'replace-title', className: 'small', onClose: () => resolve(answer),
+      children: [h('h2', { id: 'replace-title' }, heading), h('p', null, words), h('div', { class: 'actions' }, h('span', { class: 'spacer' }), no, yes)],
+    });
+    no.addEventListener('click', () => dialog.close());
+    yes.addEventListener('click', () => {
+      answer = true;
+      dialog.close();
+    });
+    no.focus();
+  });
+}
+
+async function bringIn(ask) {
+  let result = await ask(false);
+  if (result.confirm) {
+    if (!(await confirmReplace(result.confirm))) return;
+    result = await ask(true);
+  }
   if (result.error) {
     set('step', result.error);
     return;
   }
   if (result.cancelled) return;
   refresh(result.state);
-  set('step', '');
+  const said = [];
+  if (result.refreshed) said.push('The book was brought in again. Your design and your own pages are kept. Build to see which pages moved.');
+  if (result.removed) said.push('The .rtbook file was deleted, because it held your book unencrypted. The book is kept in RT Press’s own encrypted project.');
+  if (result.removed === false) said.push(`The .rtbook file could not be deleted, and it holds your book unencrypted: delete it yourself (${result.removeError}).`);
+  $('step').replaceChildren(...said.flatMap((sentence) => [h('span', null, sentence), ' ']));
+}
+
+const importChapters = () => bringIn((confirmed) => window.rtPress.importChapters(confirmed));
+const openBook = () => bringIn((confirmed) => window.rtPress.openBookFile(confirmed));
+
+// After the book came in again: what changed on the pages since the build before.
+function showRefresh(change) {
+  const box = $('refresh-note');
+  box.hidden = !change;
+  if (!change) {
+    box.replaceChildren();
+    return;
+  }
+  const lines = [change.changed.length
+    ? `Since the book was brought in again, ${change.changed.length} of ${change.pagesAfter} pages changed: ${pageRanges(change.changed)}.`
+    : 'Since the book was brought in again, no page changed.'];
+  if (change.pagesAfter !== change.pagesBefore) lines.push(`Pages before and now: ${change.pagesBefore} and ${change.pagesAfter}.`);
+  box.replaceChildren(
+    ...lines.map((line) => h('p', null, line)),
+    ...(change.moved.length ? [h('p', null, 'These now start on another page:'), h('ul', { id: 'moved-starts' }, change.moved.map((m) => h('li', null, h('span', { translate: 'no' }, m.title), ' ', h('span', null, `Page ${m.from} is now page ${m.to}.`))))] : []),
+  );
 }
 
 async function saveSettings() {
@@ -599,6 +661,7 @@ const openPalette = createPalette({
 // Every command, by the name the menus use.
 const COMMANDS = {
   'import-chapters': importChapters,
+  'open-book': openBook,
   build,
   'save-pdf': exportPdf,
   preferences: () => openPreferences({ run, setLanguage: (code) => translator.setLanguage(code), appearance }),
@@ -624,6 +687,7 @@ function run(command) {
 
 function wire() {
   $('import-empty').addEventListener('click', () => run('import-chapters'));
+  $('open-empty').addEventListener('click', () => run('open-book'));
   for (const id of ['title', 'subtitle', 'author']) $(id).addEventListener('change', saveDetails);
   $('pages-open').addEventListener('click', () => run('book-pages'));
   $('book-theme').addEventListener('change', () => chooseBookTheme($('book-theme').value));

@@ -322,6 +322,23 @@ carry on and miss the bottom line went from 27 to 17 with the rule above.
 - **Straight quotes are curled when the pages are set**, not when the book comes in, so the book's language can be changed.
   Quotes the writer curled are never changed.
 
+### Bringing a book in
+
+✅ The build session's choices, 28 November 2026, open to the owner.
+
+- **What Press reads from an .rtbook** is written down in [the .rtbook file](design/rtbook.md), from RT Story Tracker's own
+  export model. Story Tracker doesn't write the file yet.
+- **Deleting the .rtbook** is the plan's own rule. Press deletes it only after the book is saved in the project, and says
+  so, or says that it couldn't. A file Press can't read is left alone. Word, Markdown and EPUB files are never changed.
+- **The same book** is the same book id from Story Tracker, or the same file or folder name from files. Anything else is
+  another book, which takes the place of the one that is open.
+- **Press asks first** when bringing a book in would undo corrections made here, or would drop pages written here for
+  another book.
+- **The matter in Story Tracker's book details** (copyright, dedication, acknowledgements, about the author, also by, stay
+  connected) comes in as pages that are read-only like the chapters. The title page and contents page are Press's.
+- **In a Story Tracker chapter**, a quotation block is set as an in-story document, since Story Tracker can't yet mark one.
+  Colours, highlighting, underlining and strike-through are left out with a notice, since the inside is black.
+
 ### Custom sizes, and the inside margin from the page count
 
 ✅ The build session's choices, 28 November 2026, open to the owner.

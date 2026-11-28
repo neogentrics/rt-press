@@ -1,9 +1,12 @@
 'use strict';
 // What the window talks to: the book, the choices, the last build. It holds nothing of Electron's, so it can be tried on its
 // own. Everything the window shows comes out of `state()`; everything it can do is a method.
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { assembleBook, importChapters } = require('../import/book');
+const { openBookFile } = require('../import/open');
+const { compareLayouts, layoutOf } = require('./layout');
 const { countWords, textOfNode } = require('../../shared/book-model');
 const { changeKeepList } = require('../../shared/keep-list');
 const { designOf, sameDesign } = require('../../shared/book-themes');
@@ -44,8 +47,15 @@ class Session {
     this.last = null; // the last build, with its PDF
     this.draft = null; // a quick preview made since, of the book as it is now
     this.building = false;
+    this.previewing = false;
+    this.changes = 0; // counts everything that makes a preview out of date
     // A project from before pages could be arranged has no title or contents page of its own yet.
     if (this.book) this.book = bookPages.followSwitches(this.book, this.settings);
+  }
+
+  forgetDraft() {
+    this.draft = null;
+    this.changes += 1;
   }
 
   // What the menus ask, without working out the whole state.
@@ -83,11 +93,13 @@ class Session {
 
   summary(build) {
     if (!build.ok) return { ok: false, reason: build.reason, messages: build.messages, parts: build.parts, problems: build.problems ?? [] };
-    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, even: build.even, margins: build.margins, fonts: build.fonts, builtAt: build.builtAt, startPages: Object.fromEntries((build.units ?? []).map((unit) => [unit.id, unit.page])) };
+    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, even: build.even, margins: build.margins, fonts: build.fonts, refresh: build.refresh ?? null, builtAt: build.builtAt, startPages: Object.fromEntries((build.units ?? []).map((unit) => [unit.id, unit.page])) };
   }
 
-  // Reads the Word files in a folder as a new book. Returns the state, or { error }.
-  importFolder(folder) {
+  // Reads the Word files in a folder as a book. Returns the state, { error }, or { confirm } when words corrected here, or
+  // pages written here, would be lost: asking again with `confirmed` goes ahead.
+  importFolder(folder, { confirmed = false } = {}) {
+    if (this.building) return { error: 'Wait for the build to finish.' };
     let files;
     try {
       files = chapterFiles(folder);
@@ -102,29 +114,104 @@ class Session {
       return { error: `The chapters could not be read: ${error.message}` };
     }
     if (!imported.chapters.length) return { error: 'None of those files had any text.' };
-    const title = this.details.title || path.basename(folder);
-    const assembled = assembleBook({ title, chapters: imported.chapters, language: this.settings.language });
-    assembled.source = { type: 'files', from: 'word-folder', name: path.basename(folder) };
-    // Pages the author added to the book that was here stay with the one that takes its place.
-    this.book = this.withPages(assembled);
-    this.details = { ...this.details, title };
-    this.report = {
-      folder: path.basename(folder),
-      files: files.length,
-      warnings: imported.reports.flatMap((r) => r.warnings.map((w) => `${r.file}: ${w}`)).slice(0, SHOWN_ISSUES),
-      warningCount: imported.reports.reduce((n, r) => n + r.warnings.length, 0),
-      quoteIssues: imported.reports.reduce((n, r) => n + r.quoteIssues.length, 0),
-      quoteIssueFiles: imported.reports.filter((r) => r.quoteIssues.length).map((r) => ({ file: r.file, count: r.quoteIssues.length })).slice(0, SHOWN_ISSUES),
-    };
-    this.last = null;
-    this.store.set('book', this.book);
-    this.store.set('details', this.details);
-    this.store.set('report', this.report);
-    return this.state();
+    // A chapter is named by its file, so that a page of the author's own keeps its place when the folder is brought in again.
+    const named = new Map(files.map((f) => [f.number, `file-${crypto.createHash('sha256').update(path.basename(f.file).toLowerCase()).digest('hex').slice(0, 20)}`]));
+    for (const chapter of imported.chapters) chapter.section.id = named.get(chapter.number);
+    const name = path.basename(folder);
+    const key = `word-folder:${name.toLowerCase()}`;
+    const book = assembleBook({ title: name, chapters: imported.chapters, language: this.settings.language });
+    book.source = { type: 'files', from: 'word-folder', key, name };
+    return this.takeBook({
+      book,
+      details: { title: name },
+      confirmed,
+      report: {
+        folder: name,
+        files: files.length,
+        warnings: imported.reports.flatMap((r) => r.warnings.map((w) => `${r.file}: ${w}`)).slice(0, SHOWN_ISSUES),
+        warningCount: imported.reports.reduce((n, r) => n + r.warnings.length, 0),
+        quoteIssues: imported.reports.reduce((n, r) => n + r.quoteIssues.length, 0),
+        quoteIssueFiles: imported.reports.filter((r) => r.quoteIssues.length).map((r) => ({ file: r.file, count: r.quoteIssues.length })).slice(0, SHOWN_ISSUES),
+      },
+    });
   }
 
-  withPages(book) {
-    return bookPages.followSwitches(this.book ? bookPages.keepOwnPages(this.book, book) : book, this.settings);
+  // Opens a book from one file: an .rtbook, or a Word, Markdown or EPUB file. Answers as importFolder does. An .rtbook holds
+  // the book unencrypted, so once the book is safe in the project the file is deleted, and the answer says whether it was.
+  openFile(file, { confirmed = false } = {}) {
+    if (this.building) return { error: 'Wait for the build to finish.' };
+    let read;
+    try {
+      read = openBookFile(file, { year: this.now().getFullYear() });
+    } catch (error) {
+      return { error: error.message };
+    }
+    const name = path.basename(file);
+    const answer = this.takeBook({
+      book: read.book,
+      details: read.details,
+      language: read.language,
+      cover: read.cover,
+      confirmed,
+      report: {
+        folder: name,
+        files: 1,
+        warnings: read.warnings.slice(0, SHOWN_ISSUES),
+        warningCount: read.warnings.length,
+        quoteIssues: read.quoteIssues.reduce((n, q) => n + q.count, 0),
+        quoteIssueFiles: read.quoteIssues.slice(0, SHOWN_ISSUES),
+      },
+    });
+    if (answer.confirm || answer.error || read.kind !== 'story-tracker') return answer;
+    try {
+      fs.rmSync(file);
+      return { ...answer, removed: true };
+    } catch (error) {
+      return { ...answer, removed: false, removeError: error.message };
+    }
+  }
+
+  // Puts a book that was just read in the project. The same book again is a refresh: the design, the keep list and the pages
+  // added here stay. Another book takes the place of the one that is here.
+  takeBook({ book, details, language = null, cover = null, report, confirmed }) {
+    const same = Boolean(this.book?.source?.key) && this.book.source.key === book.source.key;
+    if (!confirmed && this.hasBook) {
+      if (same && this.book.edited) return { confirm: 'corrections' };
+      if (!same && (this.book.edited || this.book.sections.some((s) => s.own && !s.generated && (s.type === 'part' || s.document?.content.length)))) return { confirm: 'another' };
+    }
+    const settings = { ...this.settings, ...(language ? { language } : {}) };
+    let next;
+    if (same) {
+      next = bookPages.keepOwnPages(this.book, book);
+      // What was built before is what the next build is measured against, to show which pages moved.
+      const layout = this.store.get('layout');
+      if (layout) this.store.set('compare_with', layout);
+    } else {
+      next = book;
+      if (this.hasBook) {
+        // What belonged to the other book goes with it.
+        this.keep = [];
+        settings.pin_pages = null;
+        this.store.set('keep_turns', this.keep);
+      }
+      this.store.set('layout', null);
+      this.store.set('compare_with', null);
+    }
+    // A title and an author typed before the first book came in are kept.
+    const typed = this.hasBook && !same ? { title: '', subtitle: '', author: this.details.author } : this.details;
+    this.details = { title: typed.title || details.title || '', subtitle: typed.subtitle || details.subtitle || '', author: typed.author || details.author || '' };
+    // A book that came with its own title page switches keeps them as they are set.
+    this.book = bookPages.followSwitches(next, settings);
+    this.settings = settings;
+    this.report = report;
+    this.last = null;
+    this.forgetDraft();
+    this.store.set('book', this.book);
+    this.store.set('details', this.details);
+    this.store.set('settings', this.settings);
+    this.store.set('report', this.report);
+    if (cover || !same) this.store.set('cover', cover);
+    return { ...this.state(), refreshed: same };
   }
 
   // Puts a ready-made book in the project, as an import would: the tutorial's practice book comes in this way.
@@ -140,6 +227,7 @@ class Session {
   }
 
   setDetails({ title, subtitle, author }) {
+    this.forgetDraft();
     const line = (value) => String(value ?? '').slice(0, 200);
     this.details = { title: line(title), subtitle: line(subtitle), author: line(author) };
     this.store.set('details', this.details);
@@ -151,7 +239,7 @@ class Session {
     const problems = validateSettings(merged);
     if (problems.length) return { error: problems.map((p) => p.message).join('. '), problems };
     this.settings = merged;
-    this.draft = null;
+    this.forgetDraft();
     this.store.set('settings', this.settings);
     if (this.book) this.keepBook(bookPages.followSwitches(this.book, this.settings));
     return this.state();
@@ -177,7 +265,7 @@ class Session {
     }
     const { book, id = null } = result.book ? result : { book: result };
     this.keepBook(book);
-    this.draft = null;
+    this.forgetDraft();
     // The switches say whether the book has these two pages, so taking one out turns its switch off.
     const has = (kind) => book.sections.some((s) => s.kind === kind);
     this.settings = { ...this.settings, title_page: has('title-page'), contents: has('contents') };
@@ -197,19 +285,26 @@ class Session {
     }
   }
 
+  // A change to something that came from the book's file is a correction, which bringing the file in again would undo.
+  corrected(book, id, next) {
+    const theirs = (b) => b.sections.filter((s) => !s.own);
+    const changed = JSON.stringify(theirs(book)) !== JSON.stringify(theirs(next));
+    return changed ? { ...next, edited: true } : next;
+  }
+
   editPage(id, changes) {
-    return this.changePages((book) => bookPages.editPage(book, id, changes ?? {}));
+    return this.changePages((book) => this.corrected(book, id, bookPages.editPage(book, id, changes ?? {})));
   }
 
   movePage(id, by) {
-    return this.changePages((book) => bookPages.movePage(book, id, by));
+    return this.changePages((book) => this.corrected(book, id, bookPages.movePage(book, id, by)));
   }
 
   removePage(id) {
     return this.changePages((book) => {
       const next = bookPages.removePage(book, id);
       if (!next.sections.some((s) => s.type === 'chapter')) throw new Error('A book needs at least one chapter.');
-      return next;
+      return this.corrected(book, id, next);
     });
   }
 
@@ -267,27 +362,42 @@ class Session {
   async build(onStep = () => {}) {
     if (this.building) return { ok: false, reason: 'busy', messages: 'A build is already running.' };
     this.building = true;
-    this.draft = null;
+    this.forgetDraft();
     try {
       const result = await buildBook({ book: this.book, settings: this.settings, details: this.details, keep: this.keep, workDir: this.workDir, fontFolder: this.fontFolder, computerFontFolders: this.computerFontFolders, resourcesPath: this.resourcesPath, now: this.now, onStep });
       this.last = { ...result, builtAt: this.now().toISOString() };
+      if (result.ok) this.rememberLayout();
       return this.summary(this.last);
     } finally {
       this.building = false;
     }
   }
 
-  // The pages as the design stands now, as pictures: set once, with nothing mended or checked, and no file to save.
+  // Where everything fell is kept, and after the book is brought in again, what moved is worked out from it.
+  rememberLayout() {
+    const layout = layoutOf(this.last);
+    const before = this.store.get('compare_with');
+    if (before) {
+      this.last.refresh = compareLayouts(before, layout);
+      this.store.set('compare_with', null);
+    }
+    this.store.set('layout', layout);
+  }
+
+  // The pages as the design stands now, as pictures: set once, with nothing mended or checked, and no file to save. It never
+  // stands in the way: the book can be changed or built while it is made, and then what it made is thrown away.
   async preview() {
-    if (this.building) return { ok: false, reason: 'busy' };
-    this.building = true;
+    if (this.building || this.previewing) return { ok: false, reason: 'busy' };
+    this.previewing = true;
+    const asked = this.changes;
     try {
       const result = await buildBook({ book: this.book, settings: this.settings, details: this.details, workDir: path.join(this.workDir, 'draft'), fontFolder: this.fontFolder, computerFontFolders: this.computerFontFolders, resourcesPath: this.resourcesPath, now: this.now, quick: true, assumePages: this.last?.pages ?? null });
+      if (asked !== this.changes) return { ok: false, reason: 'out-of-date' };
       if (!result.ok) return { ok: false, reason: result.reason, messages: result.messages, parts: result.parts, problems: result.problems ?? [] };
       this.draft = result;
       return { ok: true, pages: result.pages, startPages: Object.fromEntries(result.units.map((unit) => [unit.id, unit.page])) };
     } finally {
-      this.building = false;
+      this.previewing = false;
     }
   }
 

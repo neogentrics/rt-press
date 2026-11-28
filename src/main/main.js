@@ -169,6 +169,30 @@ const pickFolder = async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, { title: words('Choose the folder of chapters'), properties: ['openDirectory'] });
   return canceled ? null : filePaths[0];
 };
+const pickFile = async () => {
+  // A test names, in this file, the book file to be chosen next.
+  if (process.env.RTPRESS_TEST_PICK_FILE) return fs.readFileSync(process.env.RTPRESS_TEST_PICK_FILE, 'utf8').trim() || null;
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    title: words('Open a book file'),
+    properties: ['openFile'],
+    filters: [{ name: words('Books'), extensions: ['rtbook', 'docx', 'md', 'markdown', 'epub'] }],
+  });
+  return canceled ? null : filePaths[0];
+};
+
+// A book that is brought in. When Press asks first, what was chosen waits here for the answer: the window never names a file.
+let waiting = null;
+async function bringIn(kind, confirmed) {
+  const chosen = confirmed && waiting?.kind === kind ? waiting.chosen : await (kind === 'folder' ? pickFolder() : pickFile());
+  waiting = null;
+  if (!chosen) return { cancelled: true, state: session.state() };
+  const result = kind === 'folder' ? session.importFolder(chosen, { confirmed }) : session.openFile(chosen, { confirmed });
+  if (result.confirm) waiting = { kind, chosen };
+  if (result.error) return { error: result.error, state: session.state() };
+  if (result.confirm) return { confirm: result.confirm };
+  const { refreshed, removed, removeError, ...state } = result;
+  return { state, refreshed, removed, removeError };
+}
 const pickSave = async (suggested) => {
   if (process.env.RTPRESS_TEST_SAVE_PATH) return process.env.RTPRESS_TEST_SAVE_PATH;
   const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, { title: words('Save the interior'), defaultPath: suggested, filters: [{ name: 'PDF', extensions: ['pdf'] }] });
@@ -177,12 +201,8 @@ const pickSave = async (suggested) => {
 
 function registerBook() {
   handleBook('press:state', () => session.state());
-  handleBook('press:import', async () => {
-    const folder = await pickFolder();
-    if (!folder) return { cancelled: true, state: session.state() };
-    const result = session.importFolder(folder);
-    return result.error ? { error: result.error, state: session.state() } : { state: result };
-  });
+  handleBook('press:import', (confirmed) => bringIn('folder', confirmed === true));
+  handleBook('press:open-file', (confirmed) => bringIn('file', confirmed === true));
   handleBook('press:details', (details) => session.setDetails(details ?? {}));
   handleBook('press:settings', (settings) => session.setSettings(settings ?? {}));
   handle('press:fonts', () => session?.fontChoices() ?? { bundled: [], computer: [] });
@@ -200,11 +220,7 @@ function registerBook() {
     rebuildMenu(); // Build is off while one is running
     return building;
   });
-  handleBook('press:preview', () => {
-    const making = session.preview();
-    rebuildMenu();
-    return making;
-  });
+  handle('press:preview', () => session?.preview() ?? { ok: false, reason: 'busy' });
   handle('press:page', (number) => session?.page(number) ?? null);
   handle('press:in-practice', () => Boolean(ownBook));
   handleBook('press:practice-start', () => startPractice());

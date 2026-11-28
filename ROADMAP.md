@@ -33,7 +33,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | Release | Theme | Status |
 |---|---|---|
 | [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | ✅ Done: the owner went on to 1.0 |
-| [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | 🔨 Building: 4 of 8 milestones done; V3 waits on the owner's judgement |
+| [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | 🔨 Building: 5 of 8 milestones done; V3 waits on the owner's judgement |
 | [v1.1](#v11--page-frames-and-ornaments) | Page frames and ornaments | Planned |
 | [v1.2](#v12--art-on-the-page) | Art on the page | Planned |
 | [v1.3](#v13--the-paperback-cover-wrap) | The paperback cover wrap | Planned |
@@ -63,7 +63,7 @@ it, before the 1.0 work below.
 | V3 Page quality to the owner's standard | 🔨 Built, and not yet judged. The repair, the keep list, the report, even page bottoms, the pinned count and the blank even last page are in. On the test book with no page added, set in the bundled stand-ins at its own sizes, and with one rule applied to both PDFs, Press leaves 24 pages splitting a sentence and the owner's script's output 26 (Press had 60 before repair). 17 pages that carry on don't end on the bottom line, against the script's 20. The fonts differ, so the pages are not the same pages, and the owner hasn't looked at them. A choice about moving sentences is the owner's ([decisions](docs/decisions.md#how-the-repair-finds-its-moves-and-evens-the-pages)). |
 | V4 Every trim size | ✅ All 16 paperback and 5 hardcover sizes, custom paperback sizes, and the inside margin from the real page count. Every listed size and the corners of the custom range pass every check in the tests, with and without bleed. **KDP's own previewer has seen none of them.** KDP publishes no page limits for a custom size, so Press's are its own ([print rules](docs/design/print-rules.md#kdp-trim-and-page-count)). |
 | V5 Book themes, matter and fonts | ✅ Five starter themes and the author's own; chapter openers, subtitles, running heads and house rules; front and back matter added, edited and ordered; the book's language; ten fonts with open stand-ins for the owner's three. **The themes' pages were judged only on made-up books**, and KDP's previewer has seen none of them. The Spanish, French and German words, in the window and printed, haven't been checked by a native speaker. |
-| V6 Bringing a book in | Not started. Word chapters already come in. |
+| V6 Bringing a book in | ✅ A folder of Word chapters, one Word, Markdown or EPUB file, or an [.rtbook](docs/design/rtbook.md). A Story Tracker book is read-only, a book from files can be corrected, and a newer copy keeps the design and the author's pages and says what moved. In the tests, one word changed in an .rtbook changed one page. Beyond the tests' own files, RT Story Tracker's EPUB, Word and Markdown exports of a made-up book were opened: parts, chapters, italics and bold came through. In its Word export, the unheaded front pages (title, copyright, dedication) are left out with a notice. **No book from any other program has been tried, and RT Story Tracker doesn't write .rtbook files yet.** |
 | V7 The checks, complete | Not started. Eleven checks and a spread preview exist. |
 | V8 The beta | Not started |
 
@@ -93,7 +93,7 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 
 | Feature | Size | Details |
 |---|:-:|---|
-| 🙋 Bring in a book | M | From RT Story Tracker in one step, or from Word, Markdown or EPUB files. A Story Tracker book stays read-only here; a book that came from files can have its words corrected here. |
+| 🙋 ✅ Bring in a book | M | From RT Story Tracker in one step, or from Word, Markdown or EPUB files. A Story Tracker book stays read-only here; a book that came from files can have its words corrected here. |
 | 🙋 ✅ Every KDP trim size | S | All 16 paperback sizes, custom paperback sizes inside KDP's limits, and the 5 hardcover sizes, with or without bleed. |
 | 🙋 ✅ Margins from the page count | S | Mirrored margins, the inside margin set from the real page count, and the outside, top and bottom never under KDP's minimum. |
 | 🙋 ✅ Book themes | L | A starter set of book themes (the design of the printed pages, not the window's colours), each with fonts for titles, subtitles and body, sizes, spacing, drop caps, scene breaks, chapter openers and folios. Change anything and save it as your own. |

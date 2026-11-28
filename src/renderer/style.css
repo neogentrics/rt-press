@@ -428,6 +428,9 @@ details {
   gap: 0.4rem;
   margin: 0.4rem 0;
 }
+.row.centre {
+  justify-content: center;
+}
 .side details {
   margin-top: 0.6rem;
 }

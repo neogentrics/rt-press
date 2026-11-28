@@ -46,6 +46,7 @@ function menuTemplate({ send, actions = {}, state = {}, version = '', platform =
       label: '&File',
       submenu: [
         tell('import-chapters', 'Import Chapters…', 'CmdOrCtrl+O'),
+        tell('open-book', 'Open a Book File…', 'CmdOrCtrl+Shift+O'),
         tell('book-pages', 'Pages and Their Order…', null, { enabled: Boolean(state.hasBook) && !state.building }),
         separator,
         tell('build', 'Build the Interior', 'CmdOrCtrl+Return', { enabled: Boolean(state.hasBook) && !state.building }),

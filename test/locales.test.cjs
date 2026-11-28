@@ -118,6 +118,23 @@ test('every complaint about a book’s design, and every refusal about its pages
   covered([...thrown], 'pages and themes');
 });
 
+test('everything bringing a book in can say is translated', () => {
+  const said = new Set();
+  const files = ['open', 'outline', 'markdown', 'epub', 'word-book', 'rtbook', 'zip'].map((name) => `src/main/import/${name}.js`);
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(root, file), 'utf8');
+    for (const m of source.matchAll(/(?:new Error|warn|warnings\.push)\(\s*('(?:\\'|[^'\n]){12,}'|`[^`\n]{12,}`)/g)) said.add(m[1].slice(1, -1).replace(/\\'/g, '’').replace(/\$\{[^}]+\}/g, 'X'));
+    // The rtbook's table of what is left out.
+    for (const m of source.matchAll(/^ {2}(?:strike|underline|highlight|textColor): '([^'\n]+)'/gm)) said.add(m[1]);
+  }
+  // What is made from parts is checked as it comes out.
+  const made = [...said].filter((s) => !/X|^The book is not valid/.test(s));
+  for (const what of ['EPUB file', 'Word (.docx) file', '.rtbook file']) made.push(`That ${what} is too large to read.`, `That ${what} is not there.`);
+  made.push('That is not an EPUB file.', 'That is not a Word (.docx) file.', 'That is not an .rtbook file.', 'The words on the page of “Spring” were left out: a part’s page holds its title.', 'The book’s language, ja, is not one RT Press sets yet. Choose the nearest under Book language.', 'The .rtbook file could not be deleted, and it holds your book unencrypted: delete it yourself (denied).', 'Since the book was brought in again, 3 of 120 pages changed: 4–6.', 'Pages before and now: 120 and 122.', 'Page 4 is now page 5.');
+  assert.ok(made.length >= 30, `${made.length}: ${made.join(' | ')}`);
+  covered([...new Set(made)], 'bringing a book in');
+});
+
 test('every message the build and the session can give is translated', () => {
   const found = new Set();
   for (const file of ['src/main/press/pipeline.js', 'src/main/press/session.js']) {

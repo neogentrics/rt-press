@@ -18,7 +18,8 @@ const listen = (channel) => (listener) => {
 contextBridge.exposeInMainWorld('rtPress', {
   status: () => call('app:status'),
   getState: () => call('press:state'),
-  importChapters: () => call('press:import'),
+  importChapters: (confirmed) => call('press:import', confirmed),
+  openBookFile: (confirmed) => call('press:open-file', confirmed),
   setDetails: (details) => call('press:details', details),
   setSettings: (settings) => call('press:settings', settings),
   setKept: (sentence, keep) => call('press:keep', sentence, keep),

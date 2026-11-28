@@ -84,7 +84,7 @@ npm run dist:linux
 
 | | |
 |---|---|
-| **Bring in your chapters** | A folder of Word (.docx) files, one for each chapter, in order. Chapter titles are read from the files, curly quotes are set from the text around them, and quotation marks that don't pair are listed so you can check them |
+| **Bring in your book** | A folder of Word (.docx) chapters, or the whole book in one Word, Markdown or EPUB file, or an .rtbook from RT Story Tracker (which doesn't send them yet). Curly quotes are set for the book's language, and quotation marks that don't pair are listed so you can check them. Bring a newer copy in and your design and your own pages stay, and Press says which pages changed |
 | **Every KDP trim** | All 16 paperback sizes, custom paperback sizes and the 5 hardcover sizes, with only the papers KDP offers for each. KDP publishes no page limits for a custom size, so those are Press's own, and it says so |
 | **Your fonts, or ten that come with it** | Body, title and subtitle fonts from those that ship with Press or those on your computer that allow being put in a PDF. Open stand-ins for Book Antiqua, Felix Titling and Segoe UI Symbol. A missing character stops the build: nothing is borrowed from another font |
 | **Book themes** | Five designs for the printed pages, from Garamond with a drop cap to sans titles with the chapter in the running head. Change anything and save it as your own. A change shows in the pages at once |
@@ -108,7 +108,7 @@ npm run dist:linux
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
 | **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
-**Coming next, for 1.0:** books from a single Word, Markdown or EPUB file and from RT Story Tracker, and every KDP rule shown on the page it's on. See the [roadmap](ROADMAP.md).
+**Coming next, for 1.0:** every KDP rule, each shown on the page it's on. See the [roadmap](ROADMAP.md).
 
 ## What it won't do
 

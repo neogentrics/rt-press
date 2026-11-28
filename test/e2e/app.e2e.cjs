@@ -10,10 +10,138 @@ const { readPdf } = require('../../src/main/pdf/read');
 const { textItems } = require('../../src/main/pdf/text');
 const { readSharedTheme } = require('../../src/main/theme/loader');
 const measureContrast = require('./contrast.cjs');
+const { strToU8, zipSync } = require('fflate');
+const { practiceBook } = require('../../src/main/press/practice');
+const { toText } = require('../../src/shared/page-text');
 const { fileIn, prepare } = require('../../src/main/typeset/bundled-fonts');
 const { bundledFamily } = require('../../src/shared/font-catalog');
 const { madeUpFont } = require('../helpers/font.cjs');
 const { base, command, configHome, gone, launch, madeUpChapters, opened, packaged, profile, root, shared, textIs, unnamed, visible } = require('./harness.cjs');
+
+// A book from one file, in a profile of its own: opened, corrected, opened again, replaced by an .rtbook, and refreshed.
+async function bookFiles() {
+  const folder = path.join(base, 'book-files');
+  fs.mkdirSync(folder, { recursive: true });
+  const choice = path.join(folder, 'choice.txt');
+  const choose = (file) => fs.writeFileSync(choice, file);
+  const markdown = path.join(folder, 'The Lantern Road.md');
+  const practice = practiceBook();
+  fs.writeFileSync(markdown, `---\nauthor: A. Practice\n---\n\n${practice.sections.map((s) => `# ${s.title}\n\n${toText(s.document)}`).join('\n\n')}\n\n[a link](https://example.invalid)\n`);
+  const rtbook = path.join(folder, 'orchard.rtbook');
+  const send = (extra = '') => {
+    const book = { id: 'e2e-1', title: 'The Iron Orchard', language: 'en', details: { author: 'A. Grower' }, sections: practice.sections.map(({ type, id, title, document }, i) => ({ type, id, title, document: i === 2 && extra ? { ...document, content: [...document.content, { type: 'paragraph', content: [{ type: 'text', text: extra }] }] } : document })) };
+    fs.writeFileSync(rtbook, Buffer.from(zipSync({ 'book.json': strToU8(JSON.stringify(book)) })));
+    choose(rtbook);
+  };
+  const app = await launch({ RTPRESS_TEST_PICK_FILE: choice, RTPRESS_USER_DATA: path.join(folder, 'profile') });
+  try {
+    const { window, errors } = await opened(app);
+    await window.click('#tour-not-now');
+    const rebuild = async () => {
+      await window.click('#build');
+      await window.waitForSelector('#results:not([hidden])');
+      await window.waitForFunction(() => !document.getElementById('export').disabled, null, { timeout: 120000 });
+    };
+    // Choosing nothing changes nothing.
+    choose('');
+    await window.click('#open-empty');
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    assert.equal(await window.locator('#chapters li').count(), 0);
+    choose(markdown);
+    await window.click('#open-empty');
+    await window.waitForSelector('#chapters li');
+    assert.deepEqual([await window.locator('#chapters li').count(), await window.inputValue('#title'), await window.inputValue('#author')], [8, 'The Lantern Road', 'A. Practice']);
+    await window.evaluate(() => { document.getElementById('import-notes').open = true; });
+    assert.match(await window.textContent('#import-notes-list'), /Links are not printed/);
+    await rebuild();
+
+    // A chapter corrected here; bringing the file in again asks before undoing it.
+    const firstText = async () => {
+      await command(window, 'book-pages');
+      await window.click('#pages-list li[data-kind="chapter"] .page-edit');
+      await visible(window, '#page-editor');
+      return window.inputValue('#edit-text');
+    };
+    const closePages = async () => {
+      await window.click('#pages-done');
+      await gone(window, '#pages');
+    };
+    const original = await firstText();
+    await window.fill('#edit-text', `Corrected here.\n\n${original}`);
+    await window.click('#edit-save');
+    await gone(window, '#page-editor');
+    await closePages();
+    await command(window, 'open-book');
+    await visible(window, '#replace-book');
+    assert.match(await window.textContent('#replace-book'), /Replace your corrections\?/);
+    assert.deepEqual((await measureContrast(app, window)).failures, [], 'the question meets WCAG AA');
+    assert.deepEqual(await unnamed(window), []);
+    await window.click('#replace-no');
+    await gone(window, '#replace-book');
+    assert.match(await firstText(), /^Corrected here\./, 'saying no keeps the corrections');
+    await window.click('#edit-cancel');
+    await closePages();
+    await command(window, 'open-book');
+    await window.click('#replace-yes');
+    await textIs(window, '#step', /^The book was brought in again/);
+    assert.equal(await firstText(), original);
+    await window.click('#edit-cancel');
+    await closePages();
+
+    // An .rtbook: read-only, deleted once read, and a newer copy of it says what moved.
+    send();
+    await command(window, 'open-book');
+    await textIs(window, '#step', /The \.rtbook file was deleted, because it held your book unencrypted/);
+    assert.equal(fs.existsSync(rtbook), false);
+    await visible(window, '#source-note');
+    await command(window, 'book-pages');
+    await visible(window, '#pages');
+    assert.equal(await window.locator('#pages-list li[data-kind="chapter"] .page-edit').count(), 0, 'its chapters are read-only');
+    assert.equal(await window.locator('#pages-list li[data-kind="title-page"] .page-edit').count(), 1);
+    assert.equal(await window.locator('#page-kind option[value="chapter"]').count(), 0);
+    await closePages();
+    await rebuild();
+    assert.equal(await window.isVisible('#refresh-note'), false);
+    send('A new last line, sent from where the words live.');
+    await command(window, 'open-book');
+    await textIs(window, '#step', /^The book was brought in again/);
+    await rebuild();
+    await visible(window, '#refresh-note');
+    assert.match(await window.textContent('#refresh-note'), /^Since the book was brought in again, \d+ of \d+ pages changed: [\d–, ]+\./);
+    assert.deepEqual((await measureContrast(app, window)).failures, []);
+
+    // And in Spanish, with nothing left in English: the same refresh, and the question about another book.
+    await window.evaluate(() => window.rtPress.saveAppSettings({ language: 'es' }));
+    await command(window, 'preferences');
+    await window.selectOption('#pref-language', 'es');
+    await textIs(window, '#prefs-title', /^Preferencias$/);
+    await window.click('#prefs-done');
+    send('Another line again.');
+    await command(window, 'open-book');
+    await textIs(window, '#step', /El libro se ha traído de nuevo.*El archivo \.rtbook se ha eliminado/);
+    await rebuild();
+    await textIs(window, '#refresh-note', /Desde que el libro se trajo de nuevo/);
+    await command(window, 'book-pages');
+    await window.selectOption('#page-kind', 'note');
+    await window.click('#page-add');
+    await visible(window, '#page-editor');
+    await window.fill('#edit-text', 'Mine.');
+    await window.click('#edit-save');
+    await gone(window, '#page-editor');
+    await closePages();
+    choose(markdown);
+    await command(window, 'open-book');
+    await visible(window, '#replace-book');
+    await textIs(window, '#replace-title', /^¿Sustituir este libro\?$/);
+    await window.click('#replace-yes');
+    await window.waitForFunction(() => document.getElementById('title').value === 'The Lantern Road');
+    await textIs(window, '#import-summary', /The Lantern Road\.md/);
+    assert.deepEqual(await window.evaluate(() => window.rtPressUntranslated()), [], 'nothing was left in English');
+    assert.deepEqual(errors, []);
+  } finally {
+    await app.close();
+  }
+}
 
 // Made-up fonts added to the computer's own: one that may go in a PDF, and one for every reason a font may not. A machine's
 // real fonts don't have them all, and some have none. [family, embedding flag, style, why it is refused]
@@ -57,7 +185,7 @@ function pretendFonts() {
     assert.equal(await window.evaluate(() => typeof window.require), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => typeof window.process), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => Object.keys(window.rtPress).join()),
-      'status,getState,importChapters,setDetails,setSettings,setKept,fontChoices,addPage,readPage,editPage,movePage,removePage,applyBookTheme,saveBookTheme,deleteBookTheme,build,preview,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
+      'status,getState,importChapters,openBookFile,setDetails,setSettings,setKept,fontChoices,addPage,readPage,editPage,movePage,removePage,applyBookTheme,saveBookTheme,deleteBookTheme,build,preview,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
       'the window gets these calls and no more');
     const status = await window.evaluate(() => window.rtPress.status());
     assert.deepEqual([status.version, status.typst.version, status.storage.ok], [pkg.version, TYPST_VERSION, true], 'the bundled typesetter and the encrypted storage work');
@@ -624,6 +752,11 @@ function pretendFonts() {
     assert.deepEqual(errors, []);
   } finally {
     await app.close();
+  }
+
+  try {
+    await bookFiles();
+  } finally {
     fs.rmSync(base, { recursive: true, force: true, maxRetries: 5 });
     fs.rmSync(chapters, { recursive: true, force: true, maxRetries: 5 });
   }

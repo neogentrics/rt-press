@@ -21,7 +21,7 @@
       <aside class="side sidebar" aria-label="Book and settings">
         <section id="book">
           <h2>Book</h2>
-          <p id="import-summary" class="hint">Choose a folder of Word (.docx) chapters, one file for each chapter.</p>
+          <p id="import-summary" class="hint">Choose a folder of Word (.docx) chapters, one file for each chapter, or open a whole book: an .rtbook, Word, Markdown or EPUB file.</p>
           <label>Title <input id="title" type="text" maxlength="200" autocomplete="off" /></label>
           <label>Subtitle <input id="subtitle" type="text" maxlength="200" autocomplete="off" /></label>
           <label>Author <input id="author" type="text" maxlength="200" autocomplete="off" /></label>
@@ -30,6 +30,7 @@
             <ul id="import-notes-list"></ul>
           </details>
           <label>Book language <select id="language"></select></label>
+          <p id="source-note" class="hint" hidden></p>
           <p><button type="button" id="pages-open" hidden>Pages and their order…</button></p>
           <ol id="chapters" class="chapters" aria-label="Chapters"></ol>
         </section>
@@ -145,6 +146,7 @@
         <section id="results" class="page card" hidden>
           <h2 id="results-title">Checks</h2>
           <p id="build-summary"></p>
+          <div id="refresh-note" hidden></div>
           <details id="checks-box">
             <summary>The checks</summary>
             <ul id="checks" class="checks"></ul>
@@ -172,8 +174,8 @@
         </section>
 
         <div id="empty" class="empty page card">
-          <p>Import your chapters to begin.</p>
-          <p><button type="button" id="import-empty" class="primary">Import Chapters…</button></p>
+          <p>Import your chapters, or open a book file, to begin.</p>
+          <p class="row centre"><button type="button" id="import-empty" class="primary">Import Chapters…</button> <button type="button" id="open-empty">Open a Book File…</button></p>
         </div>
       </main>
     </div>

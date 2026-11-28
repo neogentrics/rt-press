@@ -9,6 +9,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 Work toward 1.0.0. Nothing here is a release yet.
 
 ### Added
+- **A whole book from one file**: a Word file split by its headings (in any language Word is in) or its chapter lines, a Markdown file, or an EPUB. What a printed page can't hold is named in the import notes.
+- **`.rtbook` files** from RT Story Tracker can be opened. Such a book is read-only here, and the file is deleted once the book is safely in Press's encrypted project, because it holds the book unencrypted. RT Story Tracker doesn't write these files yet; [what Press reads](docs/design/rtbook.md) says what it will need.
+- **A book brought in again keeps your design, keep list and own pages**, and the next build says which pages changed and which chapters moved. Press asks before replacing words corrected here.
+- **Correcting a book from files**: its chapters can be edited, added, moved and removed here. Your files are never changed.
 - **Book themes**, the design of the printed pages: *Classic*, *Inscription*, *Literary*, *Modern* and *Plain*. Choosing one fills in the design; change anything and **save it as your own**, for any book.
 - **Chapter openers**: a label above the title (a number, Roman numerals, "Chapter 1" or "Chapter One"), subtitles with a font of their own, titles centred or left, their size and space, and a mark under them.
 - **Running heads**: your name on left-hand pages, and the book's or the chapter's title on right-hand ones. None on openers, part pages or blank pages.

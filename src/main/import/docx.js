@@ -63,8 +63,11 @@ function readParagraph(p, warn) {
   const properties = childNamed(p, 'w:pPr');
   let style = '';
   let indent = 0;
+  let outline = null; // an outline level given to the paragraph itself, from 0
   if (properties) {
     style = attrOf(childNamed(properties, 'w:pStyle') ?? { ':@': {} }, 'w:val') ?? '';
+    const level = childNamed(properties, 'w:outlineLvl');
+    if (level) outline = Number.parseInt(attrOf(level, 'w:val'), 10);
     const ind = childNamed(properties, 'w:ind');
     if (ind) indent = Number.parseInt(attrOf(ind, 'w:left') || attrOf(ind, 'w:start') || '0', 10) || 0;
   }
@@ -84,7 +87,7 @@ function readParagraph(p, warn) {
       else if (tag === 'w:sym') warn('a symbol run was ignored');
     }
   }
-  return { style, indent, segs, text: segs.map((seg) => seg[0]).join('') };
+  return { style, indent, outline: Number.isInteger(outline) && outline >= 0 && outline < 9 ? outline : null, segs, text: segs.map((seg) => seg[0]).join('') };
 }
 
 function readXml(file) {
@@ -148,8 +151,10 @@ function rawParagraphs(xml, warn = () => {}) {
 //   documentIndent    twips; a paragraph indented this much is an in-story document (default 720)
 //   sceneBreaks       source paragraph numbers (counting every paragraph, empty or not, from 0) that are scene breaks
 //   paraStyles        { 'Word style name': 'role' }, for paragraphs the theme gives their own look
+//   keepQuotes        true: the words keep their quotes as written, to be curled for the book's language when it is set. The
+//                     quote check still reads them as they would be curled.
 // Returns { title, titleRaw, blocks, warnings, quoteIssues, stats }.
-function parseChapter(xml, { number = 0, stripPrefix = DEFAULT_PREFIX, documentIndent = DEFAULT_DOCUMENT_INDENT, sceneBreaks = [], paraStyles = {} } = {}) {
+function parseChapter(xml, { number = 0, stripPrefix = DEFAULT_PREFIX, documentIndent = DEFAULT_DOCUMENT_INDENT, sceneBreaks = [], paraStyles = {}, keepQuotes = false } = {}) {
   const warnings = [];
   const warn = (message) => {
     if (!warnings.includes(message)) warnings.push(message);
@@ -176,10 +181,11 @@ function parseChapter(xml, { number = 0, stripPrefix = DEFAULT_PREFIX, documentI
   }
 
   const real = paragraphs.filter((p) => p.segs);
-  real.forEach((p) => {
-    p.segs = curlyRuns(p.segs);
+  const curled = real.map((p) => curlyRuns(p.segs));
+  if (!keepQuotes) real.forEach((p, i) => {
+    p.segs = curled[i];
   });
-  const quoteIssues = quoteBalanceIssues(real.map((p) => p.segs.map((seg) => seg[0]).join('')));
+  const quoteIssues = quoteBalanceIssues(curled.map((segs) => segs.map((seg) => seg[0]).join('')));
 
   const blocks = [];
   for (const p of paragraphs) {
@@ -195,7 +201,8 @@ function parseChapter(xml, { number = 0, stripPrefix = DEFAULT_PREFIX, documentI
     }
   }
 
-  const title = smartQuotes(titleRaw.replace(stripPrefix, '').trim()).text;
+  const stripped = titleRaw.replace(stripPrefix, '').trim();
+  const title = keepQuotes ? stripped : smartQuotes(stripped).text;
   return {
     title,
     titleRaw,
@@ -210,4 +217,4 @@ function readChapterFile(file, options = {}) {
   return parseChapter(readXml(file), options);
 }
 
-module.exports = { DEFAULT_DOCUMENT_INDENT, DEFAULT_PREFIX, parseChapter, rawParagraphs, readChapterFile };
+module.exports = { DEFAULT_DOCUMENT_INDENT, DEFAULT_PREFIX, inlinesOf, parseChapter, rawParagraphs, readChapterFile };

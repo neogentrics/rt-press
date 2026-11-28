@@ -31,6 +31,9 @@ in one app means the same thing in the other.
 A book comes to Press as one `.rtbook` file: a zip holding `book.json` (the book's structure and text, in the shape RT Story
 Tracker's exports already build), its cover and its pictures.
 
+What is in the file, as Press reads it, is in [the .rtbook file](rtbook.md). Press opens one from *File → Open a Book File…*
+since 1.0; the App Link way in comes with 1.7.
+
 - **From RT Story Tracker, linked:** a *Send to RT Press* command writes the file and sends its path with App Link's
   `open_document`. Press lists `rtbook` in what it `accepts`. No change to the protocol is needed.
 - **From RT Story Tracker, not linked:** export the `.rtbook` and open it in Press.

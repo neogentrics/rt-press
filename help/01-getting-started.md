@@ -6,7 +6,7 @@ RT Press lays out a finished book for print, checks it against your printer's ru
 
 ## From chapters to a PDF
 
-1. [Import your chapters](#do=import-chapters): a folder of Word files, one for each chapter.
+1. [Import your chapters](#do=import-chapters), a folder of Word files with one for each chapter, or [open a book file](#do=open-book): an .rtbook, Word, Markdown or EPUB file.
 2. Give the book its title and author, and choose the interior: the edition, trim size, paper and type.
 3. **Build the Interior**. RT Press sets the pages, repairs page turns, and checks the file.
 4. Look through the pages, then **Save PDF…**.
@@ -19,7 +19,7 @@ RT Press lays out a finished book for print, checks it against your printer's ru
 
 ## Where to go next
 
-- [Bringing in your chapters](#help=chapters)
+- [Bringing in your book](#help=chapters)
 - [Setting the interior](#help=interior)
 - [The book's pages](#help=pages)
 - [Page turns](#help=page-turns)

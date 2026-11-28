@@ -232,3 +232,25 @@ test('choosing hardcover and a pinned count holds that page count', { skip }, as
   assert.equal(build.pages, 100);
   assert.equal(build.ready, true, JSON.stringify(build.checks.filter((c) => !c.ok)));
 });
+
+test('a quick preview never stands in the way: the book can be changed and built while one is being made, and a stale one is thrown away', { skip }, async () => {
+  const s = session();
+  s.importFolder(folderOfChapters(10, 8));
+  const made = await s.preview();
+  assert.equal(made.ok, true, made.messages);
+  assert.ok(made.pages > 10);
+  assert.match(s.page(1), /^data:image\/png;base64,/);
+  assert.equal(s.canSave, false, 'a preview is not a file to save');
+  const slow = s.preview();
+  assert.equal(s.building, false, 'a preview is not a build');
+  assert.deepEqual(await s.preview(), { ok: false, reason: 'busy' }, 'one at a time');
+  const added = s.addPage('dedication');
+  assert.equal(added.error, undefined, 'a page can be added while a preview is made');
+  assert.deepEqual(await slow, { ok: false, reason: 'out-of-date' });
+  assert.equal(s.page(1), null, 'and nothing stale is shown');
+  const during = s.preview();
+  const built = await s.build();
+  assert.equal(built.ok, true, built.messages);
+  assert.deepEqual(await during, { ok: false, reason: 'out-of-date' });
+  assert.equal(s.draft, null, 'the build’s own pages are the ones shown');
+});
