@@ -174,7 +174,7 @@ the repo they live in. What it copies is committed in `src/theme` with a `theme.
 - `src/shared`: what both sides need, such as the book, the theme and KDP's numbers (`print-rules.js`).
 
 The plan behind it all is in the [roadmap](ROADMAP.md) and the [decisions](docs/decisions.md), with designs for
-[typesetting](docs/design/typesetting.md), the [print rules](docs/design/print-rules.md) and
+[typesetting](docs/design/typesetting.md), the [print rules](docs/design/print-rules.md), the [other platforms print rules](docs/design/print-rules-other-platforms.md) and
 [working with the suite](docs/design/working-with-the-suite.md), and what step zero found in the
 [results](docs/design/step-zero-results.md).
 

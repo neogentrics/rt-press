@@ -1,0 +1,18 @@
+name: Feature request
+description: Suggest an improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: Check the [roadmap](https://github.com/neogentrics/rt-press/blob/main/ROADMAP.md) first, since it may already be planned.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like RT Press to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help?
+      description: What job are you trying to get done, and how do you do it today?

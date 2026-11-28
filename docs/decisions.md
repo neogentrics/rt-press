@@ -82,6 +82,27 @@ latest-versions file or offered as a store download, so the owner made it public
 Nothing private is in it: the test book and the owner's build script stay in a folder git ignores, and the history was
 checked for names, people and secrets first. The licence is still proprietary, as for RT Story Tracker.
 
+### One major version per platform
+
+✅ **Chosen 27 November 2026.** KDP is version 1, and everything added for it is a 1.x release. Each new platform Press prints
+for makes the next major version: Lulu 2.x, IngramSpark 3.x, Barnes & Noble Press 4.x, Google Play Books 5.x, with more to
+follow if the owner adds them. Inside a platform, x.0 is its rules and interiors, x.1 its paperback cover, x.2 its hardcover
+and x.3 what only that platform has; features every platform shares stay in 1.x. The order is the owner's to change. The
+research behind each is in [other platforms' print rules](design/print-rules-other-platforms.md), read from the platforms' own
+pages on 27 November 2026. What wasn't readable (IngramSpark's File Creation Guide, B&N Press's Print Formatting Guide, and
+spine formulas for both) is read before that platform's release is built.
+
+### Audiobooks
+
+✅ **Chosen 27 November 2026: Press doesn't make audiobooks, but it supplies what a recording needs.** RT Audio Studio handles the
+audio. Press, which has the cover and the text, supplies a square audiobook cover and the narration text (one file per
+chapter, credits wording, a chapter list) in 1.6, for an author who records their own narration or hands the text to
+Audio Studio. Press never records, edits or checks audio.
+
+### The shared themes move to 1.1
+
+✅ **Decided 27 November 2026, by the planning session at the owner's invitation: 1.0 ships with light and dark, and the ten shared themes and the looks come in 1.1.** The shared themes file isn't ready (the repo holds only a README until RT Markdown Reader's look update merges), and a 1.0 shouldn't wait on another app. The loader, tokens and lock check are built in 1.0, so 1.1 adds the files, not a new design. If the shared file is ready before 1.0 is tagged, it goes into 1.0.
+
 ### The icon
 
 ✅ **Approved 27 November 2026: the unfolded book cover on a dark tile.** The owner rejected the first draft because it looked

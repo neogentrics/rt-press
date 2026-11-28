@@ -30,9 +30,9 @@ def inline(s):
     return s
 
 def anchor(ver):
-    return 'r-' + re.sub(r'[^a-z0-9]+', '-', ver.lower()).strip('-').replace('.', '')
+    return 'r-' + re.sub(r'[^a-z0-9]+', '-', ver.lower().replace('.', '')).strip('-')
 
-sections = re.split(r'^## ', md, flags=re.M)[1:]
+sections = re.split(r'^#{2,3} ', md, flags=re.M)[1:]
 releases = []
 for sec in sections:
     head, _, body = sec.partition('\n')
@@ -95,7 +95,28 @@ def own_table(rows):
 stand_html = (f'<section id="stands" aria-labelledby="standh"><div class="section-head"><h2 id="standh">Where it stands</h2><p>As of {as_of.group(1) if as_of else ""}</p></div>'
               + '<div style="height:12px"></div>'.join(own_table(t) for t in tables) + '</section>')
 HERE = next((v for v, state in states.items() if state.startswith('Building')), 'v1.0')
-rail = ''.join(f'<a class="node {"here" if r["ver"] == HERE else "plan"}" href="#{anchor(r["ver"])}" title="{html.escape(r["theme"])}">{short(r["ver"])}</a>' for r in main)
+def is_group(r):
+    return r['ver'].endswith('.x') and not r['rows']
+
+def major(r):
+    m = re.match(r'v(\d+)', r['ver'])
+    return m.group(1) if m else '1'
+
+rail_groups = {}
+for r in main:
+    if not is_group(r):
+        rail_groups.setdefault(major(r), []).append(r)
+rail = ''.join(
+    '<div class="rail-group"><span class="rail-label">' + k + '.x</span><div class="rail-nodes">'
+    + ''.join(f'<a class="node {"here" if r["ver"] == HERE else "plan"}" href="#{anchor(r["ver"])}" title="{html.escape(r["theme"])}">{short(r["ver"])}</a>' for r in rs)
+    + '</div></div>' for k, rs in rail_groups.items())
+
+def group_html(r):
+    intro = f'<p class="relintro">{inline(r["intro"])}</p>' if r['intro'] else ''
+    return (f'<div class="relgroup" id="{anchor(r["ver"])}" style="margin:22px 0 6px"><h3 style="margin:0">{short(r["ver"])} · {inline(r["theme"])}</h3>{intro}</div>')
+
+def any_html(r, kind, opened=False):
+    return group_html(r) if is_group(r) else rel_html(r, kind, opened)
 
 decided = [
     ('Which app keeps which export', 'Press does all of it, for authors who don\'t use the other apps: designed interiors and covers, plus EPUB, Word and plain formats from v1.6. The three apps share one piece of export code instead of three copies.'),
@@ -105,7 +126,10 @@ decided = [
     ('What 1.0 does', 'Interiors for KDP first. Frames in 1.1, art in 1.2, covers in 1.3 and 1.4, where Press replaces your build script.'),
     ('The plan', 'Approved on 17 November 2026.'),
     ('From alpha to 1.0', 'Through a beta. A version tag, which publishes a build, is pushed only when you say so.'),
-    ('The icon', 'Redrawn on 27 November, because the first draft looked like the other apps\' icons: an unfolded cover on a dark tile, with a CMYK colour bar for a spine.'),
+    ('One major version per platform', 'KDP is version 1 and everything added for it is a 1.x release. Each new platform makes the next major version: Lulu 2.x, IngramSpark 3.x, Barnes & Noble Press 4.x, Google Play Books 5.x. Inside one, x.0 is its rules and interiors, x.1 its paperback cover, x.2 its hardcover, x.3 what only it has. Chosen 27 November.'),
+    ('Audiobooks', 'Press does not make them: RT Audio Studio does the audio. Press supplies the square audiobook cover and the narration text, one file per chapter, from 1.6, for an author who records their own narration. Chosen 27 November.'),
+    ('Shared themes in 1.1', 'Version 1.0 ships light and dark; the ten shared themes and the looks come in 1.1, because the shared themes file is not ready. The plumbing is built in 1.0. If the file is ready first, it goes into 1.0. Decided 27 November.'),
+    ('The icon', 'The unfolded book cover on a dark tile, with a striped spine, crop marks and a barcode. The first draft looked like the other apps icons, so it was redrawn. Approved 27 November.'),
     ('Who keeps the plan', 'The session that builds Press keeps the README, roadmap and decisions true as it goes.'),
     ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs. The files move in after Reader's 3.13.x look update merges."),
     ("Alphas for testing", "You asked on 22 November for CI to create alpha releases like the other apps. 0.1.0-alpha.0 is the first: a pre-release built by the release workflow, unsigned, for you to test."),
@@ -152,7 +176,7 @@ page = f'''<!DOCTYPE html>
 </div>
 {stand_html}
 <section aria-labelledby="railh"><div class="section-head"><h2 id="railh">Every version</h2></div>
-<div class="rail"><div class="rail-group"><span class="rail-label">1.x</span><div class="rail-nodes">{rail}</div></div>
+<div class="rail">{rail}
 <div class="key"><span><i class="k-now"></i>In progress</span><span><i class="k-plan"></i>Planned</span></div></div></section>
 <section id="ideas" aria-labelledby="ideash"><div class="section-head"><h2 id="ideash">Our own way of doing the job</h2><p>Three ideas the app is built around</p></div>
 <div class="ideas">
@@ -162,7 +186,7 @@ page = f'''<!DOCTYPE html>
 </div></section>
 <section id="coming" aria-labelledby="comingh"><div class="section-head"><h2 id="comingh">The releases</h2><p>Each one can be tested on its own</p></div>
 <div class="tools"><input type="search" id="q" placeholder="Search the roadmap" aria-label="Search the roadmap"><button type="button" id="all">Open all</button></div>
-<div class="list" id="list" style="margin-top:10px">{"".join(rel_html(r, "plan", r["ver"] == HERE) for r in main)}</div>
+<div class="list" id="list" style="margin-top:10px">{"".join(any_html(r, "plan", r["ver"] == HERE) for r in main)}</div>
 <p class="empty hide" id="none">Nothing matches that.</p></section>
 <section id="owns" aria-labelledby="ownsh"><div class="section-head"><h2 id="ownsh">Who keeps which export</h2><p>Every app can get a book out by itself, from shared code</p></div>
 <div class="scroll"><table class="own"><thead><tr><th>Export</th><th>RT Press</th><th>RT Story Tracker</th><th>RT Markdown Reader</th></tr></thead><tbody>

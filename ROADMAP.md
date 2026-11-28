@@ -17,8 +17,13 @@ own. **The owner approved this plan on 17 November 2026. Step zero is done, and 
 
 **Legend:** ✅ built (on the branch being built, not yet released) · 🙋 requested by the owner · 🛡️ needs a permission step · Size: **S** ≈ a day, **M** ≈ a few days, **L** ≈ a week or more
 
-**Version numbers:** new features are 1.x releases (1.9 is followed by 1.10, 1.11…). The next major version, 2.0, is kept for
-something as big as a change to what the app is.
+**Version numbers:** each platform Press prints for is a major version. **KDP is version 1**, and every feature added for it
+is a 1.x release (1.9 is followed by 1.10, 1.11…). **Adding a new platform makes the next major version:** Lulu is 2.x,
+IngramSpark 3.x, Barnes & Noble Press 4.x and Google Play Books 5.x. Inside a platform's version the pattern is the same:
+x.0 is its rules and interiors, x.1 its paperback cover, x.2 its hardcover, and x.3 whatever only that platform has. Features
+every platform shares stay in 1.x. The order of the platforms is the owner's and can change; so can the number of them. The
+rules for each are in [other platforms' print rules](docs/design/print-rules-other-platforms.md), read from the platforms' own
+pages on 27 November 2026.
 
 **Every release must:** install on a clean computer with nothing else set up, update from the release before it without
 losing anything, and pass its automated tests on Windows, Mac and Linux.
@@ -33,10 +38,14 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v1.2](#v12--art-on-the-page) | Art on the page | Planned |
 | [v1.3](#v13--the-paperback-cover-wrap) | The paperback cover wrap | Planned |
 | [v1.4](#v14--the-hardcover-case-wrap) | The hardcover case wrap | Planned |
-| [v1.5](#v15--other-printers-and-editions) | Other printers and editions | Planned |
+| [v1.5](#v15--editions-and-rule-sets) | Editions and rule sets | Planned |
 | [v1.6](#v16--every-other-format) | Every other format | Planned |
 | [v1.7](#v17--the-recon-towers-suite) | The Recon Towers suite | Planned |
 | [v1.8](#v18--claude-and-ai) | Claude and AI | Planned |
+| [v2.x](#v2x--lulu) | Lulu | Researched, planned after 1.8 |
+| [v3.x](#v3x--ingramspark) | IngramSpark | Researched, planned after Lulu |
+| [v4.x](#v4x--barnes--noble-press) | Barnes & Noble Press | Partly researched, planned after IngramSpark |
+| [v5.x](#v5x--google-play-books) | Google Play Books (ebooks) | Researched, planned after B&N Press |
 | [Later](#later--only-if-needed) | Only if needed | Ideas |
 | [Ongoing](#ongoing--polish--distribution) | Polish & distribution | Ongoing |
 
@@ -101,12 +110,12 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 | ✅ Installed list | S | On first run and after each update, writes `installed/rt-press.json` (id, name, version, launch path, protocol) in the App Link folder, and removes it on uninstall, so the other apps can find Press. |
 | 🙋 ✅ Menus and Help | M | File, Edit, View and Help, each kept short, with less-used commands in submenus and every command runnable by name from the command palette (`Ctrl+K`). The Help menu in the suite's order: *Help Center* (`F1`), *Tutorial*, *Check for Updates…*, *About RT Press*. Guides are plain Markdown files in a `help` folder, and the tutorial offers a practice book. |
 | 🙋 ✅ About and Preferences | S | The suite's About window: icon, version, *Website*, *What's new in this version*, *Report a problem or suggest a feature*, *Source code*, the Electron, Chromium, Node and system versions with *Copy details*, and links to the licence and the open-source notices. One Preferences window (`Ctrl+,`) holds every setting. |
-| 🙋 App themes and the toolbar | M | The window is built to the suite's [theming file](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-theming.md), taken in from the suite's one shared themes file in the private repo `neogentrics/recon-theme`, not copied by hand: a script copies the files at a pinned tag and writes a `theme.lock` (a hash of them), Press commits both, so building never needs access, and a test fails if the copy differs from the lock (the files move in after RT Markdown Reader's 3.13.x look update merges, and until then RT Markdown Reader's files are the source): the ten shared themes (Paper, Night, Sepia, Mist, Forest, Dusk, Blue, Red, Yellow, High Contrast) plus *Auto*, the shared colour tokens, the *Solid*, *Metallic* and *Glass* looks, *Colour-safe* and *Customize Theme*. A theme made in *Customize Theme* or loaded from a file is kept once in the suite's shared folder, so every app offers it, and a theme that fails contrast is refused. One theme button on the main screen, also under *Preferences → Appearance* and *View → Look*. Contrast of every theme with every look is measured in the tests on all three systems. The page preview stays plain, since looks are for the window around it. An icon toolbar with a name on hover for each button. |
-| 🙋 Updates, access and languages | M | *Restart to update* where the system allows it, and a download link where it doesn't. Every button named, every theme at WCAG AA contrast, Windows high contrast, and everything doable from the keyboard, all checked by the tests. Spanish, French and German, and right-to-left layouts. |
+| 🙋 App theme and the toolbar | M | The window follows the system, light or dark, with *Auto* and a choice of either, built to the suite's [theming file](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-theming.md) and ready for the suite's shared themes file: the loader, the shared colour tokens and the `theme.lock` check are in, so the ten themes and the looks arrive in 1.1 without changing the app. One theme button on the main screen, also under *Preferences → Appearance*. Contrast of light and dark is measured in the tests on all three systems. The page preview stays plain. An icon toolbar with a name on hover for each button. |
+| 🙋 Updates, access and languages | M | *Restart to update* where the system allows it, and a download link where it doesn't. Every button named, light and dark at WCAG AA contrast, Windows high contrast, and everything doable from the keyboard, all checked by the tests. Spanish, French and German, and right-to-left layouts. |
 
 **Test:** lay out a book in each trim size, upload it to KDP's previewer, and it reports nothing. Change one word in RT
 Story Tracker, refresh, and only that page moves. The menus, Help, About and Preferences use RT Markdown
-Reader's wording, and every theme passes the contrast test. The print preview and the layout screens have their own design, inside that frame.
+Reader's wording, and light and dark pass the contrast test. The print preview and the layout screens have their own design, inside that frame.
 
 ## v1.1 — Page frames and ornaments
 
@@ -117,6 +126,7 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 | 🙋 Page frames | L | A frame on every page, mirrored for left and right pages and kept clear of the spine, drawn from shapes or from your own artwork. |
 | 🙋 Part-page frames | S | A different frame, or extra artwork, on the Part title pages. |
 | Ornaments | S | Scene-break and heading ornaments from a font or your own artwork. |
+| 🙋 The suite's themes and looks | M | Moved here from 1.0 on 27 November 2026 (the owner left the timing to the planning session), because the shared themes file in the private repo `neogentrics/recon-theme` wasn't ready: it holds only a README until RT Markdown Reader's 3.13.x look update merges. Press takes the files in by script at a pinned tag and writes a `theme.lock`, committed, so building never needs access, and a test fails if the copy differs from the lock. They give the ten shared themes (Paper, Night, Sepia, Mist, Forest, Dusk, Blue, Red, Yellow, High Contrast) plus *Auto*, the shared colour tokens, the *Solid*, *Metallic* and *Glass* looks, *Colour-safe* and *Customize Theme*. A theme made in *Customize Theme* or loaded from a file is kept once in the suite's shared folder, so every app offers it, and a theme that fails contrast is refused. Also under *View → Look*. Contrast of every theme with every look is measured in the tests on all three systems. If the shared file is ready before 1.0 is tagged, it goes into 1.0 instead. |
 | Blank pages | S | Choose whether blank pages carry the frame and a page number. |
 
 **Test:** a framed book passes KDP's previewer with no warning about content near the edge.
@@ -163,15 +173,18 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 
 **Test:** a hardcover wrap passes KDP's cover check. **From here, Press does everything the owner's build script does.**
 
-## v1.5 — Other printers and editions
+## v1.5 — Editions and rule sets
+
+The groundwork every later platform plugs into. KDP's numbers become one rule set among several, so a new platform is a new
+rule set plus whatever its files need, not a change to the typesetter.
 
 | Feature | Size | Details |
 |---|:-:|---|
-| Printer rule sets | M | IngramSpark, Barnes & Noble Press and Lulu, each as a rule set you can read and change. Add your own printer. |
-| Print-standard files | M | The PDF/X files and CMYK covers some printers ask for. |
+| Printer rule sets as files | M | Each printer's numbers (trim sizes, page limits, margins, bleed, spine widths, file rules) live in a rule set you can read and change, with the date and page each came from. KDP's is the first. Add your own printer. |
+| Bleed as a mode | S | Bleed on the outside edges only (KDP, IngramSpark), or on all four sides (Lulu), chosen by the rule set. |
 | 🙋 Editions | M | Paperback, hardcover and large print from one book, sharing its design. |
 
-**Test:** the same book passes each printer's own checker.
+**Test:** KDP's rule set, moved into a file, gives the same pages and the same checks as before.
 
 ## v1.6 — Every other format
 
@@ -182,6 +195,8 @@ Reader's wording, and every theme passes the contrast test. The print preview an
 | 🙋 EPUB | M | A store-ready EPUB, checked with EPUBCheck before it's saved. |
 | 🙋 Word | S | Including a Kindle Word file: real headings, a linked contents page, and no frames, blank pages or page numbers. |
 | Plain formats | S | A plain print PDF, Markdown, HTML and plain text. |
+| Audiobook cover | S | A square cover made from the book's front cover design, for the audiobook stores: no borders to turn a rectangle into a square, the title and author clear, saved at each store's size and colour mode (RGB, not CMYK). The store sizes are read from each store's own page when this is built. |
+| Audiobook text | S | The book as plain text in reading order, one file per chapter, with the front and back matter marked, the opening and closing credits wording (title, author and narrator), and a chapter list with word counts, ready for someone recording their own narration or to hand to RT Audio Studio. Press doesn't record, edit or check audio; that is RT Audio Studio's job. |
 | Every file type | M | Every format the suite's apps can make, from the shared module: at least EPUB, Word, plain PDF, Markdown, HTML, plain text, RTF, OpenDocument and XML, so a book can be exported from Press in whatever form a store or site asks for. |
 
 **Test:** the EPUB passes EPUBCheck and KDP's previewer. The Kindle Word file builds its contents on Kindle.
@@ -212,6 +227,144 @@ An add-on, off until you turn it on, with your choice of service, including a mo
 
 **Test:** with AI off, nothing reaches any service, and the app is complete.
 
+## v2.x — Lulu
+
+🙋 The next platform after KDP. Lulu prints and sells books itself and also distributes them to stores. Its rules are in
+[other platforms' print rules](docs/design/print-rules-other-platforms.md#lulu-version-2). The release can't start until 1.5's
+rule sets exist.
+
+### v2.0 — Lulu interiors
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Lulu rule set | M | Sixteen book trim sizes from 4.25 × 6.875 to 11.69 × 8.27 in, paperback 32 to 800 pages and hardcover 24 to 800, the safety margin and the gutter by page count, all as data. |
+| Bleed on all four sides | S | The page is the trim size plus 0.25 in each way, as Lulu asks, with the picture running into the bleed on the spine side too. A file with no bleed gets white edges from Lulu, so Press says so. |
+| Lulu's colour rules | S | sRGB for colour books and grey for black and white; total ink no more than 270 %; pictures 300 ppi and no more than 600. |
+| Lulu's checks before upload | M | Fonts embedded, no transparency, one page size, no marks or password, the title on an odd page and the copyright on an even one, and the page count against the binding. |
+
+**Test:** the same book, set for Lulu, uploads with no bleed warning and the right page size in Lulu's own preview.
+
+### v2.1 — Lulu paperback cover
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Cover wrap for Lulu | M | One PDF with the back cover first, then spine, then front. Spine = pages ÷ 444 + 0.06 in, checked against Lulu's template for the exact page count. |
+| Safety and spine rules | S | A 0.5 in safety margin (the stricter of Lulu's two figures), no spine text at 80 pages or fewer, and 0.125 in clear each side of any spine text. |
+| Barcode | S | An ISBN barcode from the author's own number, or the space left for the one Lulu gives for free. |
+
+**Test:** a cover for a book in each size passes Lulu's upload check first time.
+
+### v2.2 — Lulu hardcover
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Casewrap | M | The cover printed 0.75 in larger all round, with the overhang, the hinge about 0.25 in from the spine, and spine widths from Lulu's table of 27 page ranges. |
+| Linen and foil | S | Colour of the linen, the foil colour, and a spine stamp of at most 42 capital letters and a short list of punctuation, checked as it's typed. |
+| Dust jacket | M | The flaps and the jacket's own template. |
+
+**Test:** a casewrap passes Lulu's upload check and its template overlay lines up.
+
+### v2.3 — What only Lulu has
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Coil and saddle stitch | S | Bindings with no spine, so no spine width and no gutter. |
+| Comics and magazines | M | Print on the inside of the covers, with a two-page cover file. |
+| Right-to-left books | M | The page order reversed in the file and the cover turned around, as Lulu's instructions say. This also covers the "Right-to-left books" row in Later for Lulu. |
+| Retail distribution checks | S | Text inside a picture at least 0.5 in from the edge, as Lulu asks for books sold through its store network. |
+
+**Test:** each binding passes Lulu's upload check.
+
+## v3.x — IngramSpark
+
+🙋 The wholesale route into bookstores and libraries. Rules are in
+[other platforms' print rules](docs/design/print-rules-other-platforms.md#ingramspark-version-3). **Needs a short test first:**
+whether Typst can write PDF/X-1a and CMYK itself, or a finishing step has to ship inside Press.
+
+### v3.0 — IngramSpark interiors
+
+| Feature | Size | Details |
+|---|:-:|---|
+| IngramSpark rule set | M | Trim sizes from 4 × 6 to 8.5 × 11, custom sizes for paperbacks, 18 to 900 pages (840 for hardcover), the paper and ink options, as data. The trim-size matrix is read from the File Creation Guide first. |
+| PDF/X-1a files | L | The print-standard file IngramSpark recommends, with fonts embedded and no transparency. Depends on the test above. |
+| CMYK and ink rules | M | Black and white interiors in grey with no spot colours or ICC profiles; colour interiors in CMYK with total ink no more than 240 % and no registration black. |
+| IngramSpark's checks before upload | S | The final page blank, margins at least 0.5 in, bleed on three edges, one page size, and no marks. |
+
+**Test:** the file passes IngramSpark's own file check (its upload does the check) and a PDF/X validator.
+
+### v3.1 — IngramSpark paperback cover
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Cover wrap in CMYK | M | A full spread with bleed from the spine width for the page count and paper, read from IngramSpark's Spine Width Calculator, not from memory. |
+| Type and spine rules | S | Type at least 0.25 in inside the trim; 0.0625 in clear each side of a spine of 0.35 in or more, 0.03125 in for a narrower one; text of 24 pt or less in 100 % black; no spine text under 48 pages. |
+| Barcode | S | Mandatory on every back cover: 100 % black on a white box with a 1.75 × 1 in area. Press draws one from the ISBN, or leaves the area for IngramSpark's. |
+
+**Test:** a cover generated for each paper passes IngramSpark's cover check.
+
+### v3.2 — IngramSpark hardcover
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Case laminate | M | The 0.625 in wrap and 0.5 in hinge, with nothing important in the hinge. |
+| Digital cloth | S | Navy or grey, with a spine stamp of at most 42 characters in the characters the stamp can print. |
+| Jacket | M | The jacketed case laminate, with its own template. |
+
+**Test:** a hardcover cover passes IngramSpark's cover check.
+
+### v3.3 — What only IngramSpark has
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Print on the inside of the cover | S | Duplex covers for perfect-bound paperbacks, not offered at 11 × 8.5. |
+| Perforated pages | S | For the sizes where they're offered. |
+
+## v4.x — Barnes & Noble Press
+
+🙋 Barnes & Noble's own self-publishing print service. Part of its rules were readable
+([other platforms' print rules](docs/design/print-rules-other-platforms.md#barnes--noble-press-version-4)); the **Print Formatting
+Guide** (interior margins, bleed, spine) wasn't, and is read before 4.0 starts.
+
+### v4.0 — B&N Press interiors
+
+| Feature | Size | Details |
+|---|:-:|---|
+| B&N Press rule set | M | Twenty trim sizes with no custom sizes, 18 to 800 pages (400 for 11 × 8.5), cream, white and groundwood paper, and black and white, standard or premium colour. |
+| B&N Press's checks before upload | M | Margins and bleed from the Print Formatting Guide, once read. |
+| Price and listing notes | S | A note, not a block, that new print listings can't be under $14.99, an account holds at most 100 titles, and public-domain books aren't allowed (rules from April 2026). |
+
+**Test:** the interior is accepted by B&N Press's upload.
+
+### v4.1 — B&N Press paperback cover
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Separate or full cover | M | Either a front and a back, or one wrap with the spine, never both, matching the template tool's size for the trim and page count. The file has only the cover, none of the template's trim lines. |
+| Spine | S | From the template tool's exact figure for the page count; the formula is not published where it could be read. |
+
+**Test:** a cover passes the upload.
+
+### v4.2 — B&N Press hardcover
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Printed case and dust jacket | M | For the sizes that offer them, once the dimensions are read from the templates. |
+
+## v5.x — Google Play Books
+
+🙋 Ebooks only: Google Play Books doesn't print. This version gets a book into Play Books cleanly, using what 1.6 makes. Rules
+are in [other platforms' print rules](docs/design/print-rules-other-platforms.md#google-play-books-version-5).
+
+| Feature | Size | Details |
+|---|:-:|---|
+| Play Books rule set | S | EPUB 3.3, 3 or 2, or a PDF, each under 2 GB; the EPUB holds its cover image and the whole book. |
+| EPUB that passes EpubCheck | S | Google requires a validated EPUB, so Press checks it before the file is saved. |
+| PDF for Play Books | S | Not password-protected, with bookmarks so Google builds the contents list. |
+| Cover image | S | JPEG, PNG, TIFF or PDF, at least 640 and at most 7,200 pixels each way. |
+| Names that match | S | The PDF named for the print ISBN and the EPUB for the electronic ISBN, so the book isn't listed twice. |
+
+**Test:** a book uploads to Play Books' Partner Center as one listing with both files. Audiobooks aren't made here: Press supplies the audiobook cover and text from 1.6, and RT Audio Studio does the audio.
+
 ## Later — only if needed
 
 | Feature | Size | Details |
@@ -226,4 +379,5 @@ An add-on, off until you turn it on, with your choice of service, including a mo
 |---|:-:|---|
 | Code signing | S | Windows and Mac signing, as for the other apps. |
 | KDP's rules | S | Read again at the source before each release, with the date in [print rules](docs/design/print-rules.md). |
+| Other platforms' rules | S | Lulu, IngramSpark, B&N Press and Google Play Books are read again from their own pages before the release that supports them is built, with the date in [their print rules](docs/design/print-rules-other-platforms.md). |
 | The typesetter | S | Each new Typst release is tested against the step-zero book before Press moves to it. |
