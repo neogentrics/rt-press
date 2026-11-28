@@ -14,10 +14,11 @@ const { fileIn, prepare, sources } = require('../src/main/typeset/bundled-fonts'
 const { checkFonts } = require('../src/main/typeset/check-fonts');
 const { fontFolders, pickStyles, scan } = require('../src/main/typeset/computer-fonts');
 const { FontFileError, coverage, embedding, readFaces } = require('../src/main/typeset/font-file');
-const { resolveFont } = require('../src/main/typeset/resolve-fonts');
+const { refusal, resolveFont } = require('../src/main/typeset/resolve-fonts');
 const { generateTypst } = require('../src/main/typeset/typst-source');
 const { typesetBook } = require('../src/main/typeset/typeset-book');
 const { BUNDLED, STAND_INS, bundledFamily } = require('../src/shared/font-catalog');
+const { createTranslator } = require('../src/shared/i18n');
 const { withDefaults } = require('../src/shared/theme');
 const { collection, madeUpFont } = require('./helpers/font.cjs');
 const { chapter, fakeBook, fakeTheme, matter, paragraph, text } = require('./helpers/fake-book.cjs');
@@ -87,6 +88,22 @@ test('the embedding flag: what lets a font into a PDF and what keeps it out', ()
   assert.match(embedding(0x0108).reason, /only some of its letters/);
   assert.match(embedding(0x0208).reason, /only pictures/);
   assert.match(embedding(null).reason, /no embedding flag/);
+});
+
+test('every reason a font is refused has its words in the other languages, as the window and a stopped build say it', () => {
+  // The window shows a reason as a sentence of its own; a build that stops puts it inside one. A machine may have no font
+  // that would show either, so they are looked for here.
+  const reasons = [...new Set([null, 2, 0x108, 0x208].map((flag) => embedding(flag).reason)), refusal({}).reason];
+  assert.equal(reasons.length, 5);
+  for (const code of ['es', 'fr', 'de']) {
+    const t = createTranslator(code);
+    for (const reason of reasons) {
+      const sentence = `${reason[0].toUpperCase()}${reason.slice(1)}.`;
+      assert.ok(t.has(sentence), `${code}: ${sentence}`);
+      const stopped = `A Face can’t be used: ${reason}. Choose another font.`;
+      assert.ok(t.has(stopped), `${code}: ${stopped}`);
+    }
+  }
 });
 
 test('a collection gives each of its fonts, and a damaged file is an error, never a guess', { skip }, () => {

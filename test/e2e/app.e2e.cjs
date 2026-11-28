@@ -10,12 +10,39 @@ const { readPdf } = require('../../src/main/pdf/read');
 const { textItems } = require('../../src/main/pdf/text');
 const { readSharedTheme } = require('../../src/main/theme/loader');
 const measureContrast = require('./contrast.cjs');
+const { fileIn, prepare } = require('../../src/main/typeset/bundled-fonts');
+const { bundledFamily } = require('../../src/shared/font-catalog');
+const { madeUpFont } = require('../helpers/font.cjs');
 const { base, command, configHome, gone, launch, madeUpChapters, opened, packaged, profile, root, shared, textIs, unnamed, visible } = require('./harness.cjs');
+
+// Made-up fonts added to the computer's own: one that may go in a PDF, and one for every reason a font may not. A machine's
+// real fonts don't have them all, and some have none. [family, embedding flag, style, why it is refused]
+const PRETEND = [
+  ['Zz Open Face', 0, 'Regular', null],
+  ['Zz Locked Face', 2, 'Regular', 'Its embedding flag forbids putting it in a document.'],
+  ['Zz Subset Face', 0x108, 'Regular', 'Its embedding flag forbids putting in only some of its letters, which is how a PDF holds a font.'],
+  ['Zz Picture Face', 0x208, 'Regular', 'Its embedding flag allows only pictures of its letters to be put in a document.'],
+  ['Zz Unflagged Face', 'none', 'Regular', 'It has no embedding flag to say that it may be put in a document.'],
+  ['Zz Heavy Face', 0, 'Bold', 'It has no regular style that can be used.'],
+];
+function pretendFonts() {
+  const folder = path.join(base, 'pretend-fonts');
+  fs.mkdirSync(folder, { recursive: true });
+  const from = prepare();
+  for (const [family, fsType, style] of PRETEND) {
+    for (const each of family === 'Zz Open Face' ? ['Regular', 'Italic'] : [style]) {
+      const source = fileIn(from, bundledFamily('Libre Baskerville'), each.toLowerCase());
+      fs.writeFileSync(path.join(folder, `${family}-${each}.ttf`), madeUpFont(source, { family, style: each, fsType }));
+    }
+  }
+  return folder;
+}
 
 (async () => {
   const chapters = madeUpChapters();
   const saved = path.join(base, 'saved.pdf');
-  const withDialogs = { RTPRESS_TEST_PICK_FOLDER: chapters, RTPRESS_TEST_SAVE_PATH: saved };
+  const extraFonts = packaged ? {} : { RTPRESS_EXTRA_FONT_FOLDER: pretendFonts() };
+  const withDialogs = { RTPRESS_TEST_PICK_FOLDER: chapters, RTPRESS_TEST_SAVE_PATH: saved, ...extraFonts };
   let app = await launch(withDialogs);
   try {
     const { window, errors } = await opened(app);
@@ -263,6 +290,17 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     assert.equal(await window.inputValue('#body-font'), 'EB Garamond');
     assert.equal(await window.locator('#body-font option[value="TeX Gyre Pagella"]').textContent(), 'TeX Gyre Pagella (stands in for Book Antiqua)');
     assert.equal(await window.locator('#body-font option[value="Noto Sans Symbols 2"]').count(), 0, 'the symbol font sets ornaments, not a book\'s text');
+    // A font that may not go in a PDF is listed, can't be chosen, and says why. One that may is put in the PDF.
+    if (!packaged) {
+      for (const [family, , , why] of PRETEND) {
+        const found = await window.$eval(`#body-font option[value="${family}"]`, (o) => [o.textContent, o.disabled, o.title]);
+        assert.deepEqual(found, why ? [`${family} (can’t be put in a PDF)`, true, why] : [family, false, ''], family);
+      }
+      await window.selectOption('#body-font', 'Zz Open Face');
+      await window.waitForFunction(async () => (await window.rtPress.getState()).settings.body_font === 'Zz Open Face');
+      await rebuild();
+      assert.match(await window.textContent('#build-summary'), /Zz Open Face is set from the copy on this computer\./);
+    }
     await window.selectOption('#body-font', 'TeX Gyre Pagella');
     await window.selectOption('#title-font', 'Playfair Display');
     await window.waitForFunction(async () => (await window.rtPress.getState()).settings.title_font === 'Playfair Display');
@@ -382,7 +420,7 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
   }
 
   // Once finished, it isn't offered again.
-  app = await launch();
+  app = await launch(extraFonts);
   try {
     const { window, errors } = await opened(app);
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -403,6 +441,8 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     await window.click('#build');
     await window.waitForSelector('#results-title:has-text("Listo para guardar")', { timeout: 120000 });
     await window.waitForFunction(() => document.getElementById('page-right').naturalWidth > 0);
+    // So is the reason a font can't be chosen, which shows when it is pointed at.
+    if (!packaged) assert.equal(await window.$eval('#body-font option[value="Zz Locked Face"]', (o) => o.title), 'Su indicador de incrustación prohíbe incluirla en un documento.');
     // The font lists' headings are words too, though they are written as attributes.
     assert.deepEqual(await window.$$eval('#body-font optgroup', (groups) => groups.map((g) => g.label)), ['Incluidas con RT Press', 'En este equipo']);
     // The page turn report, in Spanish too, with a sentence put on the list.

@@ -147,6 +147,9 @@ const named = (value, extra) => {
   return made;
 };
 
+// A reason a font can't be used, as a sentence of its own: that is the form the other languages have.
+const sentenceCase = (text) => `${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
+
 function fillFont(id, chosen) {
   const group = (label, options) => {
     if (!options.length) return null;
@@ -156,7 +159,7 @@ function fillFont(id, chosen) {
   };
   const bundled = fontChoices.bundled.map((f) => (f.standsInFor ? option(f.family, `${f.family} (stands in for ${f.standsInFor})`) : named(f.family)));
   // One that may not be put in a PDF is shown, so its absence is no mystery, but it can't be chosen.
-  const computer = fontChoices.computer.map((f) => (f.reason ? option(f.family, `${f.family} (can’t be put in a PDF)`, { disabled: true, title: f.reason }) : named(f.family)));
+  const computer = fontChoices.computer.map((f) => (f.reason ? option(f.family, `${f.family} (can’t be put in a PDF)`, { disabled: true, title: sentenceCase(f.reason) }) : named(f.family)));
   const known = [...fontChoices.bundled, ...fontChoices.computer].some((f) => f.family === chosen);
   const select = $(id);
   select.replaceChildren(...[
@@ -174,7 +177,6 @@ function showFonts() {
 }
 
 // What a build did about the fonts, when it did more than use the ones that come with RT Press.
-const sentenceCase = (text) => `${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
 function fontNotes(fonts = []) {
   return fonts.flatMap((f) => {
     if (f.source === 'computer') return [`${f.asked} is set from the copy on this computer.`];

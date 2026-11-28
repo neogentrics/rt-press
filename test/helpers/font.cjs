@@ -25,7 +25,8 @@ function nameTable(names) {
   return Buffer.concat([header, ...records.map((r) => r.bytes)]);
 }
 
-// `from` calling itself `family` (`style` as it names its style), with `fsType` for its embedding flag.
+// `from` calling itself `family` (`style` as it names its style), with `fsType` for its embedding flag; 'none' takes away the
+// table that holds the flag.
 function madeUpFont(from, { family, style = 'Regular', fsType = null }) {
   const source = fs.readFileSync(from);
   const padded = Buffer.concat([source, Buffer.alloc((4 - (source.length % 4)) % 4)]);
@@ -34,7 +35,8 @@ function madeUpFont(from, { family, style = 'Regular', fsType = null }) {
   const name = tableAt(data, 'name');
   data.writeUInt32BE(padded.length, name.entry + 8);
   data.writeUInt32BE(names.length, name.entry + 12);
-  if (fsType !== null) data.writeUInt16BE(fsType, tableAt(data, 'OS/2').at + 8);
+  if (fsType === 'none') data.write('XXXX', tableAt(data, 'OS/2').entry, 'latin1');
+  else if (fsType !== null) data.writeUInt16BE(fsType, tableAt(data, 'OS/2').at + 8);
   return data;
 }
 

@@ -16,6 +16,7 @@ const { Session } = require('./press/session');
 const { openStore } = require('./press/store');
 const practice = require('./press/practice');
 const { bundledFolder } = require('./typeset/bundled-fonts');
+const { fontFolders } = require('./typeset/computer-fonts');
 const { detailsText, osName } = require('../shared/about');
 const { createTranslator, pickLanguage, translateMenu } = require('../shared/i18n');
 const { orderThemes } = require('../shared/themes');
@@ -80,7 +81,9 @@ const updater = new Updater((status) => {
 
 // The author's book lives in the app's own folder, in an encrypted project; the fonts and the typesetter come with the app.
 function openBook(folder, workDir) {
-  return new Session({ store: openStore(folder), workDir, fontFolder: bundledFolder({ resourcesPath: resourcesPath() }), resourcesPath: resourcesPath() });
+  // A test may add a folder of made-up fonts to the computer's own, in an app run from the source only.
+  const extra = !app.isPackaged && process.env.RTPRESS_EXTRA_FONT_FOLDER;
+  return new Session({ store: openStore(folder), workDir, fontFolder: bundledFolder({ resourcesPath: resourcesPath() }), computerFontFolders: extra ? [...fontFolders(), extra] : null, resourcesPath: resourcesPath() });
 }
 
 function startSession() {
