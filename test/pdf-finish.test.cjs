@@ -9,8 +9,8 @@ const { pageMarks } = require('../src/main/pdf/content');
 const { finishPdf } = require('../src/main/pdf/finish');
 const { readPdf } = require('../src/main/pdf/read');
 const { typesetBook } = require('../src/main/typeset/typeset-book');
-const { STAND_INS, prepare, sources } = require('../src/main/typeset/stand-in-fonts');
-const { fakeBook, fakeTheme } = require('./helpers/fake-book.cjs');
+const { prepare, sources } = require('../src/main/typeset/bundled-fonts');
+const { TEST_FONTS, fakeBook, fakeTheme } = require('./helpers/fake-book.cjs');
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-finish-test-'));
 test.after(() => fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 5 }));
@@ -22,7 +22,7 @@ let raw;
 async function typstPdf() {
   if (raw) return raw;
   const fonts = prepare({ folder: path.join(scratch, 'fonts') });
-  const result = await typesetBook({ book: fakeBook({ chapters: 6 }), theme: fakeTheme, workDir: path.join(scratch, 'work'), output: path.join(scratch, 'raw.pdf'), fontPaths: [fonts], fontMap: STAND_INS, targetPages: 32, bleed_in: 0.125, timestamp: 1794960000 });
+  const result = await typesetBook({ book: fakeBook({ chapters: 6 }), theme: fakeTheme, workDir: path.join(scratch, 'work'), output: path.join(scratch, 'raw.pdf'), fontPaths: [fonts], fontMap: TEST_FONTS, targetPages: 32, bleed_in: 0.125, timestamp: 1794960000 });
   assert.equal(result.ok, true, result.messages);
   raw = fs.readFileSync(result.output);
   return raw;
@@ -97,7 +97,7 @@ test('the same file finishes to the same bytes', { skip }, async () => {
 
 test('a book with no bleed keeps its page and is still cleaned', { skip }, async () => {
   const fonts = prepare({ folder: path.join(scratch, 'fonts') });
-  const result = await typesetBook({ book: fakeBook({ chapters: 6 }), theme: fakeTheme, workDir: path.join(scratch, 'plain'), output: path.join(scratch, 'plain.pdf'), fontPaths: [fonts], fontMap: STAND_INS, targetPages: 32, timestamp: 1794960000 });
+  const result = await typesetBook({ book: fakeBook({ chapters: 6 }), theme: fakeTheme, workDir: path.join(scratch, 'plain'), output: path.join(scratch, 'plain.pdf'), fontPaths: [fonts], fontMap: TEST_FONTS, targetPages: 32, timestamp: 1794960000 });
   const { data, changes } = finishPdf(fs.readFileSync(result.output), { bleed_in: 0, date: DATE });
   assert.equal(changes.some((c) => /bleed/.test(c)), false);
   assert.deepEqual(runChecks(data, { ...SPEC, bleed: false }).results.filter((r) => !r.ok), []);

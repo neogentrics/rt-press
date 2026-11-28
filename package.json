@@ -17,7 +17,15 @@
     "fflate": "^0.8.3"
   },
   "devDependencies": {
-    "@fontsource/eb-garamond": "^5.3.0",
+    "@expo-google-fonts/cinzel": "0.4.2",
+    "@expo-google-fonts/courier-prime": "0.4.1",
+    "@expo-google-fonts/crimson-pro": "0.4.2",
+    "@expo-google-fonts/eb-garamond": "0.4.3",
+    "@expo-google-fonts/libre-baskerville": "0.4.3",
+    "@expo-google-fonts/noto-sans-symbols-2": "0.4.1",
+    "@expo-google-fonts/playfair-display": "0.4.2",
+    "@expo-google-fonts/source-sans-3": "0.4.2",
+    "@expo-google-fonts/source-serif-4": "0.4.2",
     "electron": "^45.5.0",
     "electron-builder": "^26.18.0",
     "esbuild": "^0.28.2",
@@ -28,12 +36,12 @@
     "start": "npm run build:renderer && electron .",
     "test": "node --test \"test/*.test.cjs\"",
     "test:e2e": "npm run fetch:typst:current && npm run build:renderer && node test/e2e/app.e2e.cjs && node test/e2e/theme.e2e.cjs",
-    "dist:win": "npm run fonts:stand-in && npm run build:renderer && electron-builder --win nsis --x64 --publish never",
-    "dist:mac": "npm run fonts:stand-in && npm run build:renderer && electron-builder --mac dmg --arm64 --x64 --publish never",
-    "dist:linux": "npm run fonts:stand-in && npm run build:renderer && electron-builder --linux AppImage deb --x64 --publish never",
+    "dist:win": "npm run fonts && npm run build:renderer && electron-builder --win nsis --x64 --publish never",
+    "dist:mac": "npm run fonts && npm run build:renderer && electron-builder --mac dmg --arm64 --x64 --publish never",
+    "dist:linux": "npm run fonts && npm run build:renderer && electron-builder --linux AppImage deb --x64 --publish never",
     "fetch:typst": "node scripts/fetch-typst.mjs",
     "fetch:typst:current": "node scripts/fetch-typst.mjs --current",
-    "fonts:stand-in": "node scripts/prepare-fonts.mjs",
+    "fonts": "node scripts/prepare-fonts.mjs",
     "icons": "node scripts/make-icons.mjs",
     "locales": "node scripts/make-locales.mjs",
     "screenshots": "npm run build:renderer && node scripts/screenshots.cjs",
@@ -92,7 +100,7 @@
           "to": "typst"
         },
         {
-          "from": "vendor/fonts/stand-in",
+          "from": "vendor/fonts/bundled",
           "to": "fonts"
         },
         {
@@ -147,7 +155,7 @@
           "to": "typst"
         },
         {
-          "from": "vendor/fonts/stand-in",
+          "from": "vendor/fonts/bundled",
           "to": "fonts"
         },
         {
@@ -197,7 +205,7 @@
           "to": "typst"
         },
         {
-          "from": "vendor/fonts/stand-in",
+          "from": "vendor/fonts/bundled",
           "to": "fonts"
         },
         {

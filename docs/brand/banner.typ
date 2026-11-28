@@ -1,7 +1,7 @@
 // The README's banner, set by the Typst the repo pins: "npm run banner". 1280 by 420 points at 144 pixels per inch is 2560 by 840.
 #set page(width: 1280pt, height: 420pt, margin: 0pt, fill: gradient.linear(rgb("#121019"), rgb("#2c2742"), rgb("#191521"), angle: 20deg))
-#let serif = ("EB Garamond", "Libertinus Serif")
-#let mono = "DejaVu Sans Mono"
+#let serif = "EB Garamond"
+#let mono = "Courier Prime"
 #place(top + left, dx: 66pt, dy: 52pt, text(font: mono, size: 16pt, fill: rgb("#ffd27a"), tracking: 5pt)[RECON TOWERS DEV DEPARTMENT])
 #place(top + left, dx: 62pt, dy: 104pt, grid(columns: 2, column-gutter: 22pt, align: horizon,
   image("icon.svg", width: 106pt),

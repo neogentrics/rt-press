@@ -14,6 +14,9 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **Languages**: Spanish, French and German, and right-to-left layouts.
 - **The suite's themes**: Paper, Night, Sepia, Mist, Forest, Dusk, Blue, Red, Yellow and High Contrast, or *Auto*, with the *Solid*, *Metallic* and *Glass* looks and colour-safe colours, from the theme button, *View* and *Preferences → Appearance*. Taken in from the shared theme files, v0.1.0, and measured for contrast in every theme with every look.
 - **Tests for contrast and keyboard reach** in the window, on all three systems.
+- **Fonts**: a body font and a title font to choose. Press ships EB Garamond, TeX Gyre Pagella, Crimson Pro, Libre Baskerville, Source Serif 4, Source Sans 3, Cinzel, Playfair Display, Courier Prime and Noto Sans Symbols 2, and offers the fonts on the computer that allow being put in a PDF.
+- **Stand-ins** for Book Antiqua, Felix Titling and Segoe UI Symbol, used when the computer hasn't the font or it can't be embedded. The build says which, and why.
+- **A missing character or style stops the build**, naming it and where it is. Nothing is taken from another font.
 - **Custom paperback sizes**, 4 to 8.5 in wide and 6 to 11.69 in tall. KDP publishes no page limits for them, so Press uses its own rule and says so.
 - **An inside margin setting**, and a note that a large size costs more to print.
 - **A page turn report**: what the repair moved, what it couldn't and why, each with its page, and the pages that don't end on the bottom line.
@@ -21,6 +24,7 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **Even page bottoms**, a new setting, on unless turned off: pages whose text carries on end on the same last line where that can be done gently, without moving a word to another page. The build says how many don't.
 
 ### Changed
+- **Ornaments are set in Noto Sans Symbols 2**, and the large first letter in the title font, sized from the fonts' own capitals.
 - **The inside margin now comes from the page count**: KDP's least for that many pages and 0.375 in more. Books of 151 to 300 pages keep 0.875 in; thinner ones get 0.75 in and longer lines, and thicker ones get more.
 - **Page repair finds many more moves.** Adding no pages, a chapter can now use the blank page that followed it, and a move may leave its page two lines short at most.
 - **Electron 45.5.0**, from 45.4.1.
@@ -28,6 +32,7 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **Contrast is measured on the pixels** behind each piece of text and each icon, as in RT Markdown Reader.
 
 ### Fixed
+- **Letters outside Western European** no longer come quietly from another font: the EB Garamond that shipped held only Latin letters. It ships whole now.
 - **No more stretched lines**: the line left before a moved sentence ends short, unless it is nearly full.
 - **Pages allowed under a pinned count** now moves sentences. Before, nothing moved at all.
 - ***Adding no pages*** now notices a page added at the very end of the book.

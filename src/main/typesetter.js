@@ -103,12 +103,14 @@ async function version(options = {}) {
 //   output        where the PDF goes (an existing file is replaced; a failed run leaves none)
 //   root          what the document may read from (images, fonts it names); defaults to the input's folder
 //   fontPaths     folders of fonts. System fonts are ignored unless `systemFonts` is set, so every computer sets the same.
+//   embeddedFonts false leaves out the fonts Typst carries inside itself too, so that only the folders' fonts exist
 //   inputs        { key: value } for sys.inputs, so a build can pass numbers without editing the source
 //   timestamp     a Date (or seconds) for the PDF's creation date, so the same book makes the same bytes
-async function compile({ input, output, root, fontPaths = [], systemFonts = false, inputs = {}, timestamp = null, timeLimitMs = DEFAULT_TIME_LIMIT_MS, maxOutputBytes = DEFAULT_OUTPUT_LIMIT, extraArgs = [], ...where } = {}) {
+async function compile({ input, output, root, fontPaths = [], systemFonts = false, embeddedFonts = true, inputs = {}, timestamp = null, timeLimitMs = DEFAULT_TIME_LIMIT_MS, maxOutputBytes = DEFAULT_OUTPUT_LIMIT, extraArgs = [], ...where } = {}) {
   const program = findTypst(where);
   const args = ['compile', '--diagnostic-format', 'human', '--root', root ?? path.dirname(path.resolve(input))];
   if (!systemFonts) args.push('--ignore-system-fonts');
+  if (!embeddedFonts) args.push('--ignore-embedded-fonts');
   for (const folder of fontPaths) args.push('--font-path', folder);
   for (const [key, value] of Object.entries(inputs)) args.push('--input', `${key}=${value}`);
   if (timestamp !== null) args.push('--creation-timestamp', String(timestamp instanceof Date ? Math.floor(timestamp.getTime() / 1000) : timestamp));
@@ -151,10 +153,11 @@ async function compile({ input, output, root, fontPaths = [], systemFonts = fals
 // Asks a document a question: `expression` is Typst code evaluated in the document's own context, so it can read where things
 // landed (`query(<label>)`, `counter(page).final()`). Returns { ok, value, ms, messages }; the value is what the code gave,
 // read as JSON. The document is set again to answer, so this takes about as long as a compile.
-async function evaluate({ input, expression, root, fontPaths = [], systemFonts = false, inputs = {}, timeLimitMs = DEFAULT_TIME_LIMIT_MS, ...where } = {}) {
+async function evaluate({ input, expression, root, fontPaths = [], systemFonts = false, embeddedFonts = true, inputs = {}, timeLimitMs = DEFAULT_TIME_LIMIT_MS, ...where } = {}) {
   const program = findTypst(where);
   const args = ['eval', '--root', root ?? path.dirname(path.resolve(input)), '--in', path.resolve(input)];
   if (!systemFonts) args.push('--ignore-system-fonts');
+  if (!embeddedFonts) args.push('--ignore-embedded-fonts');
   for (const folder of fontPaths) args.push('--font-path', folder);
   for (const [key, value] of Object.entries(inputs)) args.push('--input', `${key}=${value}`);
   args.push(expression);
@@ -176,12 +179,13 @@ async function evaluate({ input, expression, root, fontPaths = [], systemFonts =
 
 // Sets a document as page pictures (PNG) for a preview: one file per page in `outDir`, named p-001.png, p-002.png, and so on.
 // Returns { ok, files, ms, messages }.
-async function renderPages({ input, outDir, root, fontPaths = [], systemFonts = false, ppi = 72, timeLimitMs = DEFAULT_TIME_LIMIT_MS, ...where } = {}) {
+async function renderPages({ input, outDir, root, fontPaths = [], systemFonts = false, embeddedFonts = true, ppi = 72, timeLimitMs = DEFAULT_TIME_LIMIT_MS, ...where } = {}) {
   const program = findTypst(where);
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir, { recursive: true });
   const args = ['compile', '--diagnostic-format', 'human', '--root', root ?? path.dirname(path.resolve(input)), '--format', 'png', '--ppi', String(ppi)];
   if (!systemFonts) args.push('--ignore-system-fonts');
+  if (!embeddedFonts) args.push('--ignore-embedded-fonts');
   for (const folder of fontPaths) args.push('--font-path', folder);
   args.push(path.resolve(input), path.join(outDir, 'p-{0p}.png'));
   const result = await run(program, args, { timeoutMs: timeLimitMs, env: cleanEnv() });

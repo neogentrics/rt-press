@@ -22,7 +22,7 @@ const DEFAULT_THEME = Object.freeze({
   name: 'Plain',
   trim: { width_in: 6, height_in: 9 },
   margins: { inside_in: 0.875, outside_in: 0.625, top_in: 0.875, bottom_in: 0.875 },
-  fonts: { body: 'Libertinus Serif', title: 'Libertinus Serif', ornament: 'Libertinus Serif', dropcap: 'Libertinus Serif' },
+  fonts: { body: 'EB Garamond', title: 'EB Garamond', ornament: 'Noto Sans Symbols 2', dropcap: 'EB Garamond' },
   body: { size_pt: 11, line_height: 1.3, first_line_indent_in: 0.25, justify: true, hyphenate: true },
   title: { size_pt: 20, color: '#000000', space_before_pt: 96, space_after_pt: 30, letter_spacing_pt: 0, uppercase: false },
   dropCap: { enabled: false, lines: 3, size_pt: 40, color: '#000000' },

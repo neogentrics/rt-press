@@ -9,12 +9,12 @@ const test = require('node:test');
 const { readPdf } = require('../src/main/pdf/read');
 const { textLines } = require('../src/main/pdf/text');
 const { repairAll } = require('../src/main/steer/repair');
-const { STAND_INS, prepare, sources } = require('../src/main/typeset/stand-in-fonts');
+const { prepare, sources } = require('../src/main/typeset/bundled-fonts');
 const { typesetBook } = require('../src/main/typeset/typeset-book');
 const { changeKeepList, keepMatcher, sameWords } = require('../src/shared/keep-list');
 const { textOfNode } = require('../src/shared/book-model');
 const { withDefaults } = require('../src/shared/theme');
-const { chapter, fakeBook, fakeTheme } = require('./helpers/fake-book.cjs');
+const { TEST_FONTS, chapter, fakeBook, fakeTheme } = require('./helpers/fake-book.cjs');
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-report-test-'));
 test.after(() => fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 5 }));
@@ -54,7 +54,7 @@ async function repair({ keep = [], keepPages = true, shape = WITH_ROOM, maxPushL
   fonts ??= prepare({ folder: path.join(scratch, 'fonts') });
   const book = shaped(shape);
   const dir = path.join(scratch, 'work');
-  const set = (steers) => typesetBook({ book, theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fonts], fontMap: STAND_INS, timestamp: 1794960000, trace: true, steers });
+  const set = (steers) => typesetBook({ book, theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fonts], fontMap: TEST_FONTS, timestamp: 1794960000, trace: true, steers });
   const write = async (steers) => (refuse(steers) ? { ok: false, messages: 'refused by the test' } : set(steers));
   const outcome = await repairAll({ set: write, readPdfBytes: (r) => fs.readFileSync(r.output), book, theme, keepPages, keep, maxRounds: 4, maxPushLines });
   const final = await set(outcome.steers);

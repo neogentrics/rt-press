@@ -16,7 +16,6 @@ const { validateTheme, withDefaults } = require('../../shared/theme');
 // A line box is this much of the type size above the baseline and the rest of the pitch below it, so every line is one pitch
 // tall and lines, paragraphs and blocks stack on the pitch with no leading or spacing to add up.
 const LINE_TOP_EM = 0.7;
-const FALLBACK_FONTS = ['Libertinus Serif', 'DejaVu Sans Mono'];
 const DROP_CAP_START = /^["“‘']?\p{L}/u;
 
 const round = (n) => Math.round(n * 1000) / 1000;
@@ -29,10 +28,12 @@ function str(text) {
   return `"${String(text).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n').replace(/\t/g, '\\t')}"`;
 }
 
+// One family and no other: nothing is ever borrowed from a second font for a character the first hasn't.
 function fontList(family, map) {
-  const names = [map[family] ?? family, ...FALLBACK_FONTS];
-  return `(${[...new Set(names)].map(str).join(', ')})`;
+  return str(map[family] ?? family);
 }
+
+const styleName = (italic, bold) => (bold ? (italic ? 'boldItalic' : 'bold') : italic ? 'italic' : 'regular');
 
 // One piece of text with its marks, as Typst code that can sit in markup after a `#`.
 function run(text, marks = []) {
@@ -191,7 +192,8 @@ function splitContent(content, cuts) {
   return pieces.map((piece) => piece.filter((n) => n.type !== 'text' || n.text !== ''));
 }
 
-// Generates the Typst source for a book. Returns { source, units, notes }.
+// Generates the Typst source for a book. Returns { source, units, notes, fontFamilies, uses }, where `uses` is every character
+// the book is set with, by the job its font does and the style: [{ job, style, characters: Map(character → where it was) }].
 //   fontMap       { 'Book Antiqua': 'EB Garamond' }: the family each name in the theme is set in here
 //   bleed_in      bleed on every edge (Typst adds it on all four; the finishing step takes the inside edge back off)
 //   trace         add what a measuring pass needs: an id on each paragraph, and a record of where every paragraph and every
@@ -212,6 +214,26 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   const notes = [];
   const units = [];
   const out = [];
+
+  // --- what is set in which font ---
+  const fontUse = new Map();
+  const uses = (job, style, text, where) => {
+    const key = `${job} ${style}`;
+    if (!fontUse.has(key)) fontUse.set(key, { job, style, characters: new Map() });
+    for (const character of text) if (!fontUse.get(key).characters.has(character)) fontUse.get(key).characters.set(character, where);
+  };
+  // Runs of a block: italic turns over inside text that is italic already, as the typesetter's emphasis does.
+  const usesRuns = (job, content, where, { italic = false } = {}) => {
+    for (const node of content ?? []) {
+      if (node.type !== 'text') continue;
+      const kinds = new Set((node.marks ?? []).map((m) => m.type));
+      uses(job, styleName(italic !== kinds.has('italic'), kinds.has('bold')), node.text, where);
+    }
+  };
+  // The typesetter adds a hyphen of its own where it breaks a word.
+  const usesHyphens = (content, where, options) => {
+    if (theme.body.hyphenate) usesRuns('body', (content ?? []).filter((n) => n.type === 'text').map((n) => ({ ...n, text: '-' })), where, options);
+  };
   const bodyPitch = theme.body.size_pt * theme.body.line_height;
     const fonts = {
     body: fontList(theme.fonts.body, fontMap),
@@ -222,6 +244,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
 
   // --- the page and the text ---
   const [folioBefore, folioAfter] = theme.folio.text.split('{n}');
+  uses('body', 'regular', `0123456789${folioBefore}${folioAfter ?? ''}`, 'the page numbers');
   const folioAlign = theme.folio.place === 'center' ? 'center' : 'if calc.odd(here().page()) { right } else { left }';
   const preamble = PREAMBLE.replace(/INDENT/g, inch(theme.body.first_line_indent_in))
     .replace(/LINE_TOP/g, String(LINE_TOP_EM))
@@ -239,6 +262,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   out.push(`#set par(justify: ${theme.body.justify}, leading: 0pt, spacing: 0pt, first-line-indent: (amount: ${inch(theme.body.first_line_indent_in)}, all: true))`);
   out.push('#set block(spacing: 0pt)');
   out.push('#set smartquote(enabled: false)');
+  out.push('#set text(fallback: false)');
   if (trace) out.push('#set par.line(numbering: n => context [#metadata((page: here().page(), y: here().position().y.pt())) <line>], number-clearance: 0pt)');
   out.push(preamble);
 
@@ -257,6 +281,14 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
     return roleCode.get(name);
   };
   const upper = (text) => (theme.title.uppercase ? `upper(${str(text)})` : str(text));
+  const asSet = (text) => (theme.title.uppercase ? String(text).toUpperCase() : String(text));
+  const roleFont = (name) => ({ job: theme.roles?.[name]?.font ?? 'body', italic: theme.roles?.[name]?.italic ?? false });
+  // Whether the book has a contents page, which lists the titles in the body font.
+  const hasContents = book.sections.some((x) => x.kind === 'contents');
+  const usesTitle = (title, where) => {
+    uses('title', 'regular', asSet(title), where);
+    if (hasContents) uses('body', 'regular', `${title}.`, 'the contents page');
+  };
 
   // --- paragraphs ---
   // `first` is whether the paragraph opens a run of text (no indent), as the owner's script treats it.
@@ -273,8 +305,14 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   };
   function paragraph(node, first, section) {
     const role = roleOf(node.attrs?.role);
-    if (role) return `#styled(${role})[${inlineMarkup(node.content)}]`;
+    if (role) {
+      const { job, italic } = roleFont(node.attrs.role);
+      usesRuns(job, node.content, section.title || section.id, { italic });
+      return `#styled(${role})[${inlineMarkup(node.content)}]`;
+    }
     if (node.attrs?.role) notes.push(`role "${node.attrs.role}" has no look in the theme; it is set as body text`);
+    usesRuns('body', node.content, section.title || section.id);
+    usesHyphens(node.content, section.title || section.id);
     const tighten = steers.find((x) => x.type === 'tighten' && x.section === section.id && x.block === blockIds.get(node));
     const inner = inlineMarkup(node.content);
     return feathered(paraId(section, node), `#para(indent: ${!first}${idArg(section, node)})[${tighten ? `#text(tracking: ${pt(tighten.tracking_pt)})[${inner}]` : inner}]`);
@@ -286,6 +324,8 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   function steered(node, first, section) {
     const cuts = steers.filter((x) => x.type === 'push' && x.section === section.id && x.block === blockIds.get(node)).sort((a, b) => a.at - b.at);
     if (!cuts.length) return null;
+    usesRuns('body', node.content, section.title || section.id);
+    usesHyphens(node.content, section.title || section.id);
     const pieces = splitContent(node.content, cuts.map((x) => x.at));
     const out = [];
     pieces.forEach((piece, k) => {
@@ -305,11 +345,21 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
     return out.join('\n\n');
   }
 
-  function dropCapped(node) {
+  function dropCapped(node, section) {
     const text = (node.content ?? []).map((n) => (n.type === 'text' ? n.text : '\u0000')).join('');
     if (text.includes('\u0000')) return null;
     const cap = DROP_CAP_START.exec(text)?.[0];
     if (!cap) return null;
+    const where = section.title || section.id;
+    uses('dropcap', 'regular', cap, where);
+    let skip = [...cap].length;
+    const rest = (node.content ?? []).map((n) => {
+      const drop = Math.min(skip, [...n.text].length);
+      skip -= drop;
+      return { ...n, text: [...n.text].slice(drop).join('') };
+    });
+    usesRuns('body', rest, where);
+    usesHyphens(rest, where);
     const tokens = wordTokens(node.content, [...cap].length);
     return `#dropcap(${str(cap)}, (${tokens.join(', ')},))`;
   }
@@ -321,9 +371,11 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
     section.document.content.forEach((block, index) => blockIds.set(block, index));
     for (const block of section.document.content) {
       if (block.type === 'horizontalRule') {
+        uses('ornament', 'regular', theme.sceneBreak.text, section.title || section.id);
         lines.push(`#styled(${sceneLook})[${run(theme.sceneBreak.text)}]`);
         first = true;
       } else if (block.type === 'document') {
+        for (const p of block.content) usesRuns('body', p.content, section.title || section.id, { italic: theme.document.italic });
         const inner = block.content.map((p) => `par(${inlineParagraph(p)})`).join('\n');
         lines.push(`#block(inset: (left: ${inch(theme.document.indent_in)}, right: ${inch(theme.document.indent_in)}), above: ${pt(theme.document.space_before_pt)}, below: ${pt(theme.document.space_after_pt)}, {\n  set text(style: ${theme.document.italic ? '"italic"' : '"normal"'})\n  set par(justify: false, first-line-indent: 0pt)\n${inner}\n})`);
         first = false;
@@ -331,7 +383,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
         lines.push(paragraph(block, first, section));
         first = true;
       } else {
-        const capped = dropCap && !didDrop && first && theme.dropCap.enabled ? dropCapped(block) : null;
+        const capped = dropCap && !didDrop && first && theme.dropCap.enabled ? dropCapped(block, section) : null;
         if (capped) {
           lines.push(capped);
           didDrop = true;
@@ -363,15 +415,22 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   for (const section of book.sections) {
     out.push(`// section ${units.length + 1}`);
     if (section.type === 'part') {
+      usesTitle(section.title, section.title);
+      if (theme.part.caption) uses('ornament', 'regular', theme.part.caption, section.title);
       const lines = begin(section, section.title, 1);
       lines.push(marker(section, section.title), heading(1, section.title), `#styled(${partLook})[#${upper(section.title)}]`);
       if (theme.part.caption) lines.push(`#styled(${captionLook})[${run(theme.part.caption)}]`);
       out.push(lines.join('\n'));
     } else if (section.type === 'chapter') {
+      usesTitle(section.title, section.title);
       const lines = begin(section, section.title, 2);
       lines.push(marker(section, section.title), heading(2, section.title), `#styled(${titleLook})[#${upper(section.title)}]`, body(section, { dropCap: true }));
       out.push(lines.join('\n'));
     } else {
+      if (section.title) {
+        usesTitle(section.title, section.title);
+        if (section.ornament) uses('ornament', 'regular', section.ornament, section.title);
+      }
       const lines = begin(section, section.title, 3);
       const content = [marker(section, section.title)];
       if (section.title) {
@@ -401,7 +460,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
 
   const used = new Set();
   for (const family of [theme.fonts.body, theme.fonts.title, theme.fonts.ornament, theme.fonts.dropcap]) used.add(fontMap[family] ?? family);
-  return { source: `${out.join('\n\n')}\n`, units, notes: [...new Set(notes)], fontFamilies: [...used] };
+  return { source: `${out.join('\n\n')}\n`, units, notes: [...new Set(notes)], fontFamilies: [...used], uses: [...fontUse.values()] };
 }
 
 module.exports = { generateTypst, splitContent, str };

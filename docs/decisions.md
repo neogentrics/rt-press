@@ -117,8 +117,66 @@ and a barcode. It is the app's icon for 1.0.
 ✅ **Chosen 20 November 2026: open stand-in fonts for now.** The test book's own fonts (Book Antiqua, Felix Titling and
 Segoe UI Symbol) aren't on the build machine, and their licences generally tie them to Windows or Office. Step zero sets
 the book in open fonts, so its page count won't match the owner's build script's PDF exactly; what doesn't depend on the font
-is compared instead. If an exact comparison turns out to matter, it's revisited once M4's results are in: either the
-licensed fonts go on the build machine, or the comparison runs on the owner's own Windows computer.
+is compared instead. *The fonts for V5, below, took this further on 28 November.*
+
+### Fonts for V5
+
+✅ **Chosen by the owner, 28 November 2026: every font he uses for his books, plus other open fonts good enough for V5 now;
+more can be added later.** With two rules.
+
+**1. His own fonts are never shipped or committed.** His books use Book Antiqua (the text and in-story documents), Felix
+Titling (titles and large first letters) and Segoe UI Symbol (ornaments), which belong to Windows and Office. His build
+script also names Courier Prime, for lettering in page frames; that one is open, so it ships as itself. Each of the other
+three has an open stand-in that ships with Press:
+
+| His font | Stand-in | Licence | Why this one |
+|---|---|---|---|
+| Book Antiqua | TeX Gyre Pagella | GUST Font License | A Palatino-style serif, as Book Antiqua is. On the test book at its own 13.5 pt, a full line holds the same 52 characters |
+| Felix Titling | Cinzel | SIL OFL 1.1 | Inscriptional capitals, in regular and bold |
+| Segoe UI Symbol | Noto Sans Symbols 2 | SIL OFL 1.1 | It has ◆ and ◇, which his books use, and plain characters for a scene break. The first Noto Sans Symbols lacks both diamonds |
+
+The build session picked what a book's font name is set in, in this order (✅ its reading of the owner's rule, open to him):
+
+1. A font that comes with Press is that font, on every computer.
+2. Otherwise the computer's own copy, if the embedding flag of every style used allows it in a PDF.
+3. Otherwise, for his three, the stand-in. The build says so, and why: it isn't on this computer, or its flag forbids it. A
+   font whose flag forbids it is never put in a PDF.
+4. Otherwise the build stops and gives the reason (decision 10).
+
+A flag refuses a font if it forbids embedding, allows only pictures of the letters, or forbids embedding only some of them,
+which is how a PDF holds a font. A font with no flag at all is refused too. A variable font on the computer isn't used,
+because the typesetter doesn't set one reliably.
+
+**Nothing is borrowed from another font.** Before setting a book, Press checks that each font has every style and character
+asked of it, and stops, naming them and where they are, if one doesn't. The typesetter is told never to fall back, and its
+own built-in fonts are left out. Until this change, a missing character quietly came from another font; and the EB Garamond
+that shipped was cut down to Latin letters, so Polish, Hungarian, Greek and Cyrillic letters were missing from it.
+
+**The large first letter** of a chapter is set in the title font, as in the owner's books, and sized from both fonts' own
+capital heights so that its top meets the first line's. EB Garamond's capitals are 0.65 of the size, which Press had assumed
+of every font; the others run from 0.57 to 0.77.
+
+**2. The other open fonts.** Each licence was read, in the file that ships and in the font itself:
+
+| Font | Kind | Licence |
+|---|---|---|
+| EB Garamond (the default, approved before) | serif | SIL OFL 1.1 |
+| Crimson Pro | serif | SIL OFL 1.1 |
+| Libre Baskerville | serif | SIL OFL 1.1 |
+| Source Serif 4 | serif | SIL OFL 1.1 |
+| Source Sans 3 | sans | SIL OFL 1.1 |
+| Playfair Display | display | SIL OFL 1.1 |
+
+All six have regular, italic, bold and bold italic, as do Courier Prime and TeX Gyre Pagella. Cinzel has no italic and Noto
+Sans Symbols 2 has one style: a book that asks either for more is stopped, not faked.
+
+**Size:** the fonts are 8.3 MB unpacked. On Linux they made the AppImage 3.5 MB bigger, to 151.9 MB, and the `.deb` 2.4 MB
+bigger, to 120.2 MB. The Windows and Mac installers haven't been measured.
+
+**Where they come from:** the OFL fonts from the `@expo-google-fonts` packages on npm, which carry Google Fonts' files whole,
+each pinned to an exact version. TeX Gyre Pagella isn't on npm and CTAN's mirrors aren't dependable, so its four files are in
+the repository, from CTAN, each pinned by its hash, with the licences its terms ask for. A new version of a font moves lines
+and pages, so taking one is a deliberate change.
 
 ### From alpha to 1.0
 
@@ -218,20 +276,24 @@ was far too cautious: it overlooked the blank page that follows many chapters. K
 page two lines short at most, the owner's script's own limit. Pages are then evened as the script does it, by sharing the spare
 space among the lines of whole paragraphs and before the paragraphs on the page, with at most 0.085 of the line pitch to a share.
 
-**A choice for the owner.** Fewer split sentences and more even pages pull against each other. Measured on the test book,
-adding no pages. These figures replace the first ones given on 27 November, which counted the last pages of sections as splits
-and missed every page with a hyphenated word near its foot.
+**A choice for the owner.** Fewer split sentences and more even pages pull against each other. Measured on the test book on
+28 November, adding no pages, with the bundled stand-ins at the book's own sizes (TeX Gyre Pagella for Book Antiqua, whose
+lines come out the same length):
 
 | Rule | Pages splitting a sentence | Pages that carry on, on the bottom line | Pages not on it |
 |---|---|---|---|
-| A move may leave a page 2 lines short (**what Press does**) | 18 | 54 of 84 | 30 |
-| 3 lines | 6 | 51 of 85 | 34 |
-| 3 lines, and only if the page can still be evened | 27 | 56 of 79 | 23 |
+| A move may leave a page 2 lines short (**what Press does**) | 23 | 52 of 79 | 27 |
+| 3 lines | 17 | 49 of 80 | 31 |
+| 3 lines, and only if the page can still be evened | 35 | 51 of 76 | 25 |
 | The owner's script's own output | 26 | 54 of 74 | 20 |
 
 The first row went through the app's own steps; the next two through a trial script with the same repair. The script's splits
-come from its PDF by a rule that gives 19 for the first row's PDF, against Press's own count of 18. The third rule comes
-closest to the script on both counts.
+come from its PDF by a rule that gives 24 for the first row's PDF, against Press's own count of 23.
+
+**The build session now recommends keeping the rule Press has.** On 27 November it recommended the third, on figures measured
+with EB Garamond set at 16 pt as the stand-in: 18, 6 and 27 split pages for the three rules, and 30, 34 and 23 pages off the
+line. With the closer fonts the third rule leaves 9 more split pages than the script, to leave only 2 fewer uneven pages than
+the rule Press has.
 
 ### Custom sizes, and the inside margin from the page count
 

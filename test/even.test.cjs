@@ -9,11 +9,11 @@ const test = require('node:test');
 const { readPdf } = require('../src/main/pdf/read');
 const { textLines } = require('../src/main/pdf/text');
 const { bottomLine, evenBottoms, pagesOf } = require('../src/main/steer/even');
-const { STAND_INS, prepare, sources } = require('../src/main/typeset/stand-in-fonts');
+const { prepare, sources } = require('../src/main/typeset/bundled-fonts');
 const { generateTypst } = require('../src/main/typeset/typst-source');
 const { typesetBook } = require('../src/main/typeset/typeset-book');
 const { withDefaults } = require('../src/shared/theme');
-const { chapter, fakeBook, fakeTheme } = require('./helpers/fake-book.cjs');
+const { TEST_FONTS, chapter, fakeBook, fakeTheme } = require('./helpers/fake-book.cjs');
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-even-test-'));
 test.after(() => fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 5 }));
@@ -33,7 +33,7 @@ let fonts = null;
 function setter(book) {
   fonts ??= prepare({ folder: path.join(scratch, 'fonts') });
   const dir = path.join(scratch, 'work');
-  return (steers = [], extra = {}) => typesetBook({ book, theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fonts], fontMap: STAND_INS, timestamp: 1794960000, trace: true, steers, ...extra });
+  return (steers = [], extra = {}) => typesetBook({ book, theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fonts], fontMap: TEST_FONTS, timestamp: 1794960000, trace: true, steers, ...extra });
 }
 
 // The body lines of each page of a PDF, from the top: their words, and how far down the last one sits.

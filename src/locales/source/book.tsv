@@ -51,7 +51,6 @@ Leave as set	Dejar como está	Laisser tel quel	So lassen
 Pin the page count	Fijar el número de páginas	Figer le nombre de pages	Seitenzahl festlegen
 Not pinned	Sin fijar	Non figé	Nicht festgelegt
 KDP takes {0} to {1} pages at this trim and paper.	KDP admite de {0} a {1} páginas con este tamaño y papel.	KDP accepte de {0} à {1} pages pour ce format et ce papier.	KDP nimmt bei diesem Format und Papier {0} bis {1} Seiten an.
-Type is EB Garamond, shipped with RT Press (SIL Open Font License).	La letra es EB Garamond, incluida con RT Press (SIL Open Font License).	La police est EB Garamond, fournie avec RT Press (SIL Open Font License).	Die Schrift ist EB Garamond, mit RT Press ausgeliefert (SIL Open Font License).
 the edition is paperback or hardcover	la edición es de tapa blanda o de tapa dura	l’édition est brochée ou reliée	die Ausgabe ist Taschenbuch oder Hardcover
 KDP does not print {0} × {1} in as a {2}	KDP no imprime {0} × {1} pulg. en esa edición ({2})	KDP n’imprime pas le format {0} × {1} po dans cette édition ({2})	KDP druckt {0} × {1} Zoll nicht in dieser Ausgabe ({2})
 KDP does not offer {0} paper at {1} as a {2}	KDP no ofrece el papel {0} con el tamaño {1} en esa edición ({2})	KDP ne propose pas le papier {0} au format {1} dans cette édition ({2})	KDP bietet das Papier {0} im Format {1} nicht in dieser Ausgabe an ({2})
@@ -77,3 +76,13 @@ This is a large trim size, which costs more to print.	Es un tamaño grande, cuya
 a custom size is for a paperback, 4 to 8.5 in wide and 6 to 11.69 in tall	un tamaño personalizado es para tapa blanda, de 4 a 8,5 pulg. de ancho y de 6 a 11,69 de alto	un format personnalisé est pour un livre broché, de 4 à 8,5 po de large et de 6 à 11,69 de haut	ein eigenes Format gibt es für Taschenbücher, 4 bis 8,5 Zoll breit und 6 bis 11,69 Zoll hoch
 an inside margin is 0.375 to 2 in, or empty to take it from the page count	el margen interior va de 0,375 a 2 pulg., o se deja vacío para tomarlo del número de páginas	une marge intérieure va de 0,375 à 2 po, ou reste vide pour suivre le nombre de pages	ein Innenrand beträgt 0,375 bis 2 Zoll oder bleibt leer, um ihn aus der Seitenzahl zu nehmen
 that inside margin leaves too little room for text at this size	ese margen interior deja muy poco sitio para el texto en este tamaño	cette marge intérieure laisse trop peu de place au texte pour ce format	dieser Innenrand lässt bei diesem Format zu wenig Platz für den Text
+Body font	Fuente del texto	Police du texte	Schrift für den Text
+Title font	Fuente de los títulos	Police des titres	Schrift für die Titel
+Comes with RT Press	Incluidas con RT Press	Fournies avec RT Press	In RT Press enthalten
+On this computer	En este equipo	Sur cet ordinateur	Auf diesem Computer
+{0} (stands in for {1})	{0} (sustituye a {1})	{0} (remplace {1})	{0} (Ersatz für {1})
+{0} (not on this computer)	{0} (no está en este equipo)	{0} (absente de cet ordinateur)	{0} (nicht auf diesem Computer)
+{0} (can’t be put in a PDF)	{0} (no puede incluirse en un PDF)	{0} (ne peut pas être intégrée à un PDF)	{0} (darf nicht in ein PDF eingebettet werden)
+Ornaments are set in Noto Sans Symbols 2. A font on this computer is used only if it allows being put in a PDF.	Los adornos se componen en Noto Sans Symbols 2. Una fuente de este equipo solo se usa si permite incluirse en un PDF.	Les ornements sont composés en Noto Sans Symbols 2. Une police de cet ordinateur n’est utilisée que si elle autorise son intégration à un PDF.	Ornamente werden in Noto Sans Symbols 2 gesetzt. Eine Schrift dieses Computers wird nur verwendet, wenn sie das Einbetten in ein PDF erlaubt.
+the body font is the name of a font	la fuente del texto es el nombre de una fuente	la police du texte est le nom d’une police	die Textschrift ist der Name einer Schrift
+the title font is the name of a font	la fuente de los títulos es el nombre de una fuente	la police des titres est le nom d’une police	die Titelschrift ist der Name einer Schrift

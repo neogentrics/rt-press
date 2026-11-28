@@ -3,6 +3,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const crypto = require('node:crypto');
+const { BUNDLED, bundledFamily } = require('../src/shared/font-catalog');
+const { readFaces } = require('../src/main/typeset/font-file');
 const pkg = require('../package.json');
 
 test('the app says what it is', () => {
@@ -34,7 +37,7 @@ test('the typesetter and the fonts are copied beside the app on every platform',
   for (const [key, from] of [['win', 'vendor/typst/win32-${arch}'], ['mac', 'vendor/typst/darwin-${arch}'], ['linux', 'vendor/typst/linux-${arch}']]) {
     const resources = pkg.build[key].extraResources;
     assert.ok(resources.some((r) => r.from === from && r.to === 'typst'), `${key} carries Typst`);
-    assert.ok(resources.some((r) => r.from === 'vendor/fonts/stand-in' && r.to === 'fonts'), `${key} carries the fonts`);
+    assert.ok(resources.some((r) => r.from === 'vendor/fonts/bundled' && r.to === 'fonts'), `${key} carries the fonts`);
   }
 });
 
@@ -64,14 +67,32 @@ test('every version in the notices is the version Press is built with', () => {
   for (const [label, version] of rows) {
     // A row may say more about a package in brackets, and two rows are known by what they are rather than by a package's name.
     const name = label.split(' (')[0];
-    const used = name === 'Typst' ? TYPST_VERSION : locked(name === 'EB Garamond' ? '@fontsource/eb-garamond' : name);
+    const font = bundledFamily(name);
+    const used = name === 'Typst' ? TYPST_VERSION : font ? (font.package ? locked(font.package) : font.version) : locked(name);
     assert.ok(used, `"${name}" is in the notices, but nothing says which version Press uses`);
     assert.equal(version.split(' ')[0], used, `THIRD_PARTY_NOTICES.md says ${name} is ${version.split(' ')[0]}, and Press is built with ${used}`);
     listed.add(name);
   }
   // And nothing that ships is left out: the packages the app needs to run, and Electron itself.
   for (const name of [...Object.keys(pkg.dependencies), 'electron']) assert.ok(listed.has(name), `${name} ships with the app and has no row in the notices`);
-  assert.ok(listed.has('Typst') && listed.has('EB Garamond'), 'the typesetter and the font ship too');
+  assert.ok(listed.has('Typst'), 'the typesetter ships too');
+  for (const font of BUNDLED) assert.ok(listed.has(font.family), `${font.family} ships with the app and has no row in the notices`);
+});
+
+test('every font is pinned: a package to one exact version, a file kept here to its own hash', () => {
+  const root = path.join(__dirname, '..');
+  for (const font of BUNDLED) {
+    if (font.package) {
+      assert.match(pkg.devDependencies[font.package], /^\d+\.\d+\.\d+$/, `${font.package} is pinned exactly, because a new version of a font moves lines and pages`);
+      continue;
+    }
+    assert.deepEqual(Object.keys(font.sha256).sort(), Object.values(font.files).sort(), font.family);
+    for (const [file, hash] of Object.entries(font.sha256)) {
+      const at = path.join(root, 'fonts', font.folder, file);
+      assert.equal(crypto.createHash('sha256').update(fs.readFileSync(at)).digest('hex'), hash, file);
+      assert.match(readFaces(at)[0].version, new RegExp(`^Version ${font.version.replace('.', '\\.')}`), file);
+    }
+  }
 });
 
 test('the release workflow builds all three systems, tests them, opens each built app and publishes a hyphenated version as a pre-release', () => {

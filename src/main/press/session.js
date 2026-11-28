@@ -6,6 +6,9 @@ const path = require('node:path');
 const { assembleBook, importChapters } = require('../import/book');
 const { countWords, textOfNode } = require('../../shared/book-model');
 const { changeKeepList } = require('../../shared/keep-list');
+const { BUNDLED } = require('../../shared/font-catalog');
+const computerFonts = require('../typeset/computer-fonts');
+const { refusal } = require('../typeset/resolve-fonts');
 const { buildBook } = require('./pipeline');
 const { PAPER_NAMES, choices, limitsFor, validateSettings, withDefaultSettings } = require('./settings');
 
@@ -21,7 +24,8 @@ function chapterFiles(folder) {
 }
 
 class Session {
-  constructor({ store, workDir, fontFolder, resourcesPath = null, now = () => new Date() }) {
+  constructor({ store, workDir, fontFolder, computerFontFolders = null, resourcesPath = null, now = () => new Date() }) {
+    this.computerFontFolders = computerFontFolders; // null: the system's own
     this.store = store;
     this.workDir = workDir;
     this.fontFolder = fontFolder;
@@ -63,8 +67,8 @@ class Session {
   }
 
   summary(build) {
-    if (!build.ok) return { ok: false, reason: build.reason, messages: build.messages, problems: build.problems ?? [] };
-    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, even: build.even, margins: build.margins, builtAt: build.builtAt, startPages: Object.fromEntries((build.units ?? []).map((unit) => [unit.id, unit.page])) };
+    if (!build.ok) return { ok: false, reason: build.reason, messages: build.messages, parts: build.parts, problems: build.problems ?? [] };
+    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, even: build.even, margins: build.margins, fonts: build.fonts, builtAt: build.builtAt, startPages: Object.fromEntries((build.units ?? []).map((unit) => [unit.id, unit.page])) };
   }
 
   // Reads the Word files in a folder as a new book. Returns the state, or { error }.
@@ -128,6 +132,19 @@ class Session {
     return this.state();
   }
 
+  // The fonts a book's text can be set in: the ones that come with Press, and the computer's own, each with why it can't be
+  // used where it can't. The symbol font sets ornaments, not text, so it isn't offered.
+  fontChoices() {
+    const own = new Set(BUNDLED.map((f) => f.family.toLowerCase()));
+    this.found ??= computerFonts.scan(this.computerFontFolders ?? computerFonts.fontFolders());
+    return {
+      bundled: BUNDLED.filter((f) => f.kind !== 'symbols').map(({ family, kind, standsInFor = null }) => ({ family, kind, standsInFor })),
+      computer: [...this.found.values()].filter((f) => !own.has(f.family.toLowerCase()))
+        .map((f) => ({ family: f.family, reason: refusal(computerFonts.pickStyles(f.faces))?.reason ?? null }))
+        .sort((a, b) => a.family.localeCompare(b.family)),
+    };
+  }
+
   // Puts a sentence on the list of page turns to leave split, or takes it off.
   setKept(sentence, keep) {
     try {
@@ -143,7 +160,7 @@ class Session {
     if (this.building) return { ok: false, reason: 'busy', messages: 'A build is already running.' };
     this.building = true;
     try {
-      const result = await buildBook({ book: this.book, settings: this.settings, details: this.details, keep: this.keep, workDir: this.workDir, fontFolder: this.fontFolder, resourcesPath: this.resourcesPath, now: this.now, onStep });
+      const result = await buildBook({ book: this.book, settings: this.settings, details: this.details, keep: this.keep, workDir: this.workDir, fontFolder: this.fontFolder, computerFontFolders: this.computerFontFolders, resourcesPath: this.resourcesPath, now: this.now, onStep });
       this.last = { ...result, builtAt: this.now().toISOString() };
       return this.summary(this.last);
     } finally {

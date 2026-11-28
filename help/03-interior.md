@@ -11,7 +11,10 @@ These settings are under **Interior**, beside your chapters.
 
 ## The pages
 
-- **Body text** and **line spacing** set the type. The font is EB Garamond, which comes with RT Press.
+- **Body font** and **title font** can be any that comes with RT Press, or one on your computer that allows being put in a PDF. The large first letter of a chapter goes with the titles. Ornaments are set in Noto Sans Symbols 2.
+- If a book asks for Book Antiqua, Felix Titling or Segoe UI Symbol and your computer hasn't it, or it can't be put in a PDF, RT Press sets the book in an open stand-in (TeX Gyre Pagella, Cinzel or Noto Sans Symbols 2) and says so after the build.
+- If a font lacks a character or a style your book uses, the build stops and names it and where it is. Nothing is taken from another font.
+- **Body text** and **line spacing** set the size of the type.
 - **Page numbers** go on the outside edge or in the middle.
 - **Scene break** is what stands between two scenes.
 - **Drop cap**, **title page** and **contents page** can each be turned on or off.

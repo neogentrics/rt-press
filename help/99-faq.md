@@ -10,7 +10,7 @@ No. It reads your files and sets them. A page-turn repair only moves where a sen
 
 ## Can I use my own fonts?
 
-Not yet. This version sets books in EB Garamond.
+Yes. Choose a body font and a title font under **Interior**: those that come with RT Press, or one on your computer that allows being put in a PDF. See [Setting the interior](#help=interior).
 
 ## Does RT Press make the cover?
 

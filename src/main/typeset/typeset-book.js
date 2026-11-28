@@ -17,7 +17,8 @@ async function typesetBook({ book, theme, workDir, output, fontPaths = [], fontM
   fs.mkdirSync(workDir, { recursive: true });
   const input = path.join(workDir, 'book.typ');
   fs.writeFileSync(input, source);
-  const common = { input, fontPaths, timeLimitMs, ...where };
+  // A book is set with the fonts in these folders and no others, not even the typesetter's own.
+  const common = { input, fontPaths, embeddedFonts: false, timeLimitMs, ...where };
   const made = await compile({ ...common, output, timestamp });
   if (!made.ok) return { ok: false, messages: made.messages, compileMs: made.ms, notes, fonts: fontFamilies, source };
   const asked = await evaluate({ ...common, expression: trace ? TRACE_QUESTION : QUESTION });

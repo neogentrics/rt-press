@@ -2,17 +2,18 @@
 // What an author chooses for the interior, and the theme that follows from it. The choices are few on purpose: the edition
 // (which decides the paper and the page limits), the trim, the type size and spacing, and a handful of switches. Everything else
 // about the page is Press's, and the printer's rules decide what passes.
+const { DEFAULT_FAMILY: FAMILY, ORNAMENT_FAMILY } = require('../../shared/font-catalog');
 const { BLEED_IN, FORMATS, PAPERS, insideMargin, isCustomPaperbackTrim, pageLimits } = require('../../shared/print-rules');
 const { withDefaults, validateTheme } = require('../../shared/theme');
 
-const FAMILY = 'EB Garamond';
-const ORNAMENT_FAMILY = 'DejaVu Sans Mono';
 
 const DEFAULT_SETTINGS = Object.freeze({
   format: 'paperback',
   trim: { width_in: 6, height_in: 9 },
   paper: 'black-white',
   bleed: true,
+  body_font: FAMILY,
+  title_font: FAMILY,
   body_pt: 12,
   line_height: 1.4,
   drop_cap: true,
@@ -84,6 +85,9 @@ function validateSettings(settings) {
   }
   need('inside_in', settings.inside_in === null || number(settings.inside_in, 0.375, 2), 'an inside margin is 0.375 to 2 in, or empty to take it from the page count');
   if (settings.inside_in !== null && Number.isFinite(width)) need('inside_in', width - OUTSIDE_IN - settings.inside_in >= 2, 'that inside margin leaves too little room for text at this size');
+  const named = (value) => typeof value === 'string' && value.trim() !== '' && value.length <= 100 && !/[\u0000-\u001f]/.test(value);
+  need('body_font', named(settings.body_font), 'the body font is the name of a font');
+  need('title_font', named(settings.title_font), 'the title font is the name of a font');
   need('bleed', typeof settings.bleed === 'boolean', 'bleed is on or off');
   need('body_pt', number(settings.body_pt, 8, 18), 'body text is 8 to 18 points');
   need('line_height', number(settings.line_height, 1, 2.2), 'line spacing is 1 to 2.2 times the size');
@@ -100,17 +104,23 @@ function validateSettings(settings) {
 
 // The Press theme for a set of choices. The margins are sized so the printer's inside margin holds at any page count KDP prints
 // (the widest, 0.875 in, is more than most books need), and the drop cap is sized so its top meets the first line.
-// `pages` is the book's page count, which sets the inside margin unless the author has set one.
-function themeFromSettings(given, { pages = null } = {}) {
+// EB Garamond's capitals, as a part of the type size: what is assumed for a font that doesn't say.
+const CAP_HEIGHT = 0.65;
+
+// `pages` is the book's page count, which sets the inside margin unless the author has set one. `capHeights` says how tall the
+// capitals of the body font and of the large first letter's font are, so that the letter's top meets the first line's.
+function themeFromSettings(given, { pages = null, capHeights = {} } = {}) {
   const s = withDefaultSettings(given);
   const pitch = s.body_pt * s.line_height;
-  const capSize = Math.round((2 * pitch + 0.65 * s.body_pt) / 0.65);
+  // Three lines deep: two pitches and the first line's own capitals.
+  const capSize = Math.round((2 * pitch + (capHeights.body ?? CAP_HEIGHT) * s.body_pt) / (capHeights.dropcap ?? CAP_HEIGHT));
   const theme = withDefaults({
     format: 1,
     name: 'Garamond novel',
     trim: { width_in: s.trim.width_in, height_in: s.trim.height_in },
     margins: { inside_in: s.inside_in ?? automaticInside(pages ?? s.pin_pages ?? ASSUMED_PAGES), outside_in: OUTSIDE_IN, top_in: TOP_IN, bottom_in: BOTTOM_IN },
-    fonts: { body: FAMILY, title: FAMILY, ornament: ORNAMENT_FAMILY, dropcap: FAMILY },
+    // The large first letter goes with the titles, as in the owner's books.
+    fonts: { body: s.body_font, title: s.title_font, ornament: ORNAMENT_FAMILY, dropcap: s.title_font },
     body: { size_pt: s.body_pt, line_height: s.line_height, first_line_indent_in: Math.round((s.body_pt * 1.4) / 72 * 100) / 100, justify: true, hyphenate: true },
     title: { size_pt: Math.round(s.body_pt * 1.7), color: '#000000', space_before_pt: Math.round(pitch * 4), space_after_pt: Math.round(pitch * 1.5), letter_spacing_pt: 1, uppercase: true },
     dropCap: { enabled: s.drop_cap, lines: 3, size_pt: capSize, color: '#000000' },

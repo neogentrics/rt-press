@@ -1,0 +1,11 @@
+TeX Gyre Pagella, version 2.501, as it ships with RT Press.
+
+These are four files of the TeX Gyre Pagella work, copied from CTAN on 28 November 2026 and not changed in any way:
+texgyrepagella-regular.otf, texgyrepagella-italic.otf, texgyrepagella-bold.otf and texgyrepagella-bolditalic.otf.
+
+This is only part of the work. The complete work, unmodified, with all the files its manifest lists, is at
+https://ctan.org/pkg/tex-gyre-pagella and https://www.gust.org.pl/projects/e-foundry/tex-gyre
+
+The work is by B. Jackowski, J. M. Nowacki and others, on behalf of TeX Users Groups. It is distributed under the GUST Font
+License (GUST-FONT-LICENSE.txt), which is an instance of the LaTeX Project Public License (lppl-1-3c.txt).
+MANIFEST-TeX-Gyre-Pagella.txt lists the files that make up the work.

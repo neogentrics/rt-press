@@ -31,12 +31,12 @@ function toUnicode(doc, font) {
   return map;
 }
 
-// Every piece of text a page shows: { x, y, size, text }.
+// Every piece of text a page shows: { x, y, size, text, font }, `font` being the name the file gives it.
 function textItems(doc, page) {
   const fonts = new Map();
   for (const [key, ref] of Object.entries(doc.get(page.resources, 'Font') ?? {})) {
     const font = doc.resolve(ref);
-    fonts.set(key, { map: toUnicode(doc, font), wide: doc.get(font, 'Subtype')?.name === 'Type0' });
+    fonts.set(key, { map: toUnicode(doc, font), wide: doc.get(font, 'Subtype')?.name === 'Type0', name: String(doc.get(font, 'BaseFont')?.name ?? '').replace(/^[A-Z]{6}\+/, '') });
   }
   const contents = doc.resolve(page.dict.Contents);
   const data = (Array.isArray(contents) ? contents : [contents]).map((c) => doc.data(c)).filter(Boolean);
@@ -55,7 +55,7 @@ function textItems(doc, page) {
     if (font?.wide) for (let k = 0; k + 1 < str.bytes.length; k += 2) text += font.map?.get(str.bytes.readUInt16BE(k)) ?? '?';
     else for (const b of str.bytes) text += font?.map?.get(b) ?? String.fromCharCode(b);
     const m = mul(tm, ctm);
-    items.push({ x: m[4], y: m[5], size: size * Math.hypot(m[2], m[3]), text });
+    items.push({ x: m[4], y: m[5], size: size * Math.hypot(m[2], m[3]), text, font: font?.name ?? '' });
   };
   let i = 0;
   while (i < s.length) {

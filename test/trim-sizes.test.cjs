@@ -11,7 +11,7 @@ const { runChecks } = require('../src/main/checks');
 const { readPdf } = require('../src/main/pdf/read');
 const { buildBook } = require('../src/main/press/pipeline');
 const { automaticInside, choices, themeFromSettings, validateSettings, withDefaultSettings } = require('../src/main/press/settings');
-const { prepare, sources } = require('../src/main/typeset/stand-in-fonts');
+const { prepare, sources } = require('../src/main/typeset/bundled-fonts');
 const { chapter, fakeBook } = require('./helpers/fake-book.cjs');
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-trim-test-'));

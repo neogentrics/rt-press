@@ -7,6 +7,7 @@ const path = require('node:path');
 const pkg = require('../../package.json');
 const { TYPST_VERSION } = require('../../src/shared/typst-version');
 const { readPdf } = require('../../src/main/pdf/read');
+const { textItems } = require('../../src/main/pdf/text');
 const { readSharedTheme } = require('../../src/main/theme/loader');
 const measureContrast = require('./contrast.cjs');
 const { base, command, configHome, gone, launch, madeUpChapters, opened, packaged, profile, root, shared, textIs, unnamed, visible } = require('./harness.cjs');
@@ -29,7 +30,7 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     assert.equal(await window.evaluate(() => typeof window.require), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => typeof window.process), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => Object.keys(window.rtPress).join()),
-      'status,getState,importChapters,setDetails,setSettings,setKept,build,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
+      'status,getState,importChapters,setDetails,setSettings,setKept,fontChoices,build,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
       'the window gets these calls and no more');
     const status = await window.evaluate(() => window.rtPress.status());
     assert.deepEqual([status.version, status.typst.version, status.storage.ok], [pkg.version, TYPST_VERSION, true], 'the bundled typesetter and the encrypted storage work');
@@ -254,6 +255,35 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     await window.waitForFunction(async () => !(await window.rtPress.getState()).settings.trim.custom);
     await rebuild();
 
+    // Fonts: the ones that come with RT Press are offered, with the computer's own, and the book is set in the one chosen.
+    const offered = await window.evaluate(() => window.rtPress.fontChoices());
+    assert.deepEqual(offered.bundled.map((f) => f.family), ['EB Garamond', 'TeX Gyre Pagella', 'Crimson Pro', 'Libre Baskerville', 'Source Serif 4', 'Source Sans 3', 'Cinzel', 'Playfair Display', 'Courier Prime']);
+    console.log(`fonts: this computer offers ${offered.computer.length} families of its own, ${offered.computer.filter((f) => f.reason).length} of which may not be put in a PDF`);
+    await window.waitForSelector('#body-font optgroup', { state: 'attached' });
+    assert.equal(await window.inputValue('#body-font'), 'EB Garamond');
+    assert.equal(await window.locator('#body-font option[value="TeX Gyre Pagella"]').textContent(), 'TeX Gyre Pagella (stands in for Book Antiqua)');
+    assert.equal(await window.locator('#body-font option[value="Noto Sans Symbols 2"]').count(), 0, 'the symbol font sets ornaments, not a book\'s text');
+    await window.selectOption('#body-font', 'TeX Gyre Pagella');
+    await window.selectOption('#title-font', 'Playfair Display');
+    await window.waitForFunction(async () => (await window.rtPress.getState()).settings.title_font === 'Playfair Display');
+    await rebuild();
+    await window.click('#export');
+    await window.waitForFunction(() => /^Saved /.test(document.getElementById('step').textContent));
+    const inPagella = readPdf(fs.readFileSync(saved));
+    const embedded = new Set(inPagella.pages().flatMap((page) => textItems(inPagella, page).map((item) => item.font.split('-')[0])));
+    assert.ok([...embedded].some((n) => /Pagella/.test(n)) && [...embedded].some((n) => /Playfair/.test(n)) && ![...embedded].some((n) => /Garamond/.test(n)), [...embedded].join(', '));
+    // A book that names one of the owner's fonts, on a computer without it, is set in the stand-in and says so.
+    if (!offered.computer.some((f) => f.family === 'Book Antiqua')) {
+      await window.evaluate(async () => { const { settings } = await window.rtPress.getState(); await window.rtPress.setSettings({ ...settings, body_font: 'Book Antiqua' }); });
+      await window.evaluate(() => window.rtPress.build());
+      const said = await window.evaluate(async () => (await window.rtPress.getState()).build.fonts.find((f) => f.asked === 'Book Antiqua'));
+      assert.deepEqual([said.source, said.family, said.why], ['stand-in', 'TeX Gyre Pagella', 'not-here']);
+    }
+    await window.selectOption('#body-font', 'EB Garamond');
+    await window.selectOption('#title-font', 'EB Garamond');
+    await window.waitForFunction(async () => (await window.rtPress.getState()).settings.body_font === 'EB Garamond');
+    await rebuild();
+
     // Contrast, measured on the real text in light and in dark: the main window, then each of the frame's own windows.
     for (const colorScheme of ['light', 'dark']) {
       await window.emulateMedia({ colorScheme });
@@ -373,6 +403,8 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     await window.click('#build');
     await window.waitForSelector('#results-title:has-text("Listo para guardar")', { timeout: 120000 });
     await window.waitForFunction(() => document.getElementById('page-right').naturalWidth > 0);
+    // The font lists' headings are words too, though they are written as attributes.
+    assert.deepEqual(await window.$$eval('#body-font optgroup', (groups) => groups.map((g) => g.label)), ['Incluidas con RT Press', 'En este equipo']);
     // The page turn report, in Spanish too, with a sentence put on the list.
     await window.evaluate(() => { document.getElementById('turns-box').open = true; });
     await window.locator('#turns-moved button.keep').first().click();

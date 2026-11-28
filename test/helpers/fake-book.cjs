@@ -43,4 +43,8 @@ const fakeTheme = {
   roles: { Big: { align: 'center', size_pt: 30, font: 'title', space_before_pt: 140 } },
 };
 
-module.exports = { chapter, fakeBook, fakeTheme, matter, paragraph, text };
+// What the made-up theme's font names are set in for the tests. The body stays EB Garamond, so that the tests' made-up books
+// break into the lines and pages their expectations were measured on.
+const TEST_FONTS = { 'Book Antiqua': 'EB Garamond', 'Felix Titling': 'EB Garamond', 'Segoe UI Symbol': 'Noto Sans Symbols 2' };
+
+module.exports = { TEST_FONTS, chapter, fakeBook, fakeTheme, matter, paragraph, text };

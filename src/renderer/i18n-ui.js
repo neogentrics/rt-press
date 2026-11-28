@@ -3,7 +3,8 @@
 // titles, file names, the book's title) and the guides are marked translate="no" and left alone. From RT Markdown Reader (b6c6dd9).
 import { createTranslator, directionOf } from '../shared/i18n.js';
 
-const ATTRS = ['title', 'aria-label', 'placeholder', 'alt'];
+// "label" is where a list's headings are (optgroup).
+const ATTRS = ['title', 'aria-label', 'placeholder', 'alt', 'label'];
 const SKIP = '[translate="no"], script, style, kbd, code, textarea';
 
 export function createUiTranslator(root = document.body) {

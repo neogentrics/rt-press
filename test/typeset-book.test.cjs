@@ -7,8 +7,8 @@ const test = require('node:test');
 const { readPdf } = require('../src/main/pdf/read');
 const { generateTypst, str } = require('../src/main/typeset/typst-source');
 const { typesetBook } = require('../src/main/typeset/typeset-book');
-const { FOLDER, STAND_INS, prepare, sources } = require('../src/main/typeset/stand-in-fonts');
-const { chapter, fakeBook, fakeTheme, paragraph, text } = require('./helpers/fake-book.cjs');
+const { FOLDER, prepare, sources } = require('../src/main/typeset/bundled-fonts');
+const { TEST_FONTS, chapter, fakeBook, fakeTheme, paragraph, text } = require('./helpers/fake-book.cjs');
 const { withDefaults } = require('../src/shared/theme');
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-book-test-'));
@@ -20,7 +20,7 @@ let runs = 0;
 async function setBook(options = {}) {
   fontFolder ??= prepare({ folder: path.join(scratch, 'fonts') });
   const dir = path.join(scratch, `run-${(runs += 1)}`);
-  return typesetBook({ book: fakeBook(), theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fontFolder], fontMap: STAND_INS, timestamp: 1794960000, ...options });
+  return typesetBook({ book: fakeBook(), theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fontFolder], fontMap: TEST_FONTS, timestamp: 1794960000, ...options });
 }
 
 test('a Typst string holds any text', () => {
@@ -35,8 +35,8 @@ test('a book or theme that is not valid is refused before anything is written', 
 });
 
 test('the source names the fonts the theme asks for, through the map', () => {
-  const { source, fontFamilies } = generateTypst({ book: fakeBook(), theme: fakeTheme, fontMap: STAND_INS });
-  assert.deepEqual(fontFamilies.sort(), ['DejaVu Sans Mono', 'EB Garamond']);
+  const { source, fontFamilies } = generateTypst({ book: fakeBook(), theme: fakeTheme, fontMap: TEST_FONTS });
+  assert.deepEqual(fontFamilies.sort(), ['EB Garamond', 'Noto Sans Symbols 2']);
   assert.match(source, /"EB Garamond"/);
   assert.doesNotMatch(source, /Book Antiqua/);
   assert.match(generateTypst({ book: fakeBook(), theme: fakeTheme }).source, /"Book Antiqua"/, 'without a map the theme\'s own names are used');

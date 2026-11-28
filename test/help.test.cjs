@@ -10,7 +10,7 @@ const { DETAILS, practiceBook } = require('../src/main/press/practice');
 const { buildBook } = require('../src/main/press/pipeline');
 const { countWords, textOfNode, validateBook } = require('../src/shared/book-model');
 const { inline, parse, searchGuides } = require('../src/shared/markdown');
-const { prepare, sources } = require('../src/main/typeset/stand-in-fonts');
+const { prepare, sources } = require('../src/main/typeset/bundled-fonts');
 
 const root = path.join(__dirname, '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');

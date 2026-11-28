@@ -15,7 +15,7 @@ const { RELEASES_URL, Updater } = require('./updater');
 const { Session } = require('./press/session');
 const { openStore } = require('./press/store');
 const practice = require('./press/practice');
-const { bundledFolder } = require('./typeset/stand-in-fonts');
+const { bundledFolder } = require('./typeset/bundled-fonts');
 const { detailsText, osName } = require('../shared/about');
 const { createTranslator, pickLanguage, translateMenu } = require('../shared/i18n');
 const { orderThemes } = require('../shared/themes');
@@ -180,6 +180,7 @@ function registerBook() {
   });
   handleBook('press:details', (details) => session.setDetails(details ?? {}));
   handleBook('press:settings', (settings) => session.setSettings(settings ?? {}));
+  handle('press:fonts', () => session?.fontChoices() ?? { bundled: [], computer: [] });
   handleBook('press:keep', (sentence, keep) => session.setKept(sentence, keep));
   handleBook('press:build', () => {
     const building = session.build((text) => send('press:step', text));

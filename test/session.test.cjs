@@ -8,7 +8,7 @@ const { readPdf } = require('../src/main/pdf/read');
 const { Session, chapterFiles } = require('../src/main/press/session');
 const { choices, themeFromSettings, validateSettings, withDefaultSettings } = require('../src/main/press/settings');
 const { openStore } = require('../src/main/press/store');
-const { prepare, sources } = require('../src/main/typeset/stand-in-fonts');
+const { prepare, sources } = require('../src/main/typeset/bundled-fonts');
 const { validateTheme } = require('../src/shared/theme');
 const { tempDir, writeDocx } = require('./helpers/docx.cjs');
 

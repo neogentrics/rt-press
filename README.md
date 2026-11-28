@@ -26,7 +26,7 @@ books.
 
 > **This is an alpha, on the way to 1.0.** The typesetter was proved on a real book in step zero (see the
 > [results](docs/design/step-zero-results.md)), and the app does the whole interior from start to finish for a book of plain
-> chapters. In-story documents and pictures are not there yet, the type is EB Garamond only, and more pages are left
+> chapters. In-story documents and pictures are not there yet, and more pages are left
 > uneven at the foot than the owner's own build script leaves. It's for trying, not for printing your book yet. What's left before 1.0 is on the [roadmap](ROADMAP.md#where-it-stands).
 
 <table>
@@ -36,7 +36,7 @@ books.
 </tr>
 <tr>
 <td><img src="docs/screenshots/checks-fail.png" alt="The checks for a book that is too short: the page count and the inside margin are marked as failed"><br><b>Checked, not hoped.</b> Every check reads the finished file. A book that breaks a rule can't be saved.</td>
-<td><img src="docs/screenshots/settings.png" alt="The settings: edition, trim size, paper, bleed, type size, page numbers, scene break, the inside margin and a pinned page count"><br><b>Only what KDP offers.</b> Pick a trim, and only the papers that come in it are listed.</td>
+<td><img src="docs/screenshots/settings.png" alt="The settings: edition, trim size, paper, bleed, body and title fonts, type size, page numbers, scene break, the inside margin and a pinned page count"><br><b>Only what KDP offers.</b> Pick a trim, and only the papers that come in it are listed.</td>
 </tr>
 <tr>
 <td><img src="docs/screenshots/go-to.png" alt="The command box, listing every command with its menu and shortcut"><br><b>Go to anything.</b> <code>Ctrl+K</code> jumps to a chapter. Start with <code>&gt;</code> to run any command by name.</td>
@@ -82,6 +82,7 @@ npm run dist:linux
 |---|---|
 | **Bring in your chapters** | A folder of Word (.docx) files, one for each chapter, in order. Chapter titles are read from the files, curly quotes are set from the text around them, and quotation marks that don't pair are listed so you can check them |
 | **Every KDP trim** | All 16 paperback sizes, custom paperback sizes and the 5 hardcover sizes, with only the papers KDP offers for each. KDP publishes no page limits for a custom size, so those are Press's own, and it says so |
+| **Your fonts, or ten that come with it** | A body font and a title font from those that ship with Press or those on your computer that allow being put in a PDF. Open stand-ins for Book Antiqua, Felix Titling and Segoe UI Symbol. A missing character stops the build: nothing is borrowed from another font |
 | **Set like a book** | Mirrored margins with the inside one taken from the page count, or your own, every chapter starting on a right-hand page, a drop cap, scene breaks, page numbers outside or centred, an optional title page and contents page, and a blank last page |
 | **No sentence split across a page turn** | Where a page ends in the middle of a sentence, the sentence starts on the next page instead, in rounds, and the book is set again each time. By default no page is added: a sentence is only moved where its chapter has room. Or let pages be added, as far as a pinned count allows, or leave the pages as set. What's left behind on a line ends short, like the end of a paragraph, unless it's nearly full already. The repair never changes your words |
 | **A report, and your keep list** | What was moved, what couldn't be and why, each with its page. Put a sentence on your list to leave it split for suspense |
@@ -102,7 +103,7 @@ npm run dist:linux
 | **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
 **Coming next, for 1.0:** book themes
-with front and back matter and more fonts, books from Markdown and EPUB, and every KDP rule shown on the page it's on. See the [roadmap](ROADMAP.md).
+with front and back matter, books from Markdown and EPUB, and every KDP rule shown on the page it's on. See the [roadmap](ROADMAP.md).
 
 ## What it won't do
 
@@ -121,8 +122,8 @@ are only read, never changed. The PDF is written only when you choose Save, and 
 
 The same base as RT Story Tracker: Electron, with an encrypted SQLite database inside the app, on Windows 10 or later,
 macOS 13 or later and Linux. The pages are set by [Typst](https://github.com/typst/typst) (Apache-2.0), an open typesetter
-that ships inside the app, so there's nothing else to install. The type is EB Garamond (SIL Open Font License 1.1), also
-shipped inside the app. See [typesetting](docs/design/typesetting.md).
+that ships inside the app, so there's nothing else to install. The fonts ship inside it too, under the SIL Open Font License
+and, for TeX Gyre Pagella, the GUST Font License; see the [notices](THIRD_PARTY_NOTICES.md). See [typesetting](docs/design/typesetting.md).
 
 ## Running it from the source
 
@@ -149,8 +150,8 @@ npm run test:e2e
 ```
 
 `npm run fetch:typst:current` downloads the Typst program for this computer and checks it against the hash pinned in
-`vendor/typst.lock.json`. The fonts are unpacked from `@fontsource` the first time they're needed, or with
-`npm run fonts:stand-in`.
+`vendor/typst.lock.json`. The fonts are gathered from `node_modules` and `fonts/` the first time they're needed, or with
+`npm run fonts`.
 
 The icons are made from [docs/brand/icon.svg](docs/brand/icon.svg) by `npm run icons`, the screenshots on this page by
 `npm run screenshots` (with a made-up book; under `xvfb-run -a` on a machine with no screen), and the banner by
@@ -161,7 +162,8 @@ the repo they live in. What it copies is committed in `src/theme` with a `theme.
 
 - `src/main`: everything that runs outside the window, including the menus, app settings, updates and the suite's installed list.
 - `src/main/press`: the book, the settings and the build, from chapters to a checked file. It holds nothing of Electron's, so it can be tried on its own.
-- `src/main/typeset`: the Typst source for a book and a theme, and the fonts.
+- `src/main/typeset`: the Typst source for a book and a theme, and the fonts: the ones that ship, the computer's, and the check that none lacks a character.
+- `fonts`: the font files kept in this repository, with their licences.
 - `src/main/pdf`: reading and writing PDFs, and the finishing step that makes Typst's file ready for a printer.
 - `src/main/checks`: the checks, which read the finished PDF.
 - `src/main/steer`: finding the pages that split a sentence, and the steers that move them. The build uses it.

@@ -133,6 +133,7 @@ decided = [
     ('Who keeps the plan', 'The session that builds Press keeps the README, roadmap and decisions true as it goes.'),
     ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs."),
     ("Alphas for testing", "You asked on 22 November for CI to create alpha releases like the other apps. 0.1.0-alpha.0 is the first: a pre-release built by the release workflow, unsigned, for you to test."),
+    ("Fonts for V5", "Every font your books use, plus other good open ones. Yours are never shipped: they are used from your computer when their embedding flag allows, and an open stand-in ships for each (TeX Gyre Pagella, Cinzel, Noto Sans Symbols 2). Chosen 28 November."),
     ("Fonts for the comparison", "Open stand-in fonts for now, since the test book's own fonts aren't on the build machine. The page count won't match your PDF exactly, so what doesn't depend on the font is compared. Revisited if an exact match turns out to matter."),
     ('The repo is public', 'So the Bench page can link it, and the suite can list it. Nothing private is in it: your book and build script stay in a folder git ignores.'),
     ('Where it\'s built','On the Linux build machine, with Windows and Mac installers from GitHub Actions.'),

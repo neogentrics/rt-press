@@ -6,12 +6,12 @@ const path = require('node:path');
 const test = require('node:test');
 const { generateTypst, splitContent } = require('../src/main/typeset/typst-source');
 const { typesetBook } = require('../src/main/typeset/typeset-book');
-const { STAND_INS, prepare, sources } = require('../src/main/typeset/stand-in-fonts');
+const { prepare, sources } = require('../src/main/typeset/bundled-fonts');
 const { textLines } = require('../src/main/pdf/text');
 const { readPdf } = require('../src/main/pdf/read');
 const { cutLines, findMidSentenceTurns, locate } = require('../src/main/steer/turns');
 const { nearlyFull, repairAll, tryPush } = require('../src/main/steer/repair');
-const { chapter, fakeBook, fakeTheme, text } = require('./helpers/fake-book.cjs');
+const { TEST_FONTS, chapter, fakeBook, fakeTheme, text } = require('./helpers/fake-book.cjs');
 const { withDefaults } = require('../src/shared/theme');
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-steer-test-'));
@@ -66,7 +66,7 @@ const TIGHT = [3, 6, 4, 9, 9]; // none: any push adds to its chapter
 async function set(extra = {}) {
   fonts ??= prepare({ folder: path.join(scratch, 'fonts') });
   const dir = path.join(scratch, `run-${(runs += 1)}`);
-  return typesetBook({ book: fakeBook({ chapters: 3 }), theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fonts], fontMap: STAND_INS, timestamp: 1794960000, trace: true, ...extra });
+  return typesetBook({ book: fakeBook({ chapters: 3 }), theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fonts], fontMap: TEST_FONTS, timestamp: 1794960000, trace: true, ...extra });
 }
 
 test('tracing reports every line and paragraph, and does not move anything', { skip }, async () => {

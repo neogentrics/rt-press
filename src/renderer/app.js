@@ -75,6 +75,8 @@ function readSettings() {
     body_pt: Number($('body-pt').value),
     line_height: Number($('line-height').value),
     folio: $('folio').value,
+    body_font: $('body-font').value,
+    title_font: $('title-font').value,
     scene_break: $('scene-break').value,
     drop_cap: $('drop-cap').checked,
     title_page: $('title-page').checked,
@@ -134,6 +136,53 @@ function fillPapers(wanted) {
   select.selectedIndex = index >= 0 ? index : 0;
 }
 
+// ---- the fonts to choose from: the ones that come with RT Press, and the computer's own ----
+let fontChoices = { bundled: [], computer: [] };
+
+const option = (value, label, extra = {}) => Object.assign(document.createElement('option'), { value, textContent: label, ...extra });
+// A font's name is its name in every language.
+const named = (value, extra) => {
+  const made = option(value, value, extra);
+  made.translate = false;
+  return made;
+};
+
+function fillFont(id, chosen) {
+  const group = (label, options) => {
+    if (!options.length) return null;
+    const made = Object.assign(document.createElement('optgroup'), { label });
+    made.append(...options);
+    return made;
+  };
+  const bundled = fontChoices.bundled.map((f) => (f.standsInFor ? option(f.family, `${f.family} (stands in for ${f.standsInFor})`) : named(f.family)));
+  // One that may not be put in a PDF is shown, so its absence is no mystery, but it can't be chosen.
+  const computer = fontChoices.computer.map((f) => (f.reason ? option(f.family, `${f.family} (can’t be put in a PDF)`, { disabled: true, title: f.reason }) : named(f.family)));
+  const known = [...fontChoices.bundled, ...fontChoices.computer].some((f) => f.family === chosen);
+  const select = $(id);
+  select.replaceChildren(...[
+    known ? null : fontChoices.bundled.length ? option(chosen, `${chosen} (not on this computer)`) : named(chosen),
+    group('Comes with RT Press', bundled),
+    group('On this computer', computer),
+  ].filter(Boolean));
+  select.value = chosen;
+}
+
+function showFonts() {
+  if (!state) return;
+  fillFont('body-font', state.settings.body_font);
+  fillFont('title-font', state.settings.title_font);
+}
+
+// What a build did about the fonts, when it did more than use the ones that come with RT Press.
+const sentenceCase = (text) => `${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
+function fontNotes(fonts = []) {
+  return fonts.flatMap((f) => {
+    if (f.source === 'computer') return [`${f.asked} is set from the copy on this computer.`];
+    if (f.source !== 'stand-in') return [];
+    return f.why === 'not-here' ? [`${f.asked} isn’t on this computer, so the book is set in ${f.family}.`] : [`${f.asked} on this computer can’t be used, so the book is set in ${f.family}.`, sentenceCase(f.reason)];
+  });
+}
+
 function showSettings() {
   const s = state.settings;
   $('format').value = s.format;
@@ -143,6 +192,7 @@ function showSettings() {
   $('body-pt').value = s.body_pt;
   $('line-height').value = s.line_height;
   $('folio').value = s.folio;
+  showFonts();
   $('scene-break').value = s.scene_break;
   $('drop-cap').checked = s.drop_cap;
   $('title-page').checked = s.title_page;
@@ -197,7 +247,8 @@ function showBuild(build) {
   if (!build) return;
   if (!build.ok) {
     set('results-title', 'The book could not be set');
-    set('build-summary', build.messages);
+    // Several reasons are shown one after another, each in the window's language.
+    $('build-summary').replaceChildren(...(build.parts ?? [build.messages]).flatMap((part) => [h('span', null, part), ' ']));
     $('checks').replaceChildren();
     $('turns-box').hidden = true;
     return;
@@ -217,6 +268,7 @@ function showBuild(build) {
     sentences.push(`Page turns that split a sentence: ${r.before} before repair, ${r.after} after.`);
     sentences.push(added > 0 ? `Pages added: ${added}.` : 'No page was added.');
   }
+  sentences.push(...fontNotes(build.fonts));
   if (build.margins?.from === 'page-count') sentences.push(`Inside margin: ${build.margins.inside_in} in, from the page count.`);
   if (r?.kept?.length) sentences.push(`Left split on purpose: ${r.kept.length}.`);
   const uneven = build.even ? build.even.running - build.even.onLine : 0;
@@ -464,7 +516,7 @@ function wire() {
       saveSettings();
     });
   }
-  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages', 'page-turns', 'even-bottoms', 'inside-margin']) $(id).addEventListener('change', saveSettings);
+  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages', 'page-turns', 'even-bottoms', 'inside-margin', 'body-font', 'title-font']) $(id).addEventListener('change', saveSettings);
   $('first').addEventListener('click', () => go(0));
   $('prev').addEventListener('click', () => go(spread - 1));
   $('next').addEventListener('click', () => go(spread + 1));
@@ -494,6 +546,11 @@ async function start() {
     practising = await window.rtPress.inPractice();
     refresh(await window.rtPress.getState());
     drawBars();
+    // Looking over the computer's fonts can take a moment, so the window doesn't wait for it.
+    window.rtPress.fontChoices().then((choices) => {
+      fontChoices = choices;
+      showFonts();
+    }).catch((error) => toast(error.message));
     if (!status.typst.ok) toast(`The typesetter was not found: ${status.typst.error}`);
     document.body.dataset.state = 'ready';
     // The tutorial is offered until it has been finished or refused; people who update from an older version are offered it too.

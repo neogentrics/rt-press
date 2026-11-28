@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const { compile } = require('../src/main/typesetter.js');
-const { prepare } = require('../src/main/typeset/stand-in-fonts.js');
+const { prepare } = require('../src/main/typeset/bundled-fonts.js');
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const output = join(root, 'docs', 'brand', 'banner.png');
