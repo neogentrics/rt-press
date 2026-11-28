@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Build docs/roadmap.html from ROADMAP.md, in the suite's roadmap layout.
 
-Usage: python3 scripts/roadmap-page.py docs/roadmap.html > /tmp/new.html, then copy it over docs/roadmap.html
+Usage: python3 scripts/roadmap-page.py docs/roadmap.html > /tmp/new.html, then copy it over docs/roadmap.html. The "Now" box, the
+cards and the decisions are written in this file, so they change here when the roadmap does.
 The layout file is any suite roadmap page; only its <style> block is reused, with Press's colours.
 """
 import html, re, sys
@@ -23,7 +24,9 @@ def inline(s):
     s = html.escape(s, quote=False)
     s = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', s)
     s = re.sub(r'`(.+?)`', r'<code>\1</code>', s)
-    s = re.sub(r'\[(.+?)\]\((?:#|docs/)[^)]*\)', r'\1', s)
+    # A link to the web stays a link; a link within the repo is only its words, since this page isn't beside those files.
+    s = re.sub(r'\[([^\]]+)\]\((https://[^)\s"]+)\)', r'<a href="\2">\1</a>', s)
+    s = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', s)
     return s
 
 def anchor(ver):
@@ -59,19 +62,39 @@ def rel_html(r, kind, opened=False):
         items.append(f'<div class="item"><h3>{inline(name)}</h3><div class="tags">{chips}</div><p>{inline(det)}</p></div>')
     intro = f'<p class="relintro">{inline(r["intro"])}</p>' if r['intro'] else ''
     test = f'<p class="test"><b>Test:</b> {inline(r["test"])}</p>' if r['test'] else ''
-    sub = 'Not a release' if r['ver'] == 'Step zero' else ('Ideas' if kind == 'idea' else ('Ongoing' if r['ver'] == 'Ongoing' else 'Planned'))
+    # A release's state is the one the roadmap's first table gives it, so it is written in one place.
+    sub = 'Not a release' if r['ver'] == 'Step zero' else ('Ideas' if kind == 'idea' else ('Ongoing' if r['ver'] == 'Ongoing' else states.get(r['ver'], 'Planned')))
     return (f'<details class="rel {kind}" id="{anchor(r["ver"])}"{" open" if opened else ""}><summary><span class="ver">{short(r["ver"])}</span>'
             f'<span class="rel-text"><b>{inline(r["theme"])}</b><span>{sub}</span></span><span class="rel-count">{len(r["rows"])} items</span></summary>'
             f'{intro}<div class="items">{"".join(items)}</div>{test}</details>')
 
+states = {m.group(1): re.sub(r'^\W+', '', m.group(2).split(':')[0]).strip() for m in re.finditer(r'^\| \[(Step zero|v1\.\d)\]\([^)]*\) \| [^|]+ \| ([^|]+) \|$', md, re.M)}
 main = [r for r in releases if r['ver'] == 'Step zero' or r['ver'].startswith('v')]
 later = [r for r in releases if r['ver'] in ('Later', 'Ongoing')]
 sm = re.search(r'(?ms)^## Where it stands\n(.*?)(?=^## )', md)
 stand_lines = sm.group(1).splitlines() if sm else []
-stand_rows = [[c.strip() for c in l.strip('|').split('|')] for l in stand_lines if l.startswith('| ') and not l.startswith('| Piece') and not l.startswith('|---')]
-stand_html = ('<section id="stands" aria-labelledby="standh"><div class="section-head"><h2 id="standh">Where it stands</h2><p>As of 27 November 2026</p></div>'
-              '<div class="scroll"><table class="own"><thead><tr><th>Piece</th><th>State</th></tr></thead><tbody>'
-              + ''.join(f'<tr><td>{inline(a)}</td><td>{inline(b)}</td></tr>' for a, b in stand_rows) + '</tbody></table></div></section>')
+as_of = re.search(r'As of (\d{1,2} \w+ \d{4})', sm.group(1) if sm else '')
+# Each table in the section: its first line is its heading, and the line of dashes under it is skipped.
+tables, current = [], None
+for line in stand_lines:
+    if line.startswith('|'):
+        if line.startswith('|---'):
+            continue
+        cells = [c.strip() for c in line.strip('|').split('|')]
+        if current is None:
+            current = [cells]
+            tables.append(current)
+        else:
+            current.append(cells)
+    else:
+        current = None
+def own_table(rows):
+    head = ''.join(f'<th>{inline(c)}</th>' for c in rows[0])
+    body = ''.join('<tr>' + ''.join(f'<td>{inline(c)}</td>' for c in row) + '</tr>' for row in rows[1:])
+    return f'<div class="scroll"><table class="own"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
+stand_html = (f'<section id="stands" aria-labelledby="standh"><div class="section-head"><h2 id="standh">Where it stands</h2><p>As of {as_of.group(1) if as_of else ""}</p></div>'
+              + '<div style="height:12px"></div>'.join(own_table(t) for t in tables) + '</section>')
+HERE = next((v for v, state in states.items() if state.startswith('Building')), 'v1.0')
 def is_group(r):
     return r['ver'].endswith('.x') and not r['rows']
 
@@ -85,7 +108,7 @@ for r in main:
         rail_groups.setdefault(major(r), []).append(r)
 rail = ''.join(
     '<div class="rail-group"><span class="rail-label">' + k + '.x</span><div class="rail-nodes">'
-    + ''.join(f'<a class="node {"here" if r["ver"] == "Step zero" else "plan"}" href="#{anchor(r["ver"])}" title="{html.escape(r["theme"])}">{short(r["ver"])}</a>' for r in rs)
+    + ''.join(f'<a class="node {"here" if r["ver"] == HERE else "plan"}" href="#{anchor(r["ver"])}" title="{html.escape(r["theme"])}">{short(r["ver"])}</a>' for r in rs)
     + '</div></div>' for k, rs in rail_groups.items())
 
 def group_html(r):
@@ -102,10 +125,12 @@ decided = [
     ('How far the covers go', 'Size, place and set type. A template for your illustrator, the art placed, the type set and checked. No painting tools.'),
     ('What 1.0 does', 'Interiors for KDP first. Frames in 1.1, art in 1.2, covers in 1.3 and 1.4, where Press replaces your build script.'),
     ('The plan', 'Approved on 17 November 2026.'),
+    ('From alpha to 1.0', 'Through a beta. A version tag, which publishes a build, is pushed only when you say so.'),
     ('One major version per platform', 'KDP is version 1 and everything added for it is a 1.x release. Each new platform makes the next major version: Lulu 2.x, IngramSpark 3.x, Barnes & Noble Press 4.x, Google Play Books 5.x. Inside one, x.0 is its rules and interiors, x.1 its paperback cover, x.2 its hardcover, x.3 what only it has. Chosen 27 November.'),
     ('Audiobooks', 'Press does not make them: RT Audio Studio does the audio. Press supplies the square audiobook cover and the narration text, one file per chapter, from 1.6, for an author who records their own narration. Chosen 27 November.'),
     ('Shared themes in 1.1', 'Version 1.0 ships light and dark; the ten shared themes and the looks come in 1.1, because the shared themes file is not ready. The plumbing is built in 1.0. If the file is ready first, it goes into 1.0. Decided 27 November.'),
-    ('The icon', 'The unfolded book cover on a dark tile, with a striped spine, crop marks and a barcode. Approved 27 November.'),
+    ('The icon', 'The unfolded book cover on a dark tile, with a striped spine, crop marks and a barcode. The first draft looked like the other apps icons, so it was redrawn. Approved 27 November.'),
+    ('Who keeps the plan', 'The session that builds Press keeps the README, roadmap and decisions true as it goes.'),
     ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs. The files move in after Reader's 3.13.x look update merges."),
     ("Alphas for testing", "You asked on 22 November for CI to create alpha releases like the other apps. 0.1.0-alpha.0 is the first: a pre-release built by the release workflow, unsigned, for you to test."),
     ("Fonts for the comparison", "Open stand-in fonts for now, since the test book's own fonts aren't on the build machine. The page count won't match your PDF exactly, so what doesn't depend on the font is compared. Revisited if an exact match turns out to matter."),
@@ -137,17 +162,17 @@ page = f'''<!DOCTYPE html>
 <nav aria-label="Sections"><a class="lead" href="#now">Now</a><a href="#ideas">Our way</a><a href="#coming">Releases</a><a href="#owns">Who keeps what</a><a href="#later">Later</a><a href="#decisions">Decisions</a></nav></div></div>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
-<div class="kicker"><span class="pulse" aria-hidden="true"></span>Step zero is built, and an alpha is out</div>
-<h1 id="nowh">The typesetter works, and the results are waiting for you.</h1>
+<div class="kicker"><span class="pulse" aria-hidden="true"></span>1.0 is being built</div>
+<h1 id="nowh">The icon and the suite's frame are done. Page quality is under way.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
-<ul><li><b>What was found</b><span>Your book sets in about a second, every check Press can make passes on the file, and the page can be steered, with limits. Two gates passed.</span></li>
-<li><b>Needs you</b><span>Three gates are marked for you: page turns against your script, the same pages on Windows and Mac, and KDP's own previewer.</span></li>
-<li><b>An alpha is out</b><span>0.1.0-alpha.0, built when you asked for alpha releases, with installers for all three systems. Not yet opened by hand on Windows or Mac.</span></li></ul>
+<ul><li><b>Done</b><span>V1 and V2 of 8: the new icon, and menus, Help, the tutorial, About, Preferences, updates and three more languages. The theme picker is built; the colours wait for the shared themes file.</span></li>
+<li><b>Now</b><span>V3: page turns and even page bottoms. On the test book Press leaves fewer split sentences than your script, and more uneven pages. The keep list and the report of what moved are still to build. One choice is yours: fewer split sentences or more even pages.</span></li>
+<li><b>An alpha is out</b><span>0.1.0-alpha.0, from before V1. No new build is published until you ask for one. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>
 <div class="glance">
 <div class="card next"><span class="label">First release</span><b><a href="#r-v10">v1.0: Interiors for KDP</a></b><p>Paperback and hardcover interiors with themes, page-turn repair, even page bottoms, a pinned page count and every check.</p></div>
 <div class="card ok"><span class="label">The goal</span><b><a href="#r-v14">v1.4: The hardcover case wrap</a></b><p>From here Press does everything your build script does, with nothing else installed.</p></div>
-<div class="card you"><span class="label">Needs care</span><b>The typesetter</b><p>You chose to bundle Typst, so step zero tests it on a real book before anything else is built.</p></div>
+<div class="card you"><span class="label">Waiting on you</span><b>Fonts, KDP and two systems</b><p>Which fonts replace your book's own, one upload to KDP's previewer, and opening a build on Windows and Mac.</p></div>
 </div>
 {stand_html}
 <section aria-labelledby="railh"><div class="section-head"><h2 id="railh">Every version</h2></div>
@@ -161,7 +186,7 @@ page = f'''<!DOCTYPE html>
 </div></section>
 <section id="coming" aria-labelledby="comingh"><div class="section-head"><h2 id="comingh">The releases</h2><p>Each one can be tested on its own</p></div>
 <div class="tools"><input type="search" id="q" placeholder="Search the roadmap" aria-label="Search the roadmap"><button type="button" id="all">Open all</button></div>
-<div class="list" id="list" style="margin-top:10px">{"".join(any_html(r, "plan", r["ver"] == "Step zero") for r in main)}</div>
+<div class="list" id="list" style="margin-top:10px">{"".join(any_html(r, "plan", r["ver"] == HERE) for r in main)}</div>
 <p class="empty hide" id="none">Nothing matches that.</p></section>
 <section id="owns" aria-labelledby="ownsh"><div class="section-head"><h2 id="ownsh">Who keeps which export</h2><p>Every app can get a book out by itself, from shared code</p></div>
 <div class="scroll"><table class="own"><thead><tr><th>Export</th><th>RT Press</th><th>RT Story Tracker</th><th>RT Markdown Reader</th></tr></thead><tbody>

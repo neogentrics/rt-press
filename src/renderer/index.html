@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RT Press</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-state="loading">
+    <header id="top">
+      <h1 id="app-name" class="visually-hidden" translate="no">RT Press</h1>
+      <div id="toolbar" class="toolbar" role="group" aria-label="Toolbar"></div>
+      <div id="bars"></div>
+    </header>
+
+    <div class="layout">
+      <aside class="side sidebar" aria-label="Book and settings">
+        <section id="book">
+          <h2>Book</h2>
+          <p id="import-summary" class="hint">Choose a folder of Word (.docx) chapters, one file for each chapter.</p>
+          <label>Title <input id="title" type="text" maxlength="200" autocomplete="off" /></label>
+          <label>Author <input id="author" type="text" maxlength="200" autocomplete="off" /></label>
+          <details id="import-notes" hidden>
+            <summary id="import-notes-summary">Notes from the import</summary>
+            <ul id="import-notes-list"></ul>
+          </details>
+          <ol id="chapters" class="chapters" aria-label="Chapters"></ol>
+        </section>
+
+        <section id="settings">
+          <h2>Interior</h2>
+          <label>Edition
+            <select id="format">
+              <option value="paperback">Paperback</option>
+              <option value="hardcover">Hardcover</option>
+            </select>
+          </label>
+          <label>Trim size <select id="trim"></select></label>
+          <label>Paper and ink <select id="paper"></select></label>
+          <label class="check"><input id="bleed" type="checkbox" /> Bleed (0.125 in on the top, bottom and outside edges)</label>
+          <div class="pair">
+            <label>Body text (pt) <input id="body-pt" type="number" min="8" max="18" step="0.5" /></label>
+            <label>Line spacing <input id="line-height" type="number" min="1" max="2.2" step="0.05" /></label>
+          </div>
+          <label>Page numbers
+            <select id="folio">
+              <option value="outside">Outside edge</option>
+              <option value="center">Centred</option>
+            </select>
+          </label>
+          <label>Scene break <input id="scene-break" type="text" maxlength="20" autocomplete="off" /></label>
+          <label class="check"><input id="drop-cap" type="checkbox" /> Drop cap at the start of each chapter</label>
+          <label class="check"><input id="title-page" type="checkbox" /> Title page</label>
+          <label class="check"><input id="contents" type="checkbox" /> Contents page</label>
+          <label>Page turns that split a sentence
+            <select id="page-turns">
+              <option value="keep">Mend, adding no pages</option>
+              <option value="grow">Mend, pages may be added</option>
+              <option value="off">Leave as set</option>
+            </select>
+          </label>
+          <label class="check"><input id="even-bottoms" type="checkbox" /> Even page bottoms</label>
+          <label>Pin the page count <input id="pin-pages" type="number" min="24" max="900" step="1" placeholder="Not pinned" /></label>
+          <p id="limits" class="hint"></p>
+          <p id="settings-error" class="problem" role="alert" hidden></p>
+          <p class="hint">Type is EB Garamond, shipped with RT Press (SIL Open Font License).</p>
+        </section>
+      </aside>
+
+      <main class="main">
+        <p id="step" class="step" role="status" aria-live="polite"></p>
+
+        <section id="results" hidden>
+          <h2 id="results-title">Checks</h2>
+          <p id="build-summary"></p>
+          <details id="checks-box">
+            <summary>The checks</summary>
+            <ul id="checks" class="checks"></ul>
+          </details>
+        </section>
+
+        <section id="preview" hidden>
+          <div class="pager">
+            <button id="first" type="button" aria-label="First spread">First</button>
+            <button id="prev" type="button" aria-label="Previous spread">Back</button>
+            <span id="spread-label" aria-live="polite"></span>
+            <button id="next" type="button" aria-label="Next spread">Next</button>
+            <button id="last" type="button" aria-label="Last spread">Last</button>
+            <label class="goto">Go to page <input id="goto" type="number" min="1" step="1" /></label>
+          </div>
+          <div class="spread">
+            <figure class="sheet left"><img id="page-left" alt="Left-hand page" /><figcaption id="cap-left"></figcaption></figure>
+            <figure class="sheet right"><img id="page-right" alt="Right-hand page" /><figcaption id="cap-right"></figcaption></figure>
+          </div>
+        </section>
+
+        <div id="empty" class="empty">
+          <p>Import your chapters to begin.</p>
+          <p><button type="button" id="import-empty" class="primary">Import Chapters…</button></p>
+        </div>
+      </main>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

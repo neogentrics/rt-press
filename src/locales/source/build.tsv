@@ -1,0 +1,40 @@
+en	es	fr	de
+Setting the pages…	Componiendo las páginas…	Composition des pages…	Seiten werden gesetzt…
+Finishing the file…	Terminando el archivo…	Finalisation du fichier…	Datei wird fertiggestellt…
+Checking the file…	Comprobando el archivo…	Vérification du fichier…	Datei wird geprüft…
+Making the preview…	Creando la vista previa…	Création de l’aperçu…	Vorschau wird erstellt…
+Repairing page turns, round {0}: {1} split a sentence…	Arreglando cambios de página, vuelta {0}: {1} cortan una frase…	Correction des tournes, passe {0} : {1} coupent une phrase…	Seitenwechsel werden verbessert, Durchgang {0}: {1} teilen einen Satz…
+The settings changed. Build again to see the effect.	Los ajustes han cambiado. Vuelva a componer para ver el resultado.	Les réglages ont changé. Composez à nouveau pour voir le résultat.	Die Einstellungen wurden geändert. Erstellen Sie erneut, um die Wirkung zu sehen.
+The build failed: {0}	La composición ha fallado: {0}	La composition a échoué : {0}	Das Erstellen ist fehlgeschlagen: {0}
+Saved {0} MB to {1}	Guardados {0} MB en {1}	{0} Mo enregistrés dans {1}	{0} MB gespeichert unter {1}
+There is no book to set yet. Import some chapters first.	Todavía no hay libro que componer. Importe primero algunos capítulos.	Il n’y a pas encore de livre à composer. Importez d’abord des chapitres.	Es gibt noch kein Buch zum Setzen. Importieren Sie zuerst Kapitel.
+A build is already running.	Ya hay una composición en marcha.	Une composition est déjà en cours.	Es läuft bereits ein Erstellvorgang.
+Wait for the build to finish.	Espere a que termine la composición.	Attendez la fin de la composition.	Warten Sie, bis das Erstellen abgeschlossen ist.
+There is no finished file yet. Build the book first.	Todavía no hay un archivo terminado. Componga primero el libro.	Il n’y a pas encore de fichier terminé. Composez d’abord le livre.	Es gibt noch keine fertige Datei. Erstellen Sie zuerst das Buch.
+The file did not pass: {0}	El archivo no ha superado las comprobaciones: {0}	Le fichier n’a pas réussi les vérifications : {0}	Die Datei hat die Prüfungen nicht bestanden: {0}
+Checks	Comprobaciones	Vérifications	Prüfungen
+Ready to save	Listo para guardar	Prêt à enregistrer	Bereit zum Speichern
+Not ready to save	Aún no se puede guardar	Pas encore prêt à enregistrer	Noch nicht speicherbereit
+The book could not be set	No se pudo componer el libro	Le livre n’a pas pu être composé	Das Buch konnte nicht gesetzt werden
+{0} pages, all {1} checks passed.	{0} páginas, se superan las {1} comprobaciones.	{0} pages, les {1} vérifications sont réussies.	{0} Seiten, alle {1} Prüfungen bestanden.
+{0} pages, {1} of {2} checks failed.	{0} páginas, no se superan {1} de {2} comprobaciones.	{0} pages, {1} vérifications sur {2} ont échoué.	{0} Seiten, {1} von {2} Prüfungen nicht bestanden.
+Built in {0} s.	Compuesto en {0} s.	Composé en {0} s.	In {0} s erstellt.
+No page turn splits a sentence.	Ningún cambio de página corta una frase.	Aucune tourne ne coupe de phrase.	Kein Seitenwechsel teilt einen Satz.
+Page turns that split a sentence: {0} before repair, {1} after.	Cambios de página que cortan una frase: {0} antes del arreglo, {1} después.	Tournes coupant une phrase : {0} avant correction, {1} après.	Seitenwechsel mit geteiltem Satz: {0} vor der Verbesserung, {1} danach.
+Pages added: {0}.	Páginas añadidas: {0}.	Pages ajoutées : {0}.	Hinzugefügte Seiten: {0}.
+No page was added.	No se ha añadido ninguna página.	Aucune page n’a été ajoutée.	Es wurde keine Seite hinzugefügt.
+passed	superada	réussie	bestanden
+failed	no superada	échouée	nicht bestanden
+First	Primera	Début	Anfang
+Last	Última	Fin	Ende
+First spread	Primera doble página	Première double page	Erste Doppelseite
+Previous spread	Doble página anterior	Double page précédente	Vorherige Doppelseite
+Next spread	Doble página siguiente	Double page suivante	Nächste Doppelseite
+Last spread	Última doble página	Dernière double page	Letzte Doppelseite
+Pages {0} of {1}	Páginas {0} de {1}	Pages {0} sur {1}	Seiten {0} von {1}
+Go to page	Ir a la página	Aller à la page	Zu Seite
+Left-hand page	Página izquierda	Page de gauche	Linke Seite
+Right-hand page	Página derecha	Page de droite	Rechte Seite
+Evening the page bottoms…	Igualando el pie de las páginas…	Égalisation du bas des pages…	Seitenenden werden angeglichen…
+Every page that carries on ends on the same line.	Todas las páginas que continúan terminan en la misma línea.	Toutes les pages qui se poursuivent finissent sur la même ligne.	Alle weiterlaufenden Seiten enden auf derselben Zeile.
+Pages that carry on but end above or below the bottom line: {0} of {1}.	Páginas que continúan pero terminan por encima o por debajo de la última línea: {0} de {1}.	Pages qui se poursuivent mais finissent au-dessus ou au-dessous de la dernière ligne : {0} sur {1}.	Weiterlaufende Seiten, die über oder unter der letzten Zeile enden: {0} von {1}.

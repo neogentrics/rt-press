@@ -117,6 +117,40 @@ the book in open fonts, so its page count won't match the owner's build script's
 is compared instead. If an exact comparison turns out to matter, it's revisited once M4's results are in: either the
 licensed fonts go on the build machine, or the comparison runs on the owner's own Windows computer.
 
+### From alpha to 1.0
+
+✅ **Chosen 27 November 2026.** The owner wants to move from the alpha to an official 1.0, through a beta
+([the build brief](design/v1-build.md)). A version tag, which publishes a build, is pushed only when he says so.
+
+### The icon
+
+✅ **Chosen 27 November 2026.** The first draft (a book on a rounded square) looked like the other apps' icons, so it was
+redrawn: an unfolded book cover on a dark tile with cut corners, with a spine that is a CMYK colour bar. On a Mac the tile
+fills 824 of 1024 pixels, as macOS draws every icon; on Windows and Linux it fills the picture. The drawing is
+[brand/icon.svg](brand/icon.svg) and `npm run icons` makes every icon file from it.
+
+### The build session keeps the plan
+
+✅ **Chosen 27 November 2026.** The session that builds RT Press now keeps the README, the roadmap, these decisions and the
+rest of `docs/` true as it goes, in place of a separate planning session writing them. The rules in `CLAUDE.md` stay: no
+release without the owner, and no private book in any file.
+
+### Decided while building V2
+
+Small choices made while building, each open to change:
+
+- **No theme button yet.** An empty button would be worse than none; it comes with the themes.
+- **Window colours until then** follow the system's light or dark, named by the suite's colour tokens, so the shared themes
+  only have to give those names their values.
+- **The guides are in English.** The app's own words are in four languages; the Help Center's guides are not translated.
+  The Spanish, French and German were written by Claude, apart from the labels shared with RT Markdown Reader, which use
+  Reader's. No native speaker has checked them.
+- **The tutorial uses a practice book** built into the app: made-up chapters, put in a project of their own that is thrown
+  away afterwards.
+- **The book's interior settings stay beside the book.** Preferences holds the app's settings; edition, trim and type belong
+  to each book.
+- **Updates are looked for by itself** every six hours unless turned off in Preferences, as the other apps do.
+
 ## Open, the owner's
 
 ### App Link: say what an app does with each kind
@@ -135,6 +169,58 @@ repo `neogentrics/recon-theme`. A script copies it into Press at a pinned tag an
 files); Press commits both, so building never needs access to the private repo, and a test fails if the copy was edited by
 hand or no longer matches the lock. The files move in after RT Markdown Reader's 3.13.x look update merges. Until then
 RT Markdown Reader's files are the source, and Press does no theme work until the planning session says go.
+
+### How Press takes the themes in, until the shared repo says otherwise
+
+✅ Built by the build session, 27 November 2026, on the planning session's go for everything that doesn't depend on the colours.
+The shared repo has no files yet and names no file or lock format, so these are Press's choices, to be checked against the
+files when they arrive:
+
+- `npm run theme:sync -- --tag <version>` copies the repo at that tag (all but documents and dot files, with LF line endings)
+  into `src/theme/` and writes `theme.lock`: the source, the tag, a SHA-256 for each file, and one hash over that list. The old
+  copy is replaced only once the new one passes the app's own check.
+- The app, the build and the tests read the copy the same way. A changed, added, missing or linked file, or a stylesheet that
+  imports or fetches anything, refuses the whole copy. The window then keeps the system's colours and says why.
+- Which themes, looks and colour-safe choices exist is read from the selectors the theming file prescribes on the root element
+  (`data-theme`, `data-surface`, `data-colors`). `theme.css` is applied first, then the other stylesheets by name.
+- With no themes in the build there is no theme button and no Theme menu, and Preferences offers only *Follow System*.
+- Press has no colours of its own for a theme to fall back on. The stand-in colours apply only while no theme is on the window,
+  so a theme that leaves a token out fails the tests instead of being quietly filled in.
+- Contrast is measured as RT Markdown Reader measures its looks: each piece of text and each icon against the worst pixel
+  behind it, in a picture of the real window.
+- Not built: Reader's *Typeface* and *Customize colours & fonts…*, and themes kept in the suite's shared folder. *Page width*
+  has no use in a print preview.
+
+### The line left before a moved sentence
+
+✅ The build session's choice, 27 November 2026, open to the owner. When a sentence is moved to the next page, what was before
+it on that line ends short, as a paragraph's last line does. The owner's build script does the same, by ending the paragraph
+there. It is spread to the full width only when no space on it would have to grow by more than 0.12 of the type size, about
+half a space again, so that a line which was nearly full looks like the ones above it. On the test book that is 2 of the 28
+such lines.
+
+*Mend, adding no pages* means the book's page count: a round of moves is turned down if any section starts on a new page, or
+if the book gains a page at the end.
+
+### How the repair finds its moves, and evens the pages
+
+✅ The build session's choices, 27 November 2026, open to the owner. A round's moves are tried together, and when that doesn't
+fit, section by section, giving up one move at a time. This replaced a guess at the free lines on a section's last page, which
+was far too cautious: it overlooked the blank page that follows many chapters. Keeping the page count, a move may leave its
+page two lines short at most, the owner's script's own limit. Pages are then evened as the script does it, by sharing the spare
+space among the lines of whole paragraphs and before the paragraphs on the page, with at most 0.085 of the line pitch to a share.
+
+**A choice for the owner.** Fewer split sentences and more even pages pull against each other. Measured on the test book,
+adding no pages:
+
+| Rule | Split sentences left | Pages that carry on, on the bottom line |
+|---|---|---|
+| A move may leave a page 2 lines short (**what Press does**) | 26 | 54 of 84 |
+| 3 lines | 16 | 52 of 85 |
+| 3 lines, and only if the page can still be evened | 37 | 56 of 79 |
+| The owner's script's own output | 30 | 54 of 74 |
+
+The last of Press's three rules is the script's way of thinking, and leaves the fewest uneven pages.
 
 ### Theme following between apps
 

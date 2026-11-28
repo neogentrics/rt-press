@@ -1,0 +1,69 @@
+en	es	fr	de
+Book and settings	Libro y ajustes	Livre et réglages	Buch und Einstellungen
+Book	Libro	Livre	Buch
+Title	Título	Titre	Titel
+Author	Autor	Auteur	Autor
+Chapters	Capítulos	Chapitres	Kapitel
+(untitled)	(sin título)	(sans titre)	(ohne Titel)
+{0} words	{0} palabras	{0} mots	{0} Wörter
+Choose a folder of Word (.docx) chapters, one file for each chapter.	Elija una carpeta de capítulos de Word (.docx), un archivo por capítulo.	Choisissez un dossier de chapitres Word (.docx), un fichier par chapitre.	Wählen Sie einen Ordner mit Word-Kapiteln (.docx), eine Datei je Kapitel.
+{0} chapters, {1} words (from “{2}”).	{0} capítulos, {1} palabras (de «{2}»).	{0} chapitres, {1} mots (depuis « {2} »).	{0} Kapitel, {1} Wörter (aus „{2}“).
+{0} chapters, {1} words.	{0} capítulos, {1} palabras.	{0} chapitres, {1} mots.	{0} Kapitel, {1} Wörter.
+Notes from the import	Notas de la importación	Remarques sur l’importation	Hinweise zum Import
+Notes from the import ({0})	Notas de la importación ({0})	Remarques sur l’importation ({0})	Hinweise zum Import ({0})
+{0} quotation marks look unpaired. They are set as written; check them in {1}.	Parece que hay {0} comillas sin pareja. Se componen tal como están escritas; revíselas en {1}.	{0} guillemets semblent non appariés. Ils sont composés tels quels ; vérifiez-les dans {1}.	{0} Anführungszeichen scheinen ohne Partner zu sein. Sie werden wie geschrieben gesetzt; prüfen Sie sie in {1}.
+{0}.docx: a line break inside a paragraph was kept as a line break	{0}.docx: un salto de línea dentro de un párrafo se ha mantenido	{0}.docx : un saut de ligne dans un paragraphe a été conservé	{0}.docx: Ein Zeilenumbruch in einem Absatz wurde beibehalten
+{0}.docx: a symbol run was ignored	{0}.docx: se ha omitido un símbolo	{0}.docx : un symbole a été ignoré	{0}.docx: Ein Symbol wurde ausgelassen
+{0}.docx: the title says Chapter {1}, and this is chapter {2}	{0}.docx: el título dice Capítulo {1} y este es el capítulo {2}	{0}.docx : le titre indique Chapitre {1}, mais c’est le chapitre {2}	{0}.docx: Der Titel nennt Kapitel {1}, dies ist aber Kapitel {2}
+{0}.docx: the chapter has no text, so it was left out	{0}.docx: el capítulo no tiene texto, así que se ha omitido	{0}.docx : le chapitre n’a pas de texte, il a été laissé de côté	{0}.docx: Das Kapitel hat keinen Text und wurde ausgelassen
+Import your chapters to begin.	Importe sus capítulos para empezar.	Importez vos chapitres pour commencer.	Importieren Sie Ihre Kapitel, um zu beginnen.
+That folder can’t be read: {0}	No se puede leer esa carpeta: {0}	Impossible de lire ce dossier : {0}	Dieser Ordner kann nicht gelesen werden: {0}
+That folder can't be read: {0}	No se puede leer esa carpeta: {0}	Impossible de lire ce dossier : {0}	Dieser Ordner kann nicht gelesen werden: {0}
+There are no Word (.docx) files in that folder.	No hay archivos de Word (.docx) en esa carpeta.	Ce dossier ne contient aucun fichier Word (.docx).	In diesem Ordner gibt es keine Word-Dateien (.docx).
+The chapters could not be read: {0}	No se pudieron leer los capítulos: {0}	Impossible de lire les chapitres : {0}	Die Kapitel konnten nicht gelesen werden: {0}
+None of those files had any text.	Ninguno de esos archivos tenía texto.	Aucun de ces fichiers ne contenait de texte.	Keine dieser Dateien enthielt Text.
+Interior	Interior	Intérieur	Innenteil
+Edition	Edición	Édition	Ausgabe
+Paperback	Tapa blanda	Broché	Taschenbuch
+Hardcover	Tapa dura	Relié	Hardcover
+Trim size	Tamaño de corte	Format rogné	Endformat
+{0} × {1} in	{0} × {1} pulg.	{0} × {1} po	{0} × {1} Zoll
+Paper and ink	Papel y tinta	Papier et encre	Papier und Druckfarbe
+Black ink, white paper	Tinta negra, papel blanco	Encre noire, papier blanc	Schwarzdruck, weißes Papier
+Black ink, cream paper	Tinta negra, papel crema	Encre noire, papier crème	Schwarzdruck, cremefarbenes Papier
+Black ink, groundwood paper	Tinta negra, papel de pasta mecánica	Encre noire, papier de pâte mécanique	Schwarzdruck, holzhaltiges Papier
+Standard colour	Color estándar	Couleur standard	Standardfarbe
+Premium colour	Color premium	Couleur premium	Premiumfarbe
+Bleed (0.125 in on the top, bottom and outside edges)	Sangrado (0,125 pulg. en los bordes superior, inferior y exterior)	Fond perdu (0,125 po en haut, en bas et sur le bord extérieur)	Anschnitt (0,125 Zoll oben, unten und außen)
+Body text (pt)	Texto principal (pt)	Corps du texte (pt)	Grundschrift (pt)
+Line spacing	Interlineado	Interligne	Zeilenabstand
+Page numbers	Números de página	Numéros de page	Seitenzahlen
+Outside edge	Borde exterior	Bord extérieur	Außenrand
+Centred	Centrados	Centrés	Zentriert
+Scene break	Separador de escenas	Séparateur de scènes	Szenentrenner
+Drop cap at the start of each chapter	Letra capital al principio de cada capítulo	Lettrine au début de chaque chapitre	Initiale zu Beginn jedes Kapitels
+Title page	Portadilla	Page de titre	Titelseite
+Contents page	Página de contenido	Table des matières	Inhaltsverzeichnis
+Page turns that split a sentence	Cambios de página que cortan una frase	Tournes qui coupent une phrase	Seitenwechsel, die einen Satz teilen
+Mend, adding no pages	Arreglar sin añadir páginas	Corriger sans ajouter de pages	Beheben, ohne Seiten hinzuzufügen
+Mend, pages may be added	Arreglar, se pueden añadir páginas	Corriger, des pages peuvent être ajoutées	Beheben, Seiten dürfen hinzukommen
+Leave as set	Dejar como está	Laisser tel quel	So lassen
+Pin the page count	Fijar el número de páginas	Figer le nombre de pages	Seitenzahl festlegen
+Not pinned	Sin fijar	Non figé	Nicht festgelegt
+KDP takes {0} to {1} pages at this trim and paper.	KDP admite de {0} a {1} páginas con este tamaño y papel.	KDP accepte de {0} à {1} pages pour ce format et ce papier.	KDP nimmt bei diesem Format und Papier {0} bis {1} Seiten an.
+Type is EB Garamond, shipped with RT Press (SIL Open Font License).	La letra es EB Garamond, incluida con RT Press (SIL Open Font License).	La police est EB Garamond, fournie avec RT Press (SIL Open Font License).	Die Schrift ist EB Garamond, mit RT Press ausgeliefert (SIL Open Font License).
+the edition is paperback or hardcover	la edición es de tapa blanda o de tapa dura	l’édition est brochée ou reliée	die Ausgabe ist Taschenbuch oder Hardcover
+KDP does not print {0} × {1} in as a {2}	KDP no imprime {0} × {1} pulg. en esa edición ({2})	KDP n’imprime pas le format {0} × {1} po dans cette édition ({2})	KDP druckt {0} × {1} Zoll nicht in dieser Ausgabe ({2})
+KDP does not offer {0} paper at {1} as a {2}	KDP no ofrece el papel {0} con el tamaño {1} en esa edición ({2})	KDP ne propose pas le papier {0} au format {1} dans cette édition ({2})	KDP bietet das Papier {0} im Format {1} nicht in dieser Ausgabe an ({2})
+bleed is on or off	el sangrado está activado o desactivado	le fond perdu est activé ou non	Anschnitt ist an oder aus
+body text is 8 to 18 points	el texto principal mide de 8 a 18 puntos	le corps du texte va de 8 à 18 points	die Grundschrift hat 8 bis 18 Punkt
+line spacing is 1 to 2.2 times the size	el interlineado es de 1 a 2,2 veces el tamaño	l’interligne va de 1 à 2,2 fois le corps	der Zeilenabstand ist das 1- bis 2,2-Fache der Schriftgröße
+the drop cap is on or off	la letra capital está activada o desactivada	la lettrine est activée ou non	die Initiale ist an oder aus
+page numbers go outside or centre	los números de página van al borde exterior o centrados	les numéros de page sont à l’extérieur ou centrés	Seitenzahlen stehen außen oder mittig
+a scene break is 1 to 20 characters	un separador de escenas tiene de 1 a 20 caracteres	un séparateur de scènes compte de 1 à 20 caractères	ein Szenentrenner hat 1 bis 20 Zeichen
+the title page is on or off	la portadilla está activada o desactivada	la page de titre est activée ou non	die Titelseite ist an oder aus
+the contents page is on or off	la página de contenido está activada o desactivada	la table des matières est activée ou non	das Inhaltsverzeichnis ist an oder aus
+a pinned page count is a whole number from 24 to 900, or empty	un número de páginas fijado es un entero de 24 a 900, o se deja vacío	un nombre de pages figé est un entier de 24 à 900, ou reste vide	eine festgelegte Seitenzahl ist eine ganze Zahl von 24 bis 900 oder leer
+page turns are left alone, repaired without adding pages, or repaired allowing extra pages	los cambios de página se dejan, se arreglan sin añadir páginas o se arreglan permitiendo más páginas	les tournes sont laissées telles quelles, corrigées sans ajout de pages, ou corrigées avec des pages en plus	Seitenwechsel bleiben, werden ohne neue Seiten behoben oder mit zusätzlichen Seiten behoben
+Even page bottoms	Igualar el pie de las páginas	Égaliser le bas des pages	Seitenenden angleichen
+evening the page bottoms is on or off	el ajuste del pie de las páginas está activado o desactivado	l’égalisation du bas des pages est activée ou désactivée	das Angleichen der Seitenenden ist ein- oder ausgeschaltet

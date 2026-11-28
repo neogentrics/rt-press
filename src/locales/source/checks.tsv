@@ -1,0 +1,52 @@
+en	es	fr	de
+Page size matches the trim and bleed	El tamaño de página coincide con el corte y el sangrado	La taille de page correspond au format et au fond perdu	Die Seitengröße passt zu Endformat und Anschnitt
+TrimBox and BleedBox agree with the bleed	TrimBox y BleedBox concuerdan con el sangrado	TrimBox et BleedBox correspondent au fond perdu	TrimBox und BleedBox passen zum Anschnitt
+Every font is embedded	Todas las fuentes están incrustadas	Toutes les polices sont incorporées	Alle Schriften sind eingebettet
+No font is Type 3	Ninguna fuente es de tipo 3	Aucune police n’est de type 3	Keine Schrift ist vom Typ 3
+Nothing is transparent	Nada es transparente	Rien n’est transparent	Nichts ist transparent
+Page count is within KDP's limits	El número de páginas está dentro de los límites de KDP	Le nombre de pages respecte les limites de KDP	Die Seitenzahl liegt in den Grenzen von KDP
+Inside margin fits the page count	El margen interior es adecuado para el número de páginas	La marge intérieure convient au nombre de pages	Der Innenrand passt zur Seitenzahl
+Outside, top and bottom margins are enough	Los márgenes exterior, superior e inferior son suficientes	Les marges extérieure, haute et basse sont suffisantes	Außen-, Kopf- und Fußrand reichen aus
+Text is at least 7 pt	El texto mide al menos 7 pt	Le texte fait au moins 7 pt	Der Text ist mindestens 7 pt groß
+File is within KDP's size	El archivo cumple el tamaño máximo de KDP	Le fichier respecte la taille maximale de KDP	Die Datei hält die Größengrenze von KDP ein
+No bookmarks, links, annotations or encryption	Sin marcadores, enlaces, anotaciones ni cifrado	Ni signets, ni liens, ni annotations, ni chiffrement	Keine Lesezeichen, Links, Anmerkungen oder Verschlüsselung
+{0} (page {1})	{0} (página {1})	{0} (page {1})	{0} (Seite {1})
+{0} and {1} more	{0} y {1} más	{0} et {1} autres	{0} und {1} weitere
+all {0} pages are {1} × {2} in	las {0} páginas miden {1} × {2} pulg.	les {0} pages mesurent {1} × {2} po	alle {0} Seiten sind {1} × {2} Zoll groß
+expected {0} × {1} in; found {2}	se esperaba {0} × {1} pulg.; se encontró: {2}	attendu : {0} × {1} po ; trouvé : {2}	erwartet {0} × {1} Zoll; gefunden: {2}
+no page size	sin tamaño de página	aucune taille de page	keine Seitengröße
+the page is turned	la página está girada	la page est pivotée	die Seite ist gedreht
+TrimBox and BleedBox are on every page, with bleed on the top, bottom and outside edges only	TrimBox y BleedBox están en todas las páginas, con sangrado solo arriba, abajo y en el borde exterior	TrimBox et BleedBox sont sur chaque page, avec un fond perdu en haut, en bas et à l’extérieur seulement	TrimBox und BleedBox sind auf jeder Seite, mit Anschnitt nur oben, unten und außen
+no bleed, and no box disagrees with the page	sin sangrado, y ningún recuadro difiere de la página	pas de fond perdu, et aucun cadre ne contredit la page	kein Anschnitt, und kein Rahmen weicht von der Seite ab
+no TrimBox	falta TrimBox	TrimBox absente	keine TrimBox
+the TrimBox is not where the trim is (bleed belongs on the top, bottom and outside edges only)	TrimBox no está donde va el corte (el sangrado va solo arriba, abajo y en el borde exterior)	la TrimBox n’est pas à l’emplacement de la coupe (le fond perdu va seulement en haut, en bas et à l’extérieur)	die TrimBox liegt nicht am Endformat (Anschnitt gehört nur nach oben, unten und außen)
+no BleedBox	falta BleedBox	BleedBox absente	keine BleedBox
+the BleedBox is not the page	BleedBox no coincide con la página	la BleedBox ne correspond pas à la page	die BleedBox entspricht nicht der Seite
+the {0} is not the page, and the book has no bleed	{0} no coincide con la página, y el libro no tiene sangrado	la {0} ne correspond pas à la page, et le livre n’a pas de fond perdu	die {0} entspricht nicht der Seite, und das Buch hat keinen Anschnitt
+every font is embedded	todas las fuentes están incrustadas	toutes les polices sont incorporées	alle Schriften sind eingebettet
+not embedded: {0}	sin incrustar: {0}	non incorporées : {0}	nicht eingebettet: {0}
+no Type 3 fonts	no hay fuentes de tipo 3	aucune police de type 3	keine Typ-3-Schriften
+Type 3 fonts: {0}	fuentes de tipo 3: {0}	polices de type 3 : {0}	Typ-3-Schriften: {0}
+no transparency, soft masks or blend modes	sin transparencias, máscaras suaves ni modos de fusión	aucune transparence, aucun masque progressif ni mode de fusion	keine Transparenz, weichen Masken oder Füllmethoden
+transparent: {0}	transparente: {0}	transparent : {0}	transparent: {0}
+{0} pages, within {1} to {2}	{0} páginas, dentro de {1} a {2}	{0} pages, entre {1} et {2}	{0} Seiten, innerhalb von {1} bis {2}
+{0} pages; KDP takes {1} to {2} for this trim and paper	{0} páginas; KDP admite de {1} a {2} con este tamaño y papel	{0} pages ; KDP accepte de {1} à {2} pour ce format et ce papier	{0} Seiten; KDP nimmt bei diesem Format und Papier {1} bis {2} an
+KDP does not offer {0} × {1} in {2} on {3} paper	KDP no ofrece {0} × {1} pulg. en edición {2} con papel {3}	KDP ne propose pas {0} × {1} po en édition {2} sur papier {3}	KDP bietet {0} × {1} Zoll in der Ausgabe {2} nicht auf Papier {3} an
+inside margin is at least {0} in on every page, as {1} pages need	el margen interior es de al menos {0} pulg. en todas las páginas, como piden {1} páginas	la marge intérieure est d’au moins {0} po sur chaque page, comme l’exigent {1} pages	der Innenrand ist auf jeder Seite mindestens {0} Zoll, wie {1} Seiten es verlangen
+{0} pages need {1} in inside; found {2}	{0} páginas necesitan {1} pulg. de margen interior; se encontró: {2}	{0} pages exigent {1} po à l’intérieur ; trouvé : {2}	{0} Seiten brauchen {1} Zoll innen; gefunden: {2}
+KDP gives no inside margin for {0} pages (it covers 24 to 828)	KDP no indica margen interior para {0} páginas (cubre de 24 a 828)	KDP ne donne pas de marge intérieure pour {0} pages (il couvre de 24 à 828)	KDP nennt keinen Innenrand für {0} Seiten (abgedeckt sind 24 bis 828)
+at least {0} in on every page	al menos {0} pulg. en todas las páginas	au moins {0} po sur chaque page	mindestens {0} Zoll auf jeder Seite
+at least {0} in is needed; found {1}	se necesitan al menos {0} pulg.; se encontró: {1}	au moins {0} po sont nécessaires ; trouvé : {1}	mindestens {0} Zoll sind nötig; gefunden: {1}
+outside {0} in	exterior {0} pulg.	extérieur {0} po	außen {0} Zoll
+top {0} in	superior {0} pulg.	haut {0} po	oben {0} Zoll
+bottom {0} in	inferior {0} pulg.	bas {0} po	unten {0} Zoll
+{0} in	{0} pulg.	{0} po	{0} Zoll
+no text	no hay texto	aucun texte	kein Text
+the smallest text is {0} pt	el texto más pequeño mide {0} pt	le plus petit texte fait {0} pt	der kleinste Text ist {0} pt groß
+text under {0} pt: {1} pt	texto de menos de {0} pt: {1} pt	texte de moins de {0} pt : {1} pt	Text unter {0} pt: {1} pt
+{0} MB of {1} MB	{0} MB de {1} MB	{0} Mo sur {1} Mo	{0} MB von {1} MB
+none of them	nada de eso	aucun de ces éléments	nichts davon
+the file is encrypted	el archivo está cifrado	le fichier est chiffré	die Datei ist verschlüsselt
+it has bookmarks	tiene marcadores	il contient des signets	sie enthält Lesezeichen
+it has form fields	tiene campos de formulario	il contient des champs de formulaire	sie enthält Formularfelder
+links or annotations on pages {0}	enlaces o anotaciones en las páginas {0}	liens ou annotations aux pages {0}	Links oder Anmerkungen auf den Seiten {0}

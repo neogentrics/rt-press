@@ -1,0 +1,45 @@
+en	es	fr	de
+Theme	Tema	Thème	Design
+Look	Aspecto	Apparence	Optik
+Solid	Sólido	Uni	Deckend
+Metallic	Metálico	Métallique	Metallisch
+Glass	Cristal	Verre	Glas
+Auto	Automático	Auto	Automatisch
+Appearance	Apariencia	Apparence	Darstellung
+Colour-safe colours	Colores seguros	Couleurs adaptées	Farbenblind-Farben
+Paper	Papel	Papier	Papier
+Night	Noche	Nuit	Nacht
+Sepia	Sepia	Sépia	Sepia
+Mist	Niebla	Brume	Nebel
+Forest	Bosque	Forêt	Wald
+Dusk	Crepúsculo	Crépuscule	Dämmerung
+Blue	Azul	Bleu	Blau
+Red	Rojo	Rouge	Rot
+Yellow	Amarillo	Jaune	Gelb
+High Contrast	Alto contraste	Contraste élevé	Hoher Kontrast
+Contrast	Contraste	Contraste	Kontrast
+High contrast	Alto contraste	Contraste élevé	Hoher Kontrast
+Paper (light)	Papel (claro)	Papier (clair)	Papier (hell)
+Night (dark)	Noche (oscuro)	Nuit (sombre)	Nacht (dunkel)
+Theme & layout	Tema y diseño	Thème et mise en page	Design und Layout
+Theme and layout	Tema y diseño	Thème et mise en page	Design und Layout
+Forest (dark)	Bosque (oscuro)	Forêt (sombre)	Wald (dunkel)
+Dusk (dark)	Crepúsculo (oscuro)	Crépuscule (sombre)	Dämmerung (dunkel)
+Colour-Safe Colours	Colores seguros	Couleurs adaptées	Farbenblind-Farben
+The suite’s themes aren’t in this build yet. Until they are, the window follows your system’s light or dark.	Los temas de la suite aún no están en esta versión. Hasta entonces, la ventana sigue el modo claro u oscuro de su sistema.	Les thèmes de la suite ne sont pas encore dans cette version. En attendant, la fenêtre suit le mode clair ou sombre de votre système.	Die Designs der Suite sind in diesem Build noch nicht enthalten. Bis dahin folgt das Fenster dem hellen oder dunklen Modus Ihres Systems.
+The suite’s themes weren’t loaded.	No se cargaron los temas de la suite.	Les thèmes de la suite n’ont pas été chargés.	Die Designs der Suite wurden nicht geladen.
+there is no theme.lock	falta theme.lock	il n’y a pas de theme.lock	theme.lock fehlt
+theme.lock can’t be read	no se puede leer theme.lock	impossible de lire theme.lock	theme.lock kann nicht gelesen werden
+theme.lock is not complete	theme.lock está incompleto	theme.lock est incomplet	theme.lock ist unvollständig
+theme.lock lists something that is not a theme file	theme.lock incluye algo que no es un archivo de tema	theme.lock mentionne autre chose qu’un fichier de thème	theme.lock führt etwas auf, das keine Designdatei ist
+theme.lock does not match its own list	theme.lock no coincide con su propia lista	theme.lock ne correspond pas à sa propre liste	theme.lock passt nicht zu seiner eigenen Liste
+{0} is a link, not a file	{0} es un enlace, no un archivo	{0} est un lien, pas un fichier	{0} ist eine Verknüpfung, keine Datei
+{0} is not in theme.lock	{0} no está en theme.lock	{0} n’est pas dans theme.lock	{0} steht nicht in theme.lock
+{0} is missing from the themes	falta {0} en los temas	il manque {0} dans les thèmes	{0} fehlt in den Designs
+{0} is too large	{0} es demasiado grande	{0} est trop volumineux	{0} ist zu groß
+{0} does not match theme.lock	{0} no coincide con theme.lock	{0} ne correspond pas à theme.lock	{0} passt nicht zu theme.lock
+it holds no stylesheet	no contiene ninguna hoja de estilo	ils ne contiennent aucune feuille de style	sie enthalten kein Stylesheet
+{0} imports another file	{0} importa otro archivo	{0} importe un autre fichier	{0} importiert eine andere Datei
+{0} reaches for something outside itself	{0} pide algo de fuera de sí mismo	{0} va chercher un élément extérieur	{0} greift auf etwas außerhalb zu
+its stylesheets name no theme	sus hojas de estilo no nombran ningún tema	leurs feuilles de style ne nomment aucun thème	ihre Stylesheets nennen kein Design
+it can’t be read ({0})	no se pueden leer ({0})	impossible de les lire ({0})	sie können nicht gelesen werden ({0})

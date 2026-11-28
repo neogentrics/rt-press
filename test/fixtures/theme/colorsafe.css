@@ -1,0 +1,3 @@
+/* TEST ONLY: stand-ins for the colour-safe pair. */
+:root[data-theme="light"][data-colors="safe"] { --add-text: #003399; --del-text: #663300; }
+:root:is([data-theme="dark"], [data-theme="contrast"])[data-colors="safe"] { --add-text: #99ccff; --del-text: #ffcc66; }

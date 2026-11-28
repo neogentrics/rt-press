@@ -9,13 +9,13 @@ tags: [roadmap, planning]
 # Roadmap
 
 RT Press lays out a finished book for print. This page lists the releases, each one something that can be tested on its
-own. **The owner approved this plan on 17 November 2026, and step zero has started.** The choices behind it are in
+own. **The owner approved this plan on 17 November 2026. Step zero is done, and 1.0 is being built.** The choices behind it are in
 [decisions](docs/decisions.md).
 
 > [!TIP]
 > This file is written in Markdown, so it looks best opened in RT Markdown Reader.
 
-**Legend:** 🙋 requested by the owner · 🛡️ needs a permission step · Size: **S** ≈ a day, **M** ≈ a few days, **L** ≈ a week or more
+**Legend:** ✅ built (on the branch being built, not yet released) · 🙋 requested by the owner · 🛡️ needs a permission step · Size: **S** ≈ a day, **M** ≈ a few days, **L** ≈ a week or more
 
 **Version numbers:** each platform Press prints for is a major version. **KDP is version 1**, and every feature added for it
 is a 1.x release (1.9 is followed by 1.10, 1.11…). **Adding a new platform makes the next major version:** Lulu is 2.x,
@@ -32,8 +32,8 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 
 | Release | Theme | Status |
 |---|---|---|
-| [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | ✅ Built, and waiting for the owner's decision on its results |
-| [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | Planned |
+| [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | ✅ Done: the owner went on to 1.0 |
+| [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | 🔨 Building: 2 of 8 milestones done |
 | [v1.1](#v11--page-frames-and-ornaments) | Page frames and ornaments | Planned |
 | [v1.2](#v12--art-on-the-page) | Art on the page | Planned |
 | [v1.3](#v13--the-paperback-cover-wrap) | The paperback cover wrap | Planned |
@@ -51,20 +51,26 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 
 ## Where it stands
 
-As of 27 November 2026. Step zero is built on the `step-zero` branch ([pull request 8](https://github.com/neogentrics/rt-press/pull/8), still a draft), and an alpha was published from it.
+As of 27 November 2026. 1.0 is being built on the `v1.0` branch, milestone by milestone ([the build brief](docs/design/v1-build.md)).
+Step zero is on the `step-zero` branch ([pull request 8](https://github.com/neogentrics/rt-press/pull/8)), and the published
+pre-release [0.1.0-alpha.0](https://github.com/neogentrics/rt-press/releases/tag/v0.1.0-alpha.0) (23 November) was built from
+it, before the 1.0 work below.
 
-| Piece | State |
+| 1.0 milestone | State |
 |---|---|
-| The plan | ✅ Approved on 17 November, and the repo is public |
-| M1 An empty app, with encrypted storage | ✅ Committed, tests passing on all three systems |
-| M2 Typst inside the app | ✅ Committed, all six systems checked against GitHub's own digests |
-| M3 The test book comes in | ✅ Committed, and it matches the owner's build script on all 16 chapters |
-| M4 Set the pages | ✅ Committed, in open stand-in fonts (the owner's choice, 20 November) |
-| M5 The file KDP gets, and the checks | ✅ Committed: every check Press can make passes on the finished file. KDP's own previewer hasn't seen one yet. |
-| M6 Can the page be steered? | ✅ Passed, with limits |
-| The step-zero results | ✅ [Written](docs/design/step-zero-results.md): two gates passed, three need the owner |
-| Tests | ✅ Passing on Windows, Mac and Linux on the latest run, after the Windows storage bug was fixed |
-| An alpha | ✅ Published at the owner's request: the pre-release 0.1.0-alpha.0 (23 November), a window to import chapters, set the interior, check it, preview it and save the PDF, built by CI for Windows, Mac and Linux. Not yet opened by hand on Windows or Mac: CI ran the built app's window test there, and nothing is code-signed. |
+| V1 An icon, and the installers wear it | ✅ The redrawn icon (an unfolded cover with a colour-bar spine), with clear space round it on a Mac. Not yet seen installed on a real desktop. |
+| V2 The suite's frame | ✅ All of it but the themes and looks: menus, Go to, Help Center and tutorial, About, Preferences, the icon toolbar, self-update, the installed list, and Spanish, French and German with right-to-left layouts. For themes and looks, the picker with *Auto*, the menus, *Preferences → Appearance*, the `theme.lock` check, the token wiring and the contrast tests are built and tried with made-up themes. **The suite's colours and looks are not in:** their repo holds no theme files yet, so the theme button stays hidden and nothing has been measured on the real ones. |
+| V3 Page quality to the owner's standard | 🔨 Building. Done: the stretched line left behind by a moved sentence is fixed, the repair finds many more moves, and pages are evened at the foot. On the test book with no page added, 66 split sentences become 26, and 54 of 84 pages that carry on end on the bottom line; the owner's script's own output has 30 and 54 of 74, counted the same way. (The fonts differ, so the pages are not the same pages.) The page count can be pinned, and the book ends on a blank even page. **Still to build:** the keep list and the report of what moved and what couldn't. **Still worse than the script:** more uneven pages away from chapter openings. |
+| V4 Every trim size | Not started. The alpha already offers every KDP list size; custom sizes and the margin from the page count are not built. |
+| V5 Book themes, matter and fonts | Not started |
+| V6 Bringing a book in | Not started. Word chapters already come in. |
+| V7 The checks, complete | Not started. Eleven checks and a spread preview exist. |
+| V8 The beta | Not started |
+
+| Step zero | State |
+|---|---|
+| M1 to M6 | ✅ Committed, with tests passing on all three systems |
+| The results | ✅ [Written](docs/design/step-zero-results.md): two gates passed, three need the owner (fonts, KDP's previewer, Windows and Mac) |
 
 ## Step zero — Prove the typesetter
 
@@ -101,9 +107,9 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 | 🙋 Language and hyphenation | S | The book's language sets hyphenation and the quotation style, and hyphenation can be turned off. No hyphenated word is split across a page turn. |
 | 🙋 Checks before upload | M | KDP's rules for trim, page count, margins, bleed, fonts, picture resolution, links and blank pages. A broken rule is shown on the page it's on, and the file isn't written until it's fixed. |
 | Preview | M | The pages as they'll print, side by side as spreads, updating as you change the theme. |
-| Installed list | S | On first run and after each update, writes `installed/rt-press.json` (id, name, version, launch path, protocol) in the App Link folder, and removes it on uninstall, so the other apps can find Press. |
-| 🙋 Menus and Help | M | File, Edit, View and Help, each kept short, with less-used commands in submenus and every command runnable by name from the command palette (`Ctrl+K`). The Help menu in the suite's order: *Help Center* (`F1`), *Tutorial*, *Check for Updates…*, *About RT Press*. Guides are plain Markdown files in a `help` folder, and the tutorial offers a practice book. |
-| 🙋 About and Preferences | S | The suite's About window: icon, version, *Website*, *What's new in this version*, *Report a problem or suggest a feature*, *Source code*, the Electron, Chromium, Node and system versions with *Copy details*, and links to the licence and the open-source notices. One Preferences window (`Ctrl+,`) holds every setting. |
+| ✅ Installed list | S | On first run and after each update, writes `installed/rt-press.json` (id, name, version, launch path, protocol) in the App Link folder, and removes it on uninstall, so the other apps can find Press. |
+| 🙋 ✅ Menus and Help | M | File, Edit, View and Help, each kept short, with less-used commands in submenus and every command runnable by name from the command palette (`Ctrl+K`). The Help menu in the suite's order: *Help Center* (`F1`), *Tutorial*, *Check for Updates…*, *About RT Press*. Guides are plain Markdown files in a `help` folder, and the tutorial offers a practice book. |
+| 🙋 ✅ About and Preferences | S | The suite's About window: icon, version, *Website*, *What's new in this version*, *Report a problem or suggest a feature*, *Source code*, the Electron, Chromium, Node and system versions with *Copy details*, and links to the licence and the open-source notices. One Preferences window (`Ctrl+,`) holds every setting. |
 | 🙋 App theme and the toolbar | M | The window follows the system, light or dark, with *Auto* and a choice of either, built to the suite's [theming file](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-theming.md) and ready for the suite's shared themes file: the loader, the shared colour tokens and the `theme.lock` check are in, so the ten themes and the looks arrive in 1.1 without changing the app. One theme button on the main screen, also under *Preferences → Appearance*. Contrast of light and dark is measured in the tests on all three systems. The page preview stays plain. An icon toolbar with a name on hover for each button. |
 | 🙋 Updates, access and languages | M | *Restart to update* where the system allows it, and a download link where it doesn't. Every button named, light and dark at WCAG AA contrast, Windows high contrast, and everything doable from the keyboard, all checked by the tests. Spanish, French and German, and right-to-left layouts. |
 
