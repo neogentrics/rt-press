@@ -8,7 +8,7 @@ const path = require('node:path');
 const test = require('node:test');
 const { readPdf } = require('../src/main/pdf/read');
 const { textItems, textLines } = require('../src/main/pdf/text');
-const { addPage } = require('../src/main/press/book-pages');
+const { addPage, followSwitches } = require('../src/main/press/book-pages');
 const { curlBook } = require('../src/main/press/book-quotes');
 const { buildBook, withFrontMatter } = require('../src/main/press/pipeline');
 const { themeFromSettings, validateSettings, withDefaultSettings } = require('../src/main/press/settings');
@@ -265,4 +265,43 @@ test('the author’s own themes are saved, found again, replaced by name and del
   assert.equal(new ThemeShelf(folder).list().length, STARTER_THEMES.length);
   shelf.remove(id);
   assert.equal(shelf.get(id), null);
+});
+
+// Found by following the importers' paragraph looks to the printed page: no theme gave them one.
+test('a subheading, a centred line and a list item from an imported book are set as what they are, in every starter theme', { skip }, async () => {
+  const line = (role, text) => ({ type: 'paragraph', ...(role ? { attrs: { role } } : {}), content: [{ type: 'text', text }] });
+  const book = practiceBook();
+  book.sections[0].document.content = [...book.sections[0].document.content.slice(0, 2), line('Subheading', 'A Later Hour'), line(null, 'Straight after it.'), line('Centred', 'In the middle'), line('Listed', '• a coil of rope'), ...book.sections[0].document.content.slice(2)];
+  for (const theme of STARTER_THEMES) {
+    const settings = { ...theme.design, book_theme: theme.id };
+    const made = await build(book, settings);
+    assert.deepEqual(made.notes.filter((note) => /has no look/.test(note)), [], theme.id);
+    const doc = readPdf(made.pdf);
+    const find = (words) => {
+      for (const page of doc.pages()) {
+        const found = textLines(doc, page).find((l) => l.text.includes(words));
+        if (found) {
+          const items = textItems(doc, page).filter((i) => Math.abs(i.y - found.y) < 0.5);
+          const trim = doc.rect(page.dict.TrimBox);
+          // How far in from the left of the text it starts.
+          const left = trim[0] + (page.number % 2 ? themeFromSettings(settings, { pages: made.pages }).margins.inside_in : 0.625) * 72;
+          return { size: found.size, font: items[0].font, indent: found.x - left };
+        }
+      }
+      throw new Error(`${theme.id}: “${words}” is on no page`);
+    };
+    const subheading = find('A Later Hour');
+    assert.ok(subheading.size > theme.design.body_pt + 0.5, `${theme.id}: a subheading is bigger than the text (${subheading.size})`);
+    assert.ok(Math.abs(find('Straight after it').indent) < 1, `${theme.id}: the paragraph under a subheading isn’t indented`);
+    assert.ok(find('In the middle').indent > 90, `${theme.id}: a centred line is in the middle (${find('In the middle').indent})`);
+    assert.ok(Math.abs(find('a coil of rope').indent) < 1, `${theme.id}: a list item starts at the margin`);
+  }
+});
+
+test('the contents page Press makes is headed in the book’s language as it is now, and a heading the author wrote stays', () => {
+  const added = followSwitches(practiceBook(), { title_page: false, contents: true });
+  const heading = (book, language) => withFrontMatter(book, withDefaultSettings({ language, contents: true }), DETAILS).sections.find((s) => s.kind === 'contents').title;
+  assert.deepEqual(['en', 'de', 'fr', 'es'].map((language) => heading(added, language)), ['Contents', 'Inhalt', 'Table des matières', 'Índice']);
+  const own = { ...added, sections: added.sections.map((s) => (s.kind === 'contents' ? { ...s, title: 'What’s Inside' } : s)) };
+  assert.equal(heading(own, 'de'), 'What’s Inside');
 });

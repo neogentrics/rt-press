@@ -71,7 +71,9 @@ the failures are fixed; and the preview as spreads. Measure the same pages on Wi
 difference: that is the second gate.
 
 **V8. The beta.** Check the roadmap's v1.0 rows one by one and report any that isn't built. Update the README's screenshots from
-the made-up book. Then ask the owner for `1.0.0-beta.1`.
+the made-up book. Then ask the owner for `1.0.0-beta.1`. *Changed on 28 November: the owner said he can't verify anything until
+the full 1.0 build is finished and released, so there is no alpha for now. V8 ends by saying the full build is ready, with
+what was and wasn't verified; the planning session arranges the release with him.*
 
 V3 started with a fault in the page-turn repair: when a sentence was moved to the next page, the line left behind was
 justified even when it was short, so its words were stretched across the page. ✅ Fixed on 27 November, with two other faults

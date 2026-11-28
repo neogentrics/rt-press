@@ -17,7 +17,7 @@ const { readFaces } = require('../typeset/font-file');
 const { generateTypst } = require('../typeset/typst-source');
 const { typesetBook } = require('../typeset/typeset-book');
 const { BLEED_IN } = require('../../shared/print-rules');
-const { bookLanguage, knownLanguage } = require('../../shared/languages');
+const { BOOK_LANGUAGES, bookLanguage, knownLanguage } = require('../../shared/languages');
 const { curlBook } = require('./book-quotes');
 const { automaticInside, themeFromSettings, validateSettings, withDefaultSettings } = require('./settings');
 
@@ -33,12 +33,15 @@ function titlePageDocument(book, details) {
 // front if the choices ask for one the book doesn't hold; in the book's language, with its straight quotes curled for it.
 function withFrontMatter(book, settings, details) {
   const wanted = { 'title-page': settings.title_page, contents: settings.contents };
+  const language = knownLanguage(settings.language) ?? 'en';
+  // The contents page's heading, where it is the one Press wrote, follows the book's language.
+  const ours = new Set(BOOK_LANGUAGES.map((l) => l.contents));
   const sections = book.sections
     .filter((s) => !(s.generated && !wanted[s.kind]))
-    .map((s) => (s.generated && s.kind === 'title-page' ? { ...s, document: titlePageDocument(book, details) } : s));
+    .map((s) => (s.generated && s.kind === 'title-page' ? { ...s, document: titlePageDocument(book, details) } : s))
+    .map((s) => (s.generated && s.kind === 'contents' && ours.has(s.title) ? { ...s, title: bookLanguage(language).contents } : s));
   const front = [];
   if (settings.title_page && !sections.some((s) => s.kind === 'title-page')) front.push({ type: 'matter', id: 'title-page', kind: 'title-page', placement: 'front', title: '', folio: false, document: titlePageDocument(book, details) });
-  const language = knownLanguage(settings.language) ?? 'en';
   const contents = settings.contents && !sections.some((s) => s.kind === 'contents') ? [{ type: 'matter', id: 'contents', kind: 'contents', placement: 'front', title: bookLanguage(language).contents, document: { type: 'doc', content: [] } }] : [];
   const titled = sections.findIndex((s) => s.kind === 'title-page');
   sections.splice(titled + 1, 0, ...contents);

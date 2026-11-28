@@ -163,17 +163,17 @@ page = f'''<!DOCTYPE html>
 <nav aria-label="Sections"><a class="lead" href="#now">Now</a><a href="#ideas">Our way</a><a href="#coming">Releases</a><a href="#owns">Who keeps what</a><a href="#later">Later</a><a href="#decisions">Decisions</a></nav></div></div>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
-<div class="kicker"><span class="pulse" aria-hidden="true"></span>1.0 is being built</div>
-<h1 id="nowh">Book themes and every page of a book are in. Bringing books in is next.</h1>
+<div class="kicker"><span class="pulse" aria-hidden="true"></span>1.0 is built, not released</div>
+<h1 id="nowh">The full 1.0 build is ready. The release is next, with you.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
-<ul><li><b>Done</b><span>V1, V2, V4 and V5 of 8: the icon; the window, with the suite's ten themes and three looks; every KDP trim size; and book themes, front and back matter and fonts. KDP's previewer has not seen the files.</span></li>
-<li><b>Now</b><span>V6 to V8 are being built without stopping, as you asked. V3 is built and waits for your judgement: on the test book Press now leaves fewer split sentences and fewer uneven pages than your script's output, in stand-in fonts. How hard the repair should try is still your choice.</span></li>
+<ul><li><b>Done</b><span>All 8 milestones. Both gates measured: on your test book, in stand-in fonts, Press leaves fewer split sentences and fewer uneven pages than your script's output; and made-up books make the same pages on Windows, Mac and Linux.</span></li>
+<li><b>Not checked</b><span>KDP's previewer has seen no file. Nobody has judged your book's pages from this build by eye, tried an installer by hand, or read the translations as a native speaker. Even page bottoms are not met on every page. RT Story Tracker can't send a book yet.</span></li>
 <li><b>An alpha is out</b><span>0.1.0-alpha.0, from before V1. No new build is published until you ask for one. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>
 <div class="glance">
 <div class="card next"><span class="label">First release</span><b><a href="#r-v10">v1.0: Interiors for KDP</a></b><p>Paperback and hardcover interiors with themes, page-turn repair, even page bottoms, a pinned page count and every check.</p></div>
 <div class="card ok"><span class="label">The goal</span><b><a href="#r-v14">v1.4: The hardcover case wrap</a></b><p>From here Press does everything your build script does, with nothing else installed.</p></div>
-<div class="card you"><span class="label">Waiting on you</span><b>Later, with the full build</b><p>Your judgement of the pages, one upload to KDP's previewer, and opening the build on Windows and Mac.</p></div>
+<div class="card you"><span class="label">Waiting on you</span><b>The release</b><p>Then your judgement of the pages, an upload to KDP's previewer, opening it on Windows and Mac, and the page repair rule.</p></div>
 </div>
 {stand_html}
 <section aria-labelledby="railh"><div class="section-head"><h2 id="railh">Every version</h2></div>

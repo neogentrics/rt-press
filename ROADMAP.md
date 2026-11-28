@@ -33,7 +33,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | Release | Theme | Status |
 |---|---|---|
 | [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | ✅ Done: the owner went on to 1.0 |
-| [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | 🔨 Building: 5 of 8 milestones done; V3 waits on the owner's judgement |
+| [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | 🔨 Built, not yet released: all 8 milestones. The owner judges it on the full build |
 | [v1.1](#v11--page-frames-and-ornaments) | Page frames and ornaments | Planned |
 | [v1.2](#v12--art-on-the-page) | Art on the page | Planned |
 | [v1.3](#v13--the-paperback-cover-wrap) | The paperback cover wrap | Planned |
@@ -51,7 +51,9 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 
 ## Where it stands
 
-As of 28 November 2026. 1.0 is being built on the `v1.0` branch, milestone by milestone ([the build brief](docs/design/v1-build.md)).
+As of 28 November 2026. **The full 1.0 build is finished on the `v1.0` branch and not released.** It was built milestone by
+milestone ([the build brief](docs/design/v1-build.md)). The owner can't check it until it is released, so there is no alpha
+first. What was and wasn't verified is below, row by row.
 Step zero is on the `step-zero` branch ([pull request 8](https://github.com/neogentrics/rt-press/pull/8)), and the published
 pre-release [0.1.0-alpha.0](https://github.com/neogentrics/rt-press/releases/tag/v0.1.0-alpha.0) (23 November) was built from
 it, before the 1.0 work below.
@@ -64,8 +66,43 @@ it, before the 1.0 work below.
 | V4 Every trim size | ✅ All 16 paperback and 5 hardcover sizes, custom paperback sizes, and the inside margin from the real page count. Every listed size and the corners of the custom range pass every check in the tests, with and without bleed. **KDP's own previewer has seen none of them.** KDP publishes no page limits for a custom size, so Press's are its own ([print rules](docs/design/print-rules.md#kdp-trim-and-page-count)). |
 | V5 Book themes, matter and fonts | ✅ Five starter themes and the author's own; chapter openers, subtitles, running heads and house rules; front and back matter added, edited and ordered; the book's language; ten fonts with open stand-ins for the owner's three. **The themes' pages were judged only on made-up books**, and KDP's previewer has seen none of them. The Spanish, French and German words, in the window and printed, haven't been checked by a native speaker. |
 | V6 Bringing a book in | ✅ A folder of Word chapters, one Word, Markdown or EPUB file, or an [.rtbook](docs/design/rtbook.md). A Story Tracker book is read-only, a book from files can be corrected, and a newer copy keeps the design and the author's pages and says what moved. In the tests, one word changed in an .rtbook changed one page. Beyond the tests' own files, RT Story Tracker's EPUB, Word and Markdown exports of a made-up book were opened: parts, chapters, italics and bold came through. In its Word export, the unheaded front pages (title, copyright, dedication) are left out with a notice. **No book from any other program has been tried, and RT Story Tracker doesn't write .rtbook files yet.** |
-| V7 The checks, complete | Not started. Eleven checks and a spread preview exist. |
-| V8 The beta | Not started |
+| V7 The checks, complete | ✅ Every interior rule on KDP's pages is checked, each finding shown on its page, and the file isn't saved until the failures are fixed; the preview is spreads. KDP's recommendations, and blank pages, for which it gives no number, warn only. **The second gate passed:** 7 made-up books of 524 pages came out the same on Linux, Windows and an Apple silicon Mac, line for line, and the files identical to the byte. An Intel Mac wasn't measured. |
+| V8 The full build | ✅ The rows below were checked one by one, and the pictures remade from made-up books. The brief's step of asking for a beta is replaced by the owner's word of 28 November: no alpha. |
+
+### 1.0's rows, one by one
+
+| Row | State | What isn't there, or isn't verified |
+|---|---|---|
+| Bring in a book | Built | From RT Story Tracker it takes a file it **doesn't write yet**; sending in one step is 1.7. No whole-book Word, Markdown or EPUB file from outside the suite has been tried |
+| Every KDP trim size | Built | **KDP's previewer has seen none of them** |
+| Margins from the page count | Built | |
+| Book themes | Built | The five designs were judged only on made-up books |
+| Front and back matter | Built | |
+| Titles on the right | Built | |
+| Running heads | Built | |
+| Page turns | Built | Not every split can be mended. On the test book, adding no pages, 23 pages still split a sentence, each listed with its reason |
+| Even page bottoms | **Built, not met in full** | Full pages end on the same line. On the test book 17 of the 79 pages that carry on don't reach it or run below it (the owner's script: 20 of 74). The text area is 31.3 lines of the default type, so full pages end on the 31st |
+| Pin the page count | Built | |
+| Fonts you can trust | Built | The owner's Book Antiqua and Felix Titling were never on a test computer |
+| Language and hyphenation | Built | A word is left split across a page turn where holding it would move a chapter or split another sentence, and the build says where. Chapter numbers in words are English only. The other languages' quotation marks and printed words aren't checked by a native speaker |
+| Checks before upload | Built | KDP also lists "PDF creation logos or watermarks", which no check reads for (Press adds none) |
+| Preview | Built | The quick preview after a change mends and checks nothing; a build does |
+| Installed list | Built | The Windows installer's own writing and removing of the file has never been run in a test |
+| Menus and Help | Built | The guides are in English |
+| About and Preferences | Built | |
+| App themes and the toolbar | Built | *Customize Theme* is 1.1 |
+| Updates, access and languages | Built | *Restart to update* has never run from a real release. Windows high contrast is imitated in the tests, not tried on Windows' own. The tests tab to the main controls, not to every action. Spanish, French and German haven't been read by a native speaker |
+
+**1.0's own test, and what every release must do:**
+
+| It asks | Where it stands |
+|---|---|
+| A book in each trim size passes KDP's previewer | **Not done.** It needs the owner's KDP account |
+| One word changed in RT Story Tracker moves only its page | Passed in the tests with an `.rtbook` made by the test. Story Tracker can't send one yet |
+| Menus, Help and About in RT Markdown Reader's words, and every theme with every look passing contrast | Passes in CI on all three systems |
+| Installs on a clean computer with nothing else | **Not tried by hand.** CI builds all three installers and runs the app inside each |
+| Updates from the release before without losing anything | A project made by 0.1.0-alpha.0's own code opened with every chapter, word and setting. Installing over an old install wasn't tried |
+| Tests pass on Windows, Mac and Linux | They run in CI on every push |
 
 | Step zero | State |
 |---|---|
@@ -104,14 +141,14 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 | 🙋 Even page bottoms | M | The text block holds a whole number of lines, and every full page ends on the same bottom line. |
 | 🙋 ✅ Pin the page count | S | Keep the published page count so an existing cover still fits, and end on a blank page with an even total. |
 | 🙋 ✅ Fonts you can trust | S | Bundled fonts plus any on the computer that allow embedding. A character missing from its font stops the build, so nothing falls back to another font. |
-| 🙋 Language and hyphenation | S | The book's language sets hyphenation and the quotation style, and hyphenation can be turned off. No hyphenated word is split across a page turn. |
-| 🙋 Checks before upload | M | KDP's rules for trim, page count, margins, bleed, fonts, picture resolution, links and blank pages. A broken rule is shown on the page it's on, and the file isn't written until it's fixed. |
-| Preview | M | The pages as they'll print, side by side as spreads, updating as you change the theme. |
+| 🙋 ✅ Language and hyphenation | S | The book's language sets hyphenation and the quotation style, and hyphenation can be turned off. No hyphenated word is split across a page turn. |
+| 🙋 ✅ Checks before upload | M | KDP's rules for trim, page count, margins, bleed, fonts, picture resolution, links and blank pages. A broken rule is shown on the page it's on, and the file isn't written until it's fixed. |
+| ✅ Preview | M | The pages as they'll print, side by side as spreads, updating as you change the theme. |
 | ✅ Installed list | S | On first run and after each update, writes `installed/rt-press.json` (id, name, version, launch path, protocol) in the App Link folder, and removes it on uninstall, so the other apps can find Press. |
 | 🙋 ✅ Menus and Help | M | File, Edit, View and Help, each kept short, with less-used commands in submenus and every command runnable by name from the command palette (`Ctrl+K`). The Help menu in the suite's order: *Help Center* (`F1`), *Tutorial*, *Check for Updates…*, *About RT Press*. Guides are plain Markdown files in a `help` folder, and the tutorial offers a practice book. |
 | 🙋 ✅ About and Preferences | S | The suite's About window: icon, version, *Website*, *What's new in this version*, *Report a problem or suggest a feature*, *Source code*, the Electron, Chromium, Node and system versions with *Copy details*, and links to the licence and the open-source notices. One Preferences window (`Ctrl+,`) holds every setting. |
 | 🙋 ✅ App themes and the toolbar | M | The window is built to the suite's [theming file](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-theming.md) with the suite's shared themes, from the private repo `neogentrics/recon-theme`: the ten themes (Paper, Night, Sepia, Mist, Forest, Dusk, Blue, Red, Yellow, High Contrast) plus *Auto*, the *Solid*, *Metallic* and *Glass* looks, and *Colour-safe*. A script takes the files in at a pinned tag and writes a `theme.lock`; Press commits both, so building never needs access, and a copy that differs from its lock is refused. One theme button on the main screen, also under *Preferences → Appearance*, *View → Theme* and *View → Look*. Contrast of every theme with every look is measured in the tests on all three systems. The page preview stays plain. An icon toolbar with a name on hover for each button. |
-| 🙋 Updates, access and languages | M | *Restart to update* where the system allows it, and a download link where it doesn't. Every button named, every theme at WCAG AA contrast, Windows high contrast, and everything doable from the keyboard, all checked by the tests. Spanish, French and German, and right-to-left layouts. |
+| 🙋 ✅ Updates, access and languages | M | *Restart to update* where the system allows it, and a download link where it doesn't. Every button named, every theme at WCAG AA contrast, Windows high contrast, and everything doable from the keyboard, all checked by the tests. Spanish, French and German, and right-to-left layouts. |
 
 **Test:** lay out a book in each trim size, upload it to KDP's previewer, and it reports nothing. Change one word in RT
 Story Tracker, refresh, and only that page moves. The menus, Help, About and Preferences use RT Markdown

@@ -410,6 +410,11 @@ function showBuild(build) {
     sentences.push(added > 0 ? `Pages added: ${added}.` : 'No page was added.');
   }
   sentences.push(...fontNotes(build.fonts));
+  // A paragraph asking for a look no theme has is set like any other, and said to be.
+  for (const note of build.notes ?? []) {
+    const name = /^role "(.+)" has no look/.exec(note)?.[1];
+    if (name) sentences.push(`No paragraph look is called “${name}”, so those paragraphs are set as ordinary text.`);
+  }
   if (build.margins?.from === 'page-count') sentences.push(`Inside margin: ${build.margins.inside_in} in, from the page count.`);
   if (r?.kept?.length) sentences.push(`Left split on purpose: ${r.kept.length}.`);
   const uneven = build.even ? build.even.running - build.even.onLine : 0;

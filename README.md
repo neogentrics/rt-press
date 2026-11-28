@@ -24,10 +24,10 @@ Windows, Mac and Linux, with no account, no ads and nothing else to install.
 RT Press is part of the **Recon Towers** suite, built by its Dev Department. It was inspired by the owner writing his own
 books.
 
-> **This is an alpha, on the way to 1.0.** The typesetter was proved on a real book in step zero (see the
-> [results](docs/design/step-zero-results.md)), and the app does the whole interior from start to finish for a book of plain
-> chapters. Pictures aren't set yet, and KDP's own previewer hasn't seen a file it made. It's for trying, not for printing
-> your book yet. What's left before 1.0 is on the [roadmap](ROADMAP.md#where-it-stands).
+> **1.0 is built and not yet released.** It's on the `v1.0` branch. It does a book's whole interior for KDP, but **KDP's own
+> previewer hasn't seen a file it made**, nobody has judged a real book's pages from this build by eye, and pictures aren't
+> set yet. What was checked and what wasn't is on the [roadmap](ROADMAP.md#where-it-stands). The download below is the
+> early alpha, from before this work.
 
 <table>
 <tr>
@@ -68,9 +68,10 @@ imports a book, sets it, checks it and saves it before anything is published.
 The builds aren't code-signed yet, so Windows may show a SmartScreen warning the first time (choose *More info*, then *Run
 anyway*), and macOS will ask you to open the app from *System Settings → Privacy & Security*.
 
-**The published 0.1.0-alpha.0 is older than this page.** It was built before the new icon, the menus, Help, the tutorial,
-Preferences and the languages, and it doesn't look for updates. Its page-turn repair can also leave a short line
-stretched across the page. All of that is changed on the `v1.0` branch, and the next build will have it.
+**The published 0.1.0-alpha.0 is much older than this page.** It was built from step zero, before the new icon, the menus,
+Help, the languages, the book themes, the front and back matter, book files and most of the checks. It doesn't look for
+updates, and its page-turn repair can leave a short line stretched across the page. All of that is changed on the `v1.0`
+branch. No new build has been published.
 
 To build it yourself, on Linux:
 
@@ -112,7 +113,7 @@ npm run dist:linux
 
 ## What it won't do
 
-- Edit a book that lives in RT Story Tracker. Its words stay there, and Press jumps you to the chapter to fix a typo.
+- Edit a book that lives in RT Story Tracker. Its words stay there: you fix a typo there and bring the book in again. (A button that jumps to the chapter comes in 1.7.)
 - Paint or draw. Cover art and sketches are made elsewhere and placed here.
 - Upload to a store. It writes the files and checks them, and you upload them yourself.
 - Need AI. That's an add-on, off until you turn it on, with your choice of service, including a model on your own computer.
@@ -171,18 +172,19 @@ the repo they live in. What it copies is committed in `src/theme` with a `theme.
 - `fonts`: the font files kept in this repository, with their licences.
 - `src/main/pdf`: reading and writing PDFs, and the finishing step that makes Typst's file ready for a printer.
 - `src/main/checks`: the checks, which read the finished PDF.
-- `src/main/steer`: finding the pages that split a sentence, and the steers that move them. The build uses it.
-- `src/main/import`: Word chapters in.
+- `src/main/steer`: finding the pages that split a sentence or a word, evening the page bottoms, and the steers that do it. The build uses it.
+- `src/main/import`: books in, from Word, Markdown, EPUB and `.rtbook` files.
 - `src/main/storage`: the only code that touches the encrypted project.
 - `src/main/theme`: reads the suite's window themes and refuses a copy that doesn't match its `theme.lock`.
 - `src/theme`: the suite's shared themes and looks, copied in at a tag. Not edited here.
 - `src/renderer`: the window and the frame round it, bundled into `dist/renderer` by `npm run build:renderer`.
 - `src/locales`: the translations, made from the tables in `src/locales/source` by `npm run locales`.
 - `help`: the Help Center's guides, in Markdown.
-- `src/shared`: what both sides need, such as the book, the theme and KDP's numbers (`print-rules.js`).
+- `src/shared`: what both sides need, such as the book, the page theme, the book themes and KDP's numbers (`print-rules.js`).
+- `scripts/page-fingerprint.cjs` and `compare-pages.cjs`: CI's check that the same books make the same pages on every system.
 
 The plan behind it all is in the [roadmap](ROADMAP.md) and the [decisions](docs/decisions.md), with designs for
-[typesetting](docs/design/typesetting.md), the [print rules](docs/design/print-rules.md), the [other platforms print rules](docs/design/print-rules-other-platforms.md) and
+[typesetting](docs/design/typesetting.md), the [print rules](docs/design/print-rules.md), the [.rtbook file](docs/design/rtbook.md), the [other platforms print rules](docs/design/print-rules-other-platforms.md) and
 [working with the suite](docs/design/working-with-the-suite.md), and what step zero found in the
 [results](docs/design/step-zero-results.md).
 

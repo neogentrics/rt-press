@@ -151,6 +151,11 @@ function themeFromSettings(given, { pages = null, capHeights = {}, details = {} 
       Title: { align: 'center', size_pt: Math.round(s.body_pt * 2.6), font: 'title', space_before_pt: Math.round(pitch * 6), space_after_pt: Math.round(pitch * 1.2), letter_spacing_pt: 1.5, line_pt: Math.round(s.body_pt * 3.2) },
       Subtitle: { align: 'center', size_pt: Math.round(s.body_pt * 1.4), font: 'subtitle', italic: s.subtitle_italic, space_after_pt: Math.round(pitch * 0.5), line_pt: Math.round(s.body_pt * 1.9) },
       Author: { align: 'center', size_pt: Math.round(s.body_pt * 1.3), font: 'title', space_before_pt: Math.round(pitch * 1.5), letter_spacing_pt: 1, line_pt: Math.round(s.body_pt * 1.8) },
+      // What a book brought in from a file or from RT Story Tracker can hold besides the story's paragraphs. A subheading
+      // stands where the chapter titles do, a line clear above it, and stays with what it heads: two lines in all.
+      Subheading: { align: s.title_align, size_pt: Math.round(s.body_pt * 1.15), font: 'title', space_before_pt: pitch, line_pt: pitch, first_line_indent_in: 0, keep_with_next: true },
+      Centred: { align: 'center', first_line_indent_in: 0 },
+      Listed: { align: 'left', first_line_indent_in: 0 },
     },
     dashStays: s.dash_stays,
     titlesOnRight: s.titles_on_right,

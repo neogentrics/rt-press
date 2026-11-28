@@ -49,6 +49,43 @@ jobs:
         timeout-minutes: 20
         run: xvfb-run -a npm run test:e2e
 
+  # The installers, built as the Release workflow builds them but never published or kept, and the app inside each one run
+  # through the whole flow. A packaging fault shows here, not on the day of a release.
+  installers:
+    name: Installers (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: windows, os: windows-latest, script: 'dist:win', app: 'release/win-unpacked/RT Press.exe', window: 'node test/e2e/app.e2e.cjs' }
+          - { name: macos, os: macos-latest, script: 'dist:mac', app: 'release/mac-arm64/RT Press.app/Contents/MacOS/RT Press', window: 'node test/e2e/app.e2e.cjs' }
+          - { name: linux, os: ubuntu-latest, script: 'dist:linux', app: 'release/linux-unpacked/rt-press', window: 'xvfb-run -a node test/e2e/app.e2e.cjs' }
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Fetch the typesetter for all six systems (each refused unless it matches the lock file)
+        run: npm run fetch:typst
+      - run: npm run ${{ matrix.script }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Run the built app through the whole flow
+        timeout-minutes: 12
+        run: ${{ matrix.window }}
+        env:
+          RTPRESS_E2E_EXECUTABLE: ${{ github.workspace }}/${{ matrix.app }}
+      - name: How big the installers are
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');for(const f of fs.readdirSync('release').filter((f)=>/\.(exe|dmg|AppImage|deb)$/.test(f)))console.log('installer:',f,(fs.statSync('release/'+f).size/1048576).toFixed(1),'MiB')" | tee -a "$GITHUB_STEP_SUMMARY"
+
   same-pages:
     name: Same pages on Windows, Mac and Linux
     needs: test

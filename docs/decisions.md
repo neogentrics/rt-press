@@ -170,8 +170,9 @@ of every font; the others run from 0.57 to 0.77.
 All six have regular, italic, bold and bold italic, as do Courier Prime and TeX Gyre Pagella. Cinzel has no italic and Noto
 Sans Symbols 2 has one style: a book that asks either for more is stopped, not faked.
 
-**Size:** the fonts are 8.3 MB unpacked. On Linux they made the AppImage 3.5 MB bigger, to 151.9 MB, and the `.deb` 2.4 MB
-bigger, to 120.2 MB. The Windows and Mac installers haven't been measured.
+**Size:** the fonts are 8.4 million bytes unpacked. On Linux they made the AppImage 3.5 MiB bigger, to 151.9 MiB, and the
+`.deb` 2.4 MiB bigger, to 120.2 MiB (an earlier version of this entry said MB; a MiB is 1,048,576 bytes). CI measures all
+three systems' installers on every push.
 
 **Where they come from:** the OFL fonts from the `@expo-google-fonts` packages on npm, which carry Google Fonts' files whole,
 each pinned to an exact version. TeX Gyre Pagella isn't on npm and CTAN's mirrors aren't dependable, so its four files are in
@@ -182,6 +183,15 @@ and pages, so taking one is a deliberate change.
 
 ✅ **Chosen 27 November 2026.** The owner wants to move from the alpha to an official 1.0, through a beta
 ([the build brief](design/v1-build.md)). A version tag, which publishes a build, is pushed only when he says so.
+
+### No alpha before the full 1.0
+
+✅ **Said by the owner, 28 November 2026,** through the planning session: he can't verify anything until the full 1.0 build is
+finished and released, so there is no alpha for now. V5 to V8 were built without stopping for his sign-off between them.
+The planning session arranges the release with him. **Before it, for whoever releases:** the version in `package.json` is
+still `0.1.0-alpha.0`, and the Release workflow, run by hand, tags whatever that says, which is the alpha's existing tag. The
+version has to be set first (1.0.0, or a beta, is his and the planning session's to say), and the changelog's *Unreleased*
+given its name.
 
 ### The icon
 

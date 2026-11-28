@@ -381,6 +381,7 @@
  "ending on a blank even page is on or off": "das Ende auf einer leeren geraden Seite ist an oder aus",
  "page numbers on blank pages is on or off": "Seitenzahlen auf leeren Seiten sind an oder aus",
  "keeping a dash with its word is on or off": "den Strich beim Wort zu halten ist an oder aus",
+ "No paragraph look is called “{0}”, so those paragraphs are set as ordinary text.": "Es gibt keinen Absatzstil namens „{0}“, daher werden diese Absätze wie normaler Text gesetzt.",
  "Done": "Fertig",
  "Close": "Schließen",
  "Next": "Weiter",

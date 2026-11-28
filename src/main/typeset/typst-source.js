@@ -127,7 +127,7 @@ const PREAMBLE = `
 
 // A paragraph or block with its own look. \`o\` holds the look; spacing is added as plain space so that it is kept at the top
 // of a page, as a word processor keeps it after a section break.
-#let styled(o, body) = block(width: 100%, {
+#let styled(o, body) = block(width: 100%, sticky: o.at("sticky", default: false), {
   v(o.before)
   set text(font: o.font, size: o.size, fill: o.fill, style: if o.italic { "italic" } else { "normal" }, tracking: o.tracking, top-edge: LINE_TOP * o.size, bottom-edge: -(o.pitch - LINE_TOP * o.size))
   set par(leading: 0pt, spacing: 0pt, justify: o.justify, first-line-indent: (amount: o.indent, all: true))
@@ -200,12 +200,13 @@ function roleLook(theme, name, fonts, map) {
     indent: base.first_line_indent_in ?? 0,
     tracking: base.letter_spacing_pt ?? 0,
     pitch: base.line_pt ?? size * theme.body.line_height,
+    sticky: base.keep_with_next ?? false,
   });
 }
 
 function lookCode(look) {
   const align = { left: 'left', center: 'center', justify: 'left' }[look.align];
-  return `(align: ${align}, justify: ${look.align === 'justify'}, size: ${pt(look.size)}, font: ${look.font}, italic: ${look.italic}, fill: ${color(look.color)}, before: ${pt(look.before)}, after: ${pt(look.after)}, indent: ${inch(look.indent)}, tracking: ${pt(look.tracking)}, pitch: ${pt(look.pitch)})`;
+  return `(align: ${align}, justify: ${look.align === 'justify'}, size: ${pt(look.size)}, font: ${look.font}, italic: ${look.italic}, fill: ${color(look.color)}, before: ${pt(look.before)}, after: ${pt(look.after)}, indent: ${inch(look.indent)}, tracking: ${pt(look.tracking)}, pitch: ${pt(look.pitch)}${look.sticky ? ', sticky: true' : ''})`;
 }
 
 // Cuts a paragraph's runs at the given character offsets (counted over its text, a hard break counting as one). Returns one

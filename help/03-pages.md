@@ -21,7 +21,7 @@ Under **Add a page**, choose what you want: a title page, copyright, dedication,
 - A line with only `* * *` is a scene break.
 - A line that starts with `>` belongs to a letter, a log or a sign.
 - A line that ends in `\` keeps its line break.
-- `{.ClosingLine}` at the start of a paragraph gives it a look the book theme has by that name. A page that already has one keeps it.
+- `{.Subheading}`, `{.Centred}` or `{.Listed}` at the start of a paragraph makes it a subheading, centres it, or sets it as a line of a list. Books brought in from files use these. A name that isn't one of them is set as ordinary text, and the build says so.
 
 A page you don't change is left exactly as it was.
 

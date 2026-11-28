@@ -19,7 +19,7 @@
 //   matterLooks a look for the plain paragraphs of one kind of page (a dedication, a copyright page), as a role's look is
 //   part        a part's own page: its title and the mark under it
 //   roles       a look for each role a paragraph may carry (see book-model.js): { align, size_pt, font, italic, color,
-//               space_before_pt, space_after_pt, first_line_indent_in, letter_spacing_pt, line_pt }; all optional
+//               space_before_pt, space_after_pt, first_line_indent_in, letter_spacing_pt, line_pt, keep_with_next }; all optional
 const { CHAPTER_LABELS } = require('./languages');
 
 const FORMAT = 1;
@@ -115,6 +115,7 @@ function validateTheme(theme) {
     need(`${at}.align`, look.align === undefined || ROLE_ALIGNS.includes(look.align), `align is ${ROLE_ALIGNS.join(', ')}`);
     need(`${at}.font`, look.font === undefined || ROLE_FONTS.includes(look.font), `font is ${ROLE_FONTS.join(', ')}`);
     need(`${at}.size_pt`, look.size_pt === undefined || isNumber(look.size_pt, 4, 72), 'size is 4 to 72 points');
+    need(`${at}.keep_with_next`, look.keep_with_next === undefined || typeof look.keep_with_next === 'boolean', 'keep with next is on or off');
     need(`${at}.italic`, look.italic === undefined || typeof look.italic === 'boolean', 'italic is on or off');
     need(`${at}.color`, look.color === undefined || isColor(look.color), 'a colour is #rrggbb');
     for (const key of ['space_before_pt', 'space_after_pt']) need(`${at}.${key}`, look[key] === undefined || isNumber(look[key], 0, 400), 'space is 0 to 400 points');

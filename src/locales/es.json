@@ -381,6 +381,7 @@
  "ending on a blank even page is on or off": "terminar en una página par en blanco se activa o se desactiva",
  "page numbers on blank pages is on or off": "los números en las páginas en blanco se activan o se desactivan",
  "keeping a dash with its word is on or off": "mantener la raya con su palabra se activa o se desactiva",
+ "No paragraph look is called “{0}”, so those paragraphs are set as ordinary text.": "No hay ningún estilo de párrafo llamado «{0}», así que esos párrafos se componen como texto normal.",
  "Done": "Listo",
  "Close": "Cerrar",
  "Next": "Siguiente",
