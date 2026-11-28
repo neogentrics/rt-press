@@ -104,6 +104,7 @@ decided = [
     ('The plan', 'Approved on 17 November 2026.'),
     ('One major version per platform', 'KDP is version 1 and everything added for it is a 1.x release. Each new platform makes the next major version: Lulu 2.x, IngramSpark 3.x, Barnes & Noble Press 4.x, Google Play Books 5.x. Inside one, x.0 is its rules and interiors, x.1 its paperback cover, x.2 its hardcover, x.3 what only it has. Chosen 27 November.'),
     ('Audiobooks', 'Press does not make them: RT Audio Studio does the audio. Press supplies the square audiobook cover and the narration text, one file per chapter, from 1.6, for an author who records their own narration. Chosen 27 November.'),
+    ('Shared themes in 1.1', 'Version 1.0 ships light and dark; the ten shared themes and the looks come in 1.1, because the shared themes file is not ready. The plumbing is built in 1.0. If the file is ready first, it goes into 1.0. Decided 27 November.'),
     ('The icon', 'The unfolded book cover on a dark tile, with a striped spine, crop marks and a barcode. Approved 27 November.'),
     ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs. The files move in after Reader's 3.13.x look update merges."),
     ("Alphas for testing", "You asked on 22 November for CI to create alpha releases like the other apps. 0.1.0-alpha.0 is the first: a pre-release built by the release workflow, unsigned, for you to test."),

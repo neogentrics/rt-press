@@ -99,6 +99,10 @@ audio. Press, which has the cover and the text, supplies a square audiobook cove
 chapter, credits wording, a chapter list) in 1.6, for an author who records their own narration or hands the text to
 Audio Studio. Press never records, edits or checks audio.
 
+### The shared themes move to 1.1
+
+✅ **Decided 27 November 2026, by the planning session at the owner's invitation: 1.0 ships with light and dark, and the ten shared themes and the looks come in 1.1.** The shared themes file isn't ready (the repo holds only a README until RT Markdown Reader's look update merges), and a 1.0 shouldn't wait on another app. The loader, tokens and lock check are built in 1.0, so 1.1 adds the files, not a new design. If the shared file is ready before 1.0 is tagged, it goes into 1.0.
+
 ### The icon
 
 ✅ **Approved 27 November 2026: the unfolded book cover on a dark tile.** The owner rejected the first draft because it looked
