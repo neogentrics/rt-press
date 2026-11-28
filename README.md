@@ -101,7 +101,8 @@ npm run dist:linux
 
 **Coming next, for 1.0:** page turns as good as the owner's own build script, every trim size with custom sizes, book themes
 with front and back matter and more fonts, books from Markdown and EPUB, and every KDP rule shown on the page it's on. The
-window's own themes come when the suite's shared themes file is ready. See the [roadmap](ROADMAP.md).
+suite's window themes and looks come when its shared themes file is ready: the theme picker is built and waits for them. Until
+then the window follows your system's light or dark. See the [roadmap](ROADMAP.md).
 
 ## What it won't do
 
@@ -153,7 +154,8 @@ npm run test:e2e
 
 The icons are made from [docs/brand/icon.svg](docs/brand/icon.svg) by `npm run icons`, the screenshots on this page by
 `npm run screenshots` (with a made-up book; under `xvfb-run -a` on a machine with no screen), and the banner by
-`npm run banner`.
+`npm run banner`. The suite's window themes are taken in with `npm run theme:sync -- --tag <version>`, which needs access to
+the repo they live in. What it copies is committed in `src/theme` with a `theme.lock`, so building never needs that access.
 
 ## How the code is laid out
 
@@ -165,6 +167,7 @@ The icons are made from [docs/brand/icon.svg](docs/brand/icon.svg) by `npm run i
 - `src/main/steer`: finding the pages that split a sentence, and the steers that move them. The build uses it.
 - `src/main/import`: Word chapters in.
 - `src/main/storage`: the only code that touches the encrypted project.
+- `src/main/theme`: reads the suite's window themes and refuses a copy that doesn't match its `theme.lock`.
 - `src/renderer`: the window and the frame round it, bundled into `dist/renderer` by `npm run build:renderer`.
 - `src/locales`: the translations, made from the tables in `src/locales/source` by `npm run locales`.
 - `help`: the Help Center's guides, in Markdown.

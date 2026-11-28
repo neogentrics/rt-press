@@ -6,6 +6,22 @@
 
 const NAME = 'RT Press';
 
+// View → Theme, Look and Colour-Safe Colours, as RT Markdown Reader has them. They are there only when this build carries the
+// suite's themes: Follow System, the light themes, then the dark ones.
+function appearanceItems(appearance, change) {
+  if (!appearance?.themes?.length) return [];
+  const { themes, looks, colorSafe, settings } = appearance;
+  const radio = (id, label, checked, changes) => ({ id, label, type: 'radio', checked, click: () => change(changes) });
+  const theme = (t) => radio(`theme-${t.id}`, t.label, settings.theme === t.id, { theme: t.id });
+  const dark = themes.filter((t) => t.tone === 'dark');
+  return [
+    { label: 'Theme', submenu: [radio('theme-system', 'Follow System', settings.theme === 'system', { theme: 'system' }), { type: 'separator' }, ...themes.filter((t) => t.tone !== 'dark').map(theme), ...(dark.length ? [{ type: 'separator' }, ...dark.map(theme)] : [])] },
+    ...(looks.length > 1 ? [{ label: 'Look', submenu: looks.map((l) => radio(`look-${l.id}`, l.label, settings.surface === l.id, { surface: l.id })) }] : []),
+    ...(colorSafe ? [{ id: 'color-safe', label: 'Colour-Safe Colours', type: 'checkbox', checked: settings.colorSafe, click: () => change({ colorSafe: !settings.colorSafe }) }] : []),
+    { type: 'separator' },
+  ];
+}
+
 /**
  * The menus. `send(name)` tells the window what to do, `actions` are the few things the main process does itself, `state` says what is
  * true now (is there a book, a finished file, an update ready), and the menu is built again whenever that changes.
@@ -51,6 +67,7 @@ function menuTemplate({ send, actions = {}, state = {}, version = '', platform =
           submenu: [tell('first-spread', 'First Spread', null), tell('previous-spread', 'Previous Spread', null), tell('next-spread', 'Next Spread', null), tell('last-spread', 'Last Spread', null)],
         },
         separator,
+        ...appearanceItems(state.appearance, (changes) => actions.changeAppearance?.(changes)),
         role('zoomIn', 'Zoom In'),
         role('zoomOut', 'Zoom Out'),
         role('resetZoom', 'Actual Size'),

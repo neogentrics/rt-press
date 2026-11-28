@@ -149,6 +149,27 @@ files); Press commits both, so building never needs access to the private repo, 
 hand or no longer matches the lock. The files move in after RT Markdown Reader's 3.13.x look update merges. Until then
 RT Markdown Reader's files are the source, and Press does no theme work until the planning session says go.
 
+### How Press takes the themes in, until the shared repo says otherwise
+
+✅ Built by the build session, 27 November 2026, on the planning session's go for everything that doesn't depend on the colours.
+The shared repo has no files yet and names no file or lock format, so these are Press's choices, to be checked against the
+files when they arrive:
+
+- `npm run theme:sync -- --tag <version>` copies the repo at that tag (all but documents and dot files, with LF line endings)
+  into `src/theme/` and writes `theme.lock`: the source, the tag, a SHA-256 for each file, and one hash over that list. The old
+  copy is replaced only once the new one passes the app's own check.
+- The app, the build and the tests read the copy the same way. A changed, added, missing or linked file, or a stylesheet that
+  imports or fetches anything, refuses the whole copy. The window then keeps the system's colours and says why.
+- Which themes, looks and colour-safe choices exist is read from the selectors the theming file prescribes on the root element
+  (`data-theme`, `data-surface`, `data-colors`). `theme.css` is applied first, then the other stylesheets by name.
+- With no themes in the build there is no theme button and no Theme menu, and Preferences offers only *Follow System*.
+- Press has no colours of its own for a theme to fall back on. The stand-in colours apply only while no theme is on the window,
+  so a theme that leaves a token out fails the tests instead of being quietly filled in.
+- Contrast is measured as RT Markdown Reader measures its looks: each piece of text and each icon against the worst pixel
+  behind it, in a picture of the real window.
+- Not built: Reader's *Typeface* and *Customize colours & fonts…*, and themes kept in the suite's shared folder. *Page width*
+  has no use in a print preview.
+
 ### Theme following between apps
 
 When the theme changes in one app, the linked apps switch too. It needs a small addition to App Link, so a protocol decision, made

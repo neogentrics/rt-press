@@ -34,16 +34,17 @@ function readPng(buffer) {
     if (type === 'IDAT') data.push(body);
     at += 12 + length;
   }
-  if (!header || header.depth !== 8 || header.colour !== 6 || header.interlace !== 0) throw new Error('This reads only 8-bit RGBA PNGs that are not interlaced.');
+  if (!header || header.depth !== 8 || ![2, 6].includes(header.colour) || header.interlace !== 0) throw new Error('This reads only 8-bit RGB or RGBA PNGs that are not interlaced.');
   const raw = zlib.inflateSync(Buffer.concat(data));
-  const stride = header.width * 4;
+  const bytes = header.colour === 6 ? 4 : 3; // a screenshot with nothing clear in it may leave the fourth out
+  const stride = header.width * bytes;
   const pixels = Buffer.alloc(stride * header.height);
   for (let y = 0; y < header.height; y += 1) {
     const filter = raw[y * (stride + 1)];
     for (let x = 0; x < stride; x += 1) {
-      const left = x >= 4 ? pixels[y * stride + x - 4] : 0;
+      const left = x >= bytes ? pixels[y * stride + x - bytes] : 0;
       const up = y > 0 ? pixels[(y - 1) * stride + x] : 0;
-      const corner = x >= 4 && y > 0 ? pixels[(y - 1) * stride + x - 4] : 0;
+      const corner = x >= bytes && y > 0 ? pixels[(y - 1) * stride + x - bytes] : 0;
       let guess = 0;
       if (filter === 1) guess = left;
       else if (filter === 2) guess = up;
@@ -56,7 +57,10 @@ function readPng(buffer) {
       pixels[y * stride + x] = (raw[y * (stride + 1) + 1 + x] + guess) & 255;
     }
   }
-  return { width: header.width, height: header.height, pixels };
+  if (bytes === 4) return { width: header.width, height: header.height, pixels };
+  const rgba = Buffer.alloc(header.width * header.height * 4, 255);
+  for (let i = 0; i < header.width * header.height; i += 1) pixels.copy(rgba, i * 4, i * 3, i * 3 + 3);
+  return { width: header.width, height: header.height, pixels: rgba };
 }
 
 // How much of a square picture its solid part covers: the longer side of the box round every pixel more than half opaque.

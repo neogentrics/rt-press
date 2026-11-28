@@ -3,7 +3,7 @@
 import { LANGUAGES } from '../shared/i18n.js';
 import { h, openDialog, toast } from './dom.js';
 
-export async function openPreferences({ run, setLanguage }) {
+export async function openPreferences({ run, setLanguage, appearance }) {
   let settings;
   try {
     settings = await window.rtPress.appSettings();
@@ -20,6 +20,7 @@ export async function openPreferences({ run, setLanguage }) {
   };
   const updates = h('input', { id: 'pref-updates', type: 'checkbox', checked: settings.autoUpdate, onchange: (event) => save({ autoUpdate: event.target.checked }) });
   const done = h('button', { type: 'button', class: 'primary', id: 'prefs-done' }, 'Done');
+  const look = appearance.section();
   // Each language is offered under its own name, which is never translated.
   const language = h('select', { id: 'pref-language', onchange: async (event) => { await save({ language: event.target.value }); setLanguage(settings.resolvedLanguage); } },
     h('option', { value: 'system' }, 'Follow System'),
@@ -29,6 +30,7 @@ export async function openPreferences({ run, setLanguage }) {
     id: 'preferences',
     labelledby: 'prefs-title',
     className: 'prefs',
+    onClose: () => look.close(),
     children: [
       h('h2', { id: 'prefs-title' }, 'Preferences'),
       h('div', { id: 'prefs-sections' },
@@ -36,6 +38,7 @@ export async function openPreferences({ run, setLanguage }) {
           h('h3', null, 'General'),
           h('label', null, 'Language', language),
           h('p', { class: 'hint' }, 'The app’s own words, in the menus and the windows. The guides in the Help Center are in English.')),
+        look.element,
         h('section', { id: 'prefs-updates' },
           h('h3', null, 'Updates'),
           h('label', { class: 'check' }, updates, 'Look for new versions by itself'),

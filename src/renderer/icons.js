@@ -7,6 +7,7 @@ const PATHS = {
   preferences: 'M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4',
   help: 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4M12 16.6v.2',
   close: 'M6 6l12 12M18 6L6 18',
+  theme: 'M12 3a9 9 0 1 0 9 9c0-.6-.6-1-1.2-.8A6 6 0 0 1 12.8 4.2c.2-.6-.2-1.2-.8-1.2z',
 };
 
 export function icon(name) {

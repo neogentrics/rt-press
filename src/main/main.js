@@ -10,6 +10,7 @@ const { buildMenu, commandList, runCommand } = require('./menu');
 const { hardenWindow } = require('./security');
 const { storageSelfCheck } = require('./self-check');
 const typesetter = require('./typesetter');
+const { FOLDER: THEME_FOLDER, readSharedTheme } = require('./theme/loader');
 const { RELEASES_URL, Updater } = require('./updater');
 const { Session } = require('./press/session');
 const { openStore } = require('./press/store');
@@ -27,6 +28,28 @@ let session = null;
 let ownBook = null; // the person's own session, set aside while the tutorial's practice book is open
 let sessionError = null;
 let commands = new Map();
+let sharedTheme = { state: 'absent' };
+
+// The window's themes and looks: what the suite's shared file offers (if this build carries it), and what is chosen.
+function appearance() {
+  const { theme, surface, colorSafe } = appSettings.values;
+  const ready = sharedTheme.state === 'ready';
+  return {
+    state: sharedTheme.state,
+    reason: sharedTheme.reason ?? null,
+    tag: sharedTheme.tag ?? null,
+    themes: ready ? sharedTheme.themes : [],
+    looks: ready ? sharedTheme.looks : [],
+    colorSafe: ready ? sharedTheme.colorSafe : false,
+    settings: { theme, surface, colorSafe },
+  };
+}
+
+function changeAppearance(changes) {
+  appSettings.save(changes);
+  send('press:appearance', appearance());
+  rebuildMenu();
+}
 
 const resourcesPath = () => (app.isPackaged ? process.resourcesPath : null);
 const send = (channel, value) => mainWindow?.webContents.send(channel, value);
@@ -89,8 +112,8 @@ function rebuildMenu() {
   commands = buildMenu({
     translate: (template) => translateMenu(template, createTranslator(language())),
     send: (id) => send('press:command', id),
-    actions: { installUpdate: () => updater.installNow() },
-    state: menuState(),
+    actions: { installUpdate: () => updater.installNow(), changeAppearance },
+    state: { ...menuState(), appearance: appearance() },
     version: app.getVersion(),
   });
 }
@@ -197,6 +220,7 @@ function registerFrame() {
     return { name: app.getName(), version: app.getVersion(), platform: process.platform, typst: await typstStatus(), storage, update: updater.status };
   });
   handle('press:help', () => readGuides());
+  handle('press:appearance', () => appearance());
   handle('press:app-settings', () => settingsForWindow(appSettings.values));
   handle('press:save-app-settings', (changes) => {
     const values = settingsForWindow(appSettings.save(changes));
@@ -247,6 +271,10 @@ function createWindow() {
     },
   });
   hardenWindow(window, { openExternal: (url) => shell.openExternal(url) });
+  // Only a copy that matched its theme.lock gets here, and it is put into the window by the app, never fetched by the page.
+  window.webContents.on('did-finish-load', () => {
+    if (sharedTheme.state === 'ready') window.webContents.insertCSS(sharedTheme.css);
+  });
   window.once('ready-to-show', () => window.show());
   window.loadFile(path.join(__dirname, '..', '..', 'dist', 'renderer', 'index.html'));
   return window;
@@ -264,6 +292,8 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     app.setName('RT Press');
     appSettings = new AppSettings(app.getPath('userData'));
+    // A test may point an app run from the source at themes of its own; a packaged app reads only what it was built with.
+    sharedTheme = readSharedTheme((!app.isPackaged && process.env.RTPRESS_THEME_DIR) || THEME_FOLDER);
     clearPractice(); // one left behind by a tutorial that was never closed
     startSession();
     registerFrame();

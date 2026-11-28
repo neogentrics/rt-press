@@ -141,7 +141,7 @@ page = f'''<!DOCTYPE html>
 <div class="kicker"><span class="pulse" aria-hidden="true"></span>1.0 is being built</div>
 <h1 id="nowh">The icon and the suite's frame are done. Page quality is next.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
-<ul><li><b>Done</b><span>V1 and V2 of 8: the new icon, and menus, Help, the tutorial, About, Preferences, updates and three more languages. The window's themes wait for the shared themes file.</span></li>
+<ul><li><b>Done</b><span>V1 and V2 of 8: the new icon, and menus, Help, the tutorial, About, Preferences, updates and three more languages. The theme picker is built; the colours wait for the shared themes file.</span></li>
 <li><b>Next</b><span>V3: page turns as good as your script's and even page bottoms. It starts with a short line the page-turn repair can leave stretched across the page.</span></li>
 <li><b>An alpha is out</b><span>0.1.0-alpha.0, from before V1. No new build is published until you ask for one. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>

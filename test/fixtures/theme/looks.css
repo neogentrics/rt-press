@@ -1,0 +1,13 @@
+/* TEST ONLY: stand-ins for the two looks, enough to put a gradient and a see-through panel behind real text. */
+@media screen {
+  :root[data-surface="metallic"] :is(.toolbar, .sidebar, dialog, .popover, .tour-card) {
+    background-image: linear-gradient(color-mix(in srgb, var(--text) 2%, transparent), color-mix(in srgb, var(--text) 14%, transparent) 50%, transparent);
+  }
+  :root[data-surface="metallic"] .tb-btn {
+    background-image: linear-gradient(transparent, color-mix(in srgb, var(--text) 10%, transparent));
+  }
+  :root[data-surface="glass"] :is(.toolbar, .sidebar, dialog, .popover, .tour-card) {
+    background: color-mix(in srgb, var(--chrome) 85%, transparent);
+    backdrop-filter: blur(8px) saturate(1.4);
+  }
+}

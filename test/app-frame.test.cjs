@@ -30,11 +30,13 @@ test('the copied details name the versions and the system, and nothing about the
 test('app settings keep what makes sense, ignore what doesn\'t, and survive a damaged file', () => {
   const dir = path.join(scratch, 'settings');
   const settings = new AppSettings(dir);
-  assert.deepEqual(settings.values, { language: 'system', autoUpdate: true, tutorial: { state: 'new', step: 0 } });
-  settings.save({ language: 'fr', autoUpdate: false, tutorial: { state: 'later', step: 3 }, colour: 'red' });
-  assert.deepEqual(new AppSettings(dir).values, { language: 'fr', autoUpdate: false, tutorial: { state: 'later', step: 3 } });
-  settings.save({ language: 'xx', autoUpdate: 'no', tutorial: { state: 'maybe' } });
-  assert.deepEqual(settings.values, { language: 'fr', autoUpdate: false, tutorial: { state: 'later', step: 3 } });
+  const look = { theme: 'system', surface: 'solid', colorSafe: false };
+  assert.deepEqual(settings.values, { language: 'system', autoUpdate: true, ...look, tutorial: { state: 'new', step: 0 } });
+  settings.save({ language: 'fr', autoUpdate: false, theme: 'sepia', surface: 'glass', colorSafe: true, tutorial: { state: 'later', step: 3 }, colour: 'red' });
+  const kept = { language: 'fr', autoUpdate: false, theme: 'sepia', surface: 'glass', colorSafe: true, tutorial: { state: 'later', step: 3 } };
+  assert.deepEqual(new AppSettings(dir).values, kept);
+  settings.save({ language: 'xx', autoUpdate: 'no', theme: 'Not A Name!', surface: 7, colorSafe: 'yes', tutorial: { state: 'maybe' } });
+  assert.deepEqual(settings.values, kept);
   assert.equal('colour' in JSON.parse(fs.readFileSync(path.join(dir, 'settings.json'), 'utf8')), false);
   fs.writeFileSync(path.join(dir, 'settings.json'), '{ not json');
   assert.deepEqual(new AppSettings(dir).values, cleanSettings({}));

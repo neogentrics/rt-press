@@ -1,72 +1,15 @@
 'use strict';
 // Starts the real app and uses it the way a person would, through every part of the frame. On Linux this runs under xvfb-run.
-const { _electron: electron } = require('playwright-core');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 
-const root = path.join(__dirname, '..', '..');
-const base = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-e2e-'));
-const profile = path.join(base, 'profile');
 const pkg = require('../../package.json');
 const { TYPST_VERSION } = require('../../src/shared/typst-version');
-const { tempDir, writeDocx } = require('../helpers/docx.cjs');
 const { readPdf } = require('../../src/main/pdf/read');
+const { readSharedTheme } = require('../../src/main/theme/loader');
 const measureContrast = require('./contrast.cjs');
-
-// Some editors and shells set ELECTRON_RUN_AS_NODE, which makes Electron start as plain Node and refuse a window.
-const { ELECTRON_RUN_AS_NODE: _ignored, ...environment } = process.env;
-// RTPRESS_E2E_EXECUTABLE points at an installed or unpacked build, to run the same test against the packaged app.
-const packaged = process.env.RTPRESS_E2E_EXECUTABLE || null;
-// The suite's shared folder is pointed somewhere harmless: by NMR_LINK_DIR for the app run from the source, and for a packaged
-// app (which ignores that) by the settings folder Linux uses, so a test on a developer's machine leaves nothing behind.
-const shared = path.join(base, 'shared');
-const configHome = path.join(base, 'config');
-const launch = (extra = {}) => electron.launch({
-  executablePath: packaged ?? require('electron'),
-  args: [...(packaged ? [] : [root]), ...(process.platform === 'linux' ? ['--no-sandbox'] : [])],
-  env: {
-    ...environment,
-    RTPRESS_USER_DATA: profile,
-    RTPRESS_DISABLE_UPDATES: '1',
-    NMR_LINK_DIR: shared,
-    ...(process.platform === 'linux' ? { XDG_CONFIG_HOME: configHome } : {}),
-    ...(packaged ? {} : { RTPRESS_INSTALLED_LAUNCH: path.join(root, 'package.json') }),
-    ...extra,
-  },
-});
-
-// A made-up book: ten chapters of plain sentences, long enough for KDP's minimum.
-const sentence = (n) => `Sentence ${n} of the made-up story runs over the hill and down to the river, where the fox stops to drink. `;
-function madeUpChapters() {
-  const dir = tempDir('rtpress-e2e-chapters-');
-  for (let c = 1; c <= 10; c += 1) {
-    const paragraphs = [{ text: `Chapter ${c}: Title ${c}` }];
-    for (let p = 0; p < 8; p += 1) paragraphs.push({ text: `“${(sentence(c * 100 + p * 3) + sentence(c * 100 + p * 3 + 1) + sentence(c * 100 + p * 3 + 2)).trim()}”` });
-    writeDocx(dir, `Made Up - Chapter ${c}.docx`, paragraphs);
-  }
-  return dir;
-}
-
-async function opened(app) {
-  const window = await app.firstWindow();
-  const errors = [];
-  window.on('pageerror', (error) => errors.push(error.message));
-  window.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
-  await window.waitForSelector('body[data-state="ready"]');
-  return { window, errors };
-}
-
-// A command, run the way the menus and Go to run it: by name, through the main process.
-const command = (window, name) => window.evaluate((key) => window.rtPress.runCommand(key), name);
-const visible = (window, selector) => window.waitForSelector(selector, { state: 'visible' });
-const gone = (window, selector) => window.waitForSelector(selector, { state: 'detached' });
-const textIs = (window, selector, pattern) => window.waitForFunction(([s, p]) => new RegExp(p).test(document.querySelector(s)?.textContent ?? ''), [selector, pattern.source]);
-// Every button a person can reach has a name a screen reader can say.
-const unnamed = (window) => window.evaluate(() => [...document.querySelectorAll('button, input, select')].filter((el) => !el.closest('[hidden]'))
-  .filter((el) => !(el.getAttribute('aria-label') || el.textContent.trim() || el.labels?.[0]?.textContent.trim() || el.getAttribute('placeholder')))
-  .map((el) => el.outerHTML.slice(0, 120)));
+const { base, command, configHome, gone, launch, madeUpChapters, opened, packaged, profile, root, shared, textIs, unnamed, visible } = require('./harness.cjs');
 
 (async () => {
   const chapters = madeUpChapters();
@@ -86,7 +29,7 @@ const unnamed = (window) => window.evaluate(() => [...document.querySelectorAll(
     assert.equal(await window.evaluate(() => typeof window.require), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => typeof window.process), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => Object.keys(window.rtPress).join()),
-      'status,getState,importChapters,setDetails,setSettings,build,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate',
+      'status,getState,importChapters,setDetails,setSettings,build,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
       'the window gets these calls and no more');
     const status = await window.evaluate(() => window.rtPress.status());
     assert.deepEqual([status.version, status.typst.version, status.storage.ok], [pkg.version, TYPST_VERSION, true], 'the bundled typesetter and the encrypted storage work');
@@ -103,6 +46,11 @@ const unnamed = (window) => window.evaluate(() => [...document.querySelectorAll(
       const entry = JSON.parse(fs.readFileSync(path.join(listFolder, 'installed', 'rt-press.json'), 'utf8'));
       assert.deepEqual([entry.id, entry.name, entry.version, entry.protocol], ['rt-press', 'RT Press', pkg.version, 1]);
     }
+
+    // The theme button and the Theme menu are there only when this build carries the suite's themes (theme.e2e.cjs tries them).
+    const themed = readSharedTheme().state === 'ready';
+    assert.equal(await window.isVisible('#btn-theme'), themed, 'no empty theme button');
+    assert.equal(await app.evaluate(({ Menu }) => Boolean(Menu.getApplicationMenu().getMenuItemById('theme-system'))), themed);
 
     // Nothing to build until a book is in.
     assert.equal(await window.isDisabled('#build'), true);
@@ -157,6 +105,11 @@ const unnamed = (window) => window.evaluate(() => [...document.querySelectorAll(
     // Preferences holds the app's settings, and keeps them.
     await visible(window, '#preferences');
     assert.deepEqual(await unnamed(window), []);
+    assert.equal(await window.inputValue('#pref-theme'), 'system');
+    if (!themed) {
+      assert.deepEqual(await window.locator('#pref-theme option').allTextContents(), ['Follow System']);
+      assert.match(await window.textContent('#themes-state'), /suite’s themes aren’t in this build yet/);
+    }
     assert.equal(await window.isChecked('#pref-updates'), true, 'looking for new versions is on until turned off');
     await window.uncheck('#pref-updates');
     await window.waitForFunction(async () => (await window.rtPress.appSettings()).autoUpdate === false);
@@ -217,14 +170,14 @@ const unnamed = (window) => window.evaluate(() => [...document.querySelectorAll(
     for (const colorScheme of ['light', 'dark']) {
       await window.emulateMedia({ colorScheme });
       await window.evaluate(() => { document.getElementById('checks-box').open = true; });
-      const main = await window.evaluate(measureContrast);
+      const main = await measureContrast(app, window);
       assert.ok(main.measured > 60, `${colorScheme}: ${main.measured} pieces of text measured`);
       assert.deepEqual(main.failures, [], `${colorScheme}: the window meets WCAG AA`);
       for (const name of ['about', 'preferences', 'help-center', 'go-to', 'check-updates']) {
         await command(window, name);
         await visible(window, 'dialog[open]');
         await new Promise((resolve) => setTimeout(resolve, 300));
-        const dialog = await window.evaluate(measureContrast);
+        const dialog = await measureContrast(app, window);
         assert.ok(dialog.measured >= 3, `${colorScheme} ${name}: ${dialog.measured} measured`);
         assert.deepEqual(dialog.failures, [], `${colorScheme}: ${name} meets WCAG AA`);
         await window.keyboard.press('Escape');

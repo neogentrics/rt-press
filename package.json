@@ -27,7 +27,7 @@
     "build:renderer": "node scripts/build-renderer.mjs",
     "start": "npm run build:renderer && electron .",
     "test": "node --test \"test/*.test.cjs\"",
-    "test:e2e": "npm run fetch:typst:current && npm run build:renderer && node test/e2e/app.e2e.cjs",
+    "test:e2e": "npm run fetch:typst:current && npm run build:renderer && node test/e2e/app.e2e.cjs && node test/e2e/theme.e2e.cjs",
     "dist:win": "npm run fonts:stand-in && npm run build:renderer && electron-builder --win nsis --x64 --publish never",
     "dist:mac": "npm run fonts:stand-in && npm run build:renderer && electron-builder --mac dmg --arm64 --x64 --publish never",
     "dist:linux": "npm run fonts:stand-in && npm run build:renderer && electron-builder --linux AppImage deb --x64 --publish never",
@@ -37,7 +37,8 @@
     "icons": "node scripts/make-icons.mjs",
     "locales": "node scripts/make-locales.mjs",
     "screenshots": "npm run build:renderer && node scripts/screenshots.cjs",
-    "banner": "node scripts/make-banner.mjs"
+    "banner": "node scripts/make-banner.mjs",
+    "theme:sync": "node scripts/theme-sync.mjs"
   },
   "build": {
     "appId": "com.recontowers.press",
@@ -50,6 +51,7 @@
     "files": [
       "src/main/**",
       "src/shared/**",
+      "src/theme/**",
       "src/locales/*.json",
       "dist/renderer/**",
       "build/icon.png",
@@ -69,6 +71,7 @@
       "files": [
         "src/main/**",
         "src/shared/**",
+        "src/theme/**",
         "src/locales/*.json",
         "dist/renderer/**",
         "build/icon.png",
@@ -124,6 +127,7 @@
       "files": [
         "src/main/**",
         "src/shared/**",
+        "src/theme/**",
         "src/locales/*.json",
         "dist/renderer/**",
         "build/icon.png",
@@ -172,6 +176,7 @@
       "files": [
         "src/main/**",
         "src/shared/**",
+        "src/theme/**",
         "src/locales/*.json",
         "dist/renderer/**",
         "build/icon.png",

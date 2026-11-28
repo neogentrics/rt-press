@@ -3,13 +3,13 @@
 import { $, h, openDialog, toast } from './dom.js';
 
 export function updateBar(update) {
-  if (update?.state === 'downloading') return h('div', { class: 'bar', role: 'status' }, h('span', null, `Version ${update.version} is downloading`), h('span', null, 'You’ll be asked to restart when it’s ready.'));
+  if (update?.state === 'downloading') return h('div', { class: 'bar update-bar', role: 'status' }, h('span', null, `Version ${update.version} is downloading`), h('span', null, 'You’ll be asked to restart when it’s ready.'));
   if (update?.state === 'ready') {
-    return h('div', { class: 'bar', role: 'status' }, h('span', null, `Version ${update.version} is ready to install`),
+    return h('div', { class: 'bar update-bar', role: 'status' }, h('span', null, `Version ${update.version} is ready to install`),
       h('button', { type: 'button', id: 'restart-to-update', onclick: () => window.rtPress.installUpdate() }, 'Restart to update'));
   }
   if (update?.state === 'available') {
-    return h('div', { class: 'bar', role: 'status' }, h('span', null, `Version ${update.version} is available`),
+    return h('div', { class: 'bar update-bar', role: 'status' }, h('span', null, `Version ${update.version} is available`),
       h('button', { type: 'button', id: 'open-download', onclick: () => window.rtPress.openReleases() }, 'Open Download Page'));
   }
   return null;

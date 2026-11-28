@@ -1,6 +1,7 @@
 // The window: the book beside, its interior settings, the build, its checks and its pages, inside the suite's frame (toolbar, Go
 // to, Help Center, tutorial, About, Preferences and updates). The menus live in the main process and send their commands here.
 import { openAbout } from './about.js';
+import { createAppearance } from './appearance.js';
 import { $, dialogOpen, h, toast } from './dom.js';
 import { createHelp } from './help-ui.js';
 import { createUiTranslator } from './i18n-ui.js';
@@ -18,6 +19,15 @@ const set = (id, text) => {
 const translator = createUiTranslator();
 window.rtPressUntranslated = () => [...translator.missing];
 const numbers = (n) => n.toLocaleString(translator.lang);
+
+// The window's theme and look, from the suite's shared themes file when this build carries it.
+const appearance = createAppearance({
+  changed: (next) => {
+    const button = $('btn-theme');
+    if (button) button.hidden = next.state !== 'ready';
+    drawBars();
+  },
+});
 
 let state = null;
 let info = { version: '', platform: 'linux' };
@@ -39,6 +49,7 @@ function drawBars() {
       h('button', { type: 'button', id: 'practice-leave', onclick: () => tour.finish() }, 'Leave it')));
   }
   if (storageProblem) bars.push(h('div', { class: 'bar problem', role: 'alert' }, h('span', null, `Encrypted storage is not working: ${storageProblem}`)));
+  if (appearance.info.state === 'refused') bars.push(h('div', { class: 'bar problem update-bar', role: 'alert' }, h('span', null, 'The suite’s themes weren’t loaded.'), h('span', null, appearance.info.reason)));
   const news = updateBar(update);
   if (news) bars.push(news);
   $('bars').replaceChildren(...bars);
@@ -343,7 +354,7 @@ const COMMANDS = {
   'import-chapters': importChapters,
   build,
   'save-pdf': exportPdf,
-  preferences: () => openPreferences({ run, setLanguage: (code) => translator.setLanguage(code) }),
+  preferences: () => openPreferences({ run, setLanguage: (code) => translator.setLanguage(code), appearance }),
   'go-to': () => openPalette(''),
   'command-palette': () => openPalette('>'),
   'first-spread': () => go(0),
@@ -399,7 +410,10 @@ async function start() {
     storageProblem = status.storage.ok ? '' : status.storage.error ?? 'a check failed';
     translator.setLanguage((await window.rtPress.appSettings()).resolvedLanguage);
     drawToolbar({ platform: info.platform, run });
+    document.body.append(appearance.popover());
     wire();
+    window.rtPress.onAppearance((next) => appearance.update(next));
+    appearance.update(await window.rtPress.appearance());
     practising = await window.rtPress.inPractice();
     refresh(await window.rtPress.getState());
     drawBars();

@@ -1,11 +1,16 @@
 // Bundles the window into dist/renderer.
 import { build } from 'esbuild';
 import { cpSync, mkdirSync, rmSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'dist', 'renderer');
+
+// A theme copy that doesn't match its theme.lock never gets into a build.
+const shared = createRequire(import.meta.url)('../src/main/theme/loader.js').readSharedTheme();
+if (shared.state === 'refused') throw new Error(`src/theme is refused: ${shared.reason}. Take the themes in again with "npm run theme:sync -- --tag <version>".`);
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });

@@ -50,7 +50,7 @@ it, before the 1.0 work below.
 | 1.0 milestone | State |
 |---|---|
 | V1 An icon, and the installers wear it | ✅ The redrawn icon (an unfolded cover with a colour-bar spine), with clear space round it on a Mac. Not yet seen installed on a real desktop. |
-| V2 The suite's frame | ✅ All of it but the themes and looks: menus, Go to, Help Center and tutorial, About, Preferences, the icon toolbar, self-update, the installed list, and Spanish, French and German with right-to-left layouts. The window's themes and the theme button wait for the suite's shared themes file. |
+| V2 The suite's frame | ✅ All of it but the themes and looks: menus, Go to, Help Center and tutorial, About, Preferences, the icon toolbar, self-update, the installed list, and Spanish, French and German with right-to-left layouts. For themes and looks, the picker with *Auto*, the menus, *Preferences → Appearance*, the `theme.lock` check, the token wiring and the contrast tests are built and tried with made-up themes. **The suite's colours and looks are not in:** their repo holds no theme files yet, so the theme button stays hidden and nothing has been measured on the real ones. |
 | V3 Page quality to the owner's standard | Next. Includes a fault in today's page-turn repair: a short line left behind by a moved sentence is stretched across the page. |
 | V4 Every trim size | Not started. The alpha already offers every KDP list size; custom sizes and the margin from the page count are not built. |
 | V5 Book themes, matter and fonts | Not started |

@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('rtPress', {
   startPractice: () => call('press:practice-start'),
   leavePractice: () => call('press:practice-leave'),
   help: () => call('press:help'),
+  appearance: () => call('press:appearance'),
   appSettings: () => call('press:app-settings'),
   saveAppSettings: (changes) => call('press:save-app-settings', changes),
   commands: () => call('press:commands'),
@@ -40,4 +41,5 @@ contextBridge.exposeInMainWorld('rtPress', {
   onStep: listen('press:step'),
   onCommand: listen('press:command'),
   onUpdate: listen('press:update'),
+  onAppearance: listen('press:appearance'),
 });
