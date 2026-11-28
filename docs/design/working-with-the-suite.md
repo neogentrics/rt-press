@@ -54,6 +54,13 @@ moved. Until v1.7, a refresh is a new send from RT Story Tracker.
 | RT Story Tracker | A way to mark in-story documents, so they arrive as documents and not as quotes | Before Press v1.2 |
 | RT Author Desk | A request to record a finished file against an edition | Before Press v1.7 |
 
+## Audiobooks
+
+RT Audio Studio owns the audio. Press owns the two things an audiobook needs that come from the book's design and text: the
+square audiobook cover and the narration text (a file per chapter, the credits wording and a chapter list), both in 1.6. They can
+be saved as files for an author who records their own narration, or handed to Audio Studio when App Link can carry them.
+Press doesn't record, edit or check audio, and doesn't know what a store wants of the sound.
+
 ## What Press owns
 
 Interior designs, themes, frames, cover wraps and the finished print files. RT Author Desk records what was made and when;

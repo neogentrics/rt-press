@@ -173,7 +173,7 @@ cleanly, using the EPUB and PDF that version 1.6 already makes.
   at least 1,024). A separate cover file is optional, used for the thumbnail.
 - **File names carry the identifier:** the PDF is named for the **print** ISBN and the EPUB for the **electronic** ISBN. A wrongly
   named file makes a new listing.
-- **Audiobooks:** not in scope for Press.
+- **Audiobooks:** Press doesn't make or check audio. It supplies the square audiobook cover and the narration text (1.6); Google's own audiobook cover rule is a square of at least 1,024 and at most 7,200 pixels, JPG or PNG.
 
 **Still to read before building:** how the Partner Center handles a book with several ISBNs, which Typst and EPUB settings a Play
 Books PDF wants (page layout is fixed, and an ebook is reflowable), and the current EPUB 3.3 notes.

@@ -92,6 +92,13 @@ research behind each is in [other platforms' print rules](design/print-rules-oth
 pages on 27 November 2026. What wasn't readable (IngramSpark's File Creation Guide, B&N Press's Print Formatting Guide, and
 spine formulas for both) is read before that platform's release is built.
 
+### Audiobooks
+
+✅ **Chosen 27 November 2026: Press doesn't make audiobooks, but it supplies what a recording needs.** RT Audio Studio handles the
+audio. Press, which has the cover and the text, supplies a square audiobook cover and the narration text (one file per
+chapter, credits wording, a chapter list) in 1.6, for an author who records their own narration or hands the text to
+Audio Studio. Press never records, edits or checks audio.
+
 ### The icon
 
 ✅ **Approved 27 November 2026: the unfolded book cover on a dark tile.** The owner rejected the first draft because it looked

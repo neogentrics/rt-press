@@ -188,6 +188,8 @@ rule set plus whatever its files need, not a change to the typesetter.
 | 🙋 EPUB | M | A store-ready EPUB, checked with EPUBCheck before it's saved. |
 | 🙋 Word | S | Including a Kindle Word file: real headings, a linked contents page, and no frames, blank pages or page numbers. |
 | Plain formats | S | A plain print PDF, Markdown, HTML and plain text. |
+| Audiobook cover | S | A square cover made from the book's front cover design, for the audiobook stores: no borders to turn a rectangle into a square, the title and author clear, saved at each store's size and colour mode (RGB, not CMYK). The store sizes are read from each store's own page when this is built. |
+| Audiobook text | S | The book as plain text in reading order, one file per chapter, with the front and back matter marked, the opening and closing credits wording (title, author and narrator), and a chapter list with word counts, ready for someone recording their own narration or to hand to RT Audio Studio. Press doesn't record, edit or check audio; that is RT Audio Studio's job. |
 | Every file type | M | Every format the suite's apps can make, from the shared module: at least EPUB, Word, plain PDF, Markdown, HTML, plain text, RTF, OpenDocument and XML, so a book can be exported from Press in whatever form a store or site asks for. |
 
 **Test:** the EPUB passes EPUBCheck and KDP's previewer. The Kindle Word file builds its contents on Kindle.
@@ -354,7 +356,7 @@ are in [other platforms' print rules](docs/design/print-rules-other-platforms.md
 | Cover image | S | JPEG, PNG, TIFF or PDF, at least 640 and at most 7,200 pixels each way. |
 | Names that match | S | The PDF named for the print ISBN and the EPUB for the electronic ISBN, so the book isn't listed twice. |
 
-**Test:** a book uploads to Play Books' Partner Center as one listing with both files. Audiobooks are out of scope.
+**Test:** a book uploads to Play Books' Partner Center as one listing with both files. Audiobooks aren't made here: Press supplies the audiobook cover and text from 1.6, and RT Audio Studio does the audio.
 
 ## Later — only if needed
 
