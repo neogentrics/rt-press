@@ -7,7 +7,7 @@ const { assembleBook, importChapters } = require('../import/book');
 const { countWords, textOfNode } = require('../../shared/book-model');
 const { changeKeepList } = require('../../shared/keep-list');
 const { buildBook } = require('./pipeline');
-const { choices, limitsFor, validateSettings, withDefaultSettings } = require('./settings');
+const { PAPER_NAMES, choices, limitsFor, validateSettings, withDefaultSettings } = require('./settings');
 
 const SHOWN_ISSUES = 25;
 
@@ -56,6 +56,7 @@ class Session {
       settings: this.settings,
       keepList: this.keep,
       choices: choices(),
+      paperNames: PAPER_NAMES,
       limits: limitsFor(this.settings),
       build: this.last ? this.summary(this.last) : null,
     };
@@ -63,7 +64,7 @@ class Session {
 
   summary(build) {
     if (!build.ok) return { ok: false, reason: build.reason, messages: build.messages, problems: build.problems ?? [] };
-    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, even: build.even, builtAt: build.builtAt, startPages: Object.fromEntries((build.units ?? []).map((unit) => [unit.id, unit.page])) };
+    return { ok: true, pages: build.pages, contentPages: build.contentPages, checks: build.checks, ready: build.ready, timings: build.timings, previewReady: Boolean(build.preview), previewMessages: build.previewMessages, changes: build.changes, notes: build.notes, repair: build.repair, even: build.even, margins: build.margins, builtAt: build.builtAt, startPages: Object.fromEntries((build.units ?? []).map((unit) => [unit.id, unit.page])) };
   }
 
   // Reads the Word files in a folder as a new book. Returns the state, or { error }.

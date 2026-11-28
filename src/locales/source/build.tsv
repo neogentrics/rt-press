@@ -59,3 +59,5 @@ Your list changed. Build again to see the effect.	Su lista ha cambiado. Vuelva a
 That isn’t a sentence that can be kept.	Esa no es una frase que se pueda guardar.	Ce n’est pas une phrase que l’on peut garder.	Dieser Satz kann nicht gespeichert werden.
 The list of page turns to leave split is full.	La lista de cambios de página que dejar cortados está llena.	La liste des tournes à laisser coupées est pleine.	Die Liste der geteilt zu lassenden Seitenwechsel ist voll.
 A sentence on your list is left split wherever it falls on a page turn.	Una frase de su lista se deja cortada dondequiera que caiga en un cambio de página.	Une phrase de votre liste reste coupée partout où elle tombe sur une tourne.	Ein Satz auf Ihrer Liste bleibt überall geteilt, wo er auf einen Seitenwechsel fällt.
+Counting the pages…	Contando las páginas…	Comptage des pages…	Seiten werden gezählt…
+Inside margin: {0} in, from the page count.	Margen interior: {0} pulg., según el número de páginas.	Marge intérieure : {0} po, selon le nombre de pages.	Innenrand: {0} Zoll, nach der Seitenzahl.

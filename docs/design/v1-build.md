@@ -56,7 +56,7 @@ sentence split across a page turn unless it's on a keep list, every full page en
 count, a blank last page on an even count, and a report of what moved and what couldn't. Measure it against the private
 test book's script output and say what's still worse.
 
-**V4. Every trim size.** All 16 KDP paperback sizes, the 5 hardcover sizes, custom paperback sizes inside KDP's limits, paper and
+**V4. Every trim size.** ✅ *Done 28 November 2026; KDP's previewer hasn't seen the files.* All 16 KDP paperback sizes, the 5 hardcover sizes, custom paperback sizes inside KDP's limits, paper and
 ink choices, with the inside margin set from the real page count and bleed on or off. `docs/design/print-rules.md` is the source.
 
 **V5. Book themes, matter and fonts.** A starter set of book themes, each with title, subtitle and body fonts, drop caps, scene

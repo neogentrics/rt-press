@@ -163,9 +163,9 @@ page = f'''<!DOCTYPE html>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
 <div class="kicker"><span class="pulse" aria-hidden="true"></span>1.0 is being built</div>
-<h1 id="nowh">The icon and the suite's frame are done. Page quality is built.</h1>
+<h1 id="nowh">Every trim size is in. Book themes and fonts are next.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
-<ul><li><b>Done</b><span>V1 and V2 of 8: the new icon, and menus, Help, the tutorial, About, Preferences, updates and three more languages. The window has the suite's ten themes and three looks.</span></li>
+<ul><li><b>Done</b><span>V1, V2 and V4 of 8: the icon; the window, with the suite's ten themes and three looks; and every KDP trim size, custom ones too, with the inside margin from the page count. KDP's previewer has not seen the files.</span></li>
 <li><b>Now</b><span>V3 is built and waits for your judgement. On the test book Press leaves fewer split sentences than your script, and more uneven pages. One choice is yours: how hard the repair should try, against how even the pages stay.</span></li>
 <li><b>An alpha is out</b><span>0.1.0-alpha.0, from before V1. No new build is published until you ask for one. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>

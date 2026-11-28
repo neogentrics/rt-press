@@ -111,7 +111,7 @@ test('building a book that is long enough makes a file that passes every check, 
   const steps = [];
   const build = await s.build((step) => steps.push(step));
   assert.equal(build.ok, true, build.messages);
-  assert.deepEqual(steps, ['Evening the page bottoms', 'Setting the pages', 'Finishing the file', 'Checking the file', 'Making the preview']);
+  assert.deepEqual(steps, ['Counting the pages', 'Evening the page bottoms', 'Setting the pages', 'Finishing the file', 'Checking the file', 'Making the preview']);
   assert.ok(build.pages >= 24, `${build.pages} pages`);
   assert.equal(build.ready, true, JSON.stringify(build.checks.filter((c) => !c.ok)));
   assert.equal(build.previewReady, true);

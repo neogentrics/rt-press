@@ -11,7 +11,7 @@ const { repairAll } = require('../steer/repair');
 const { generateTypst } = require('../typeset/typst-source');
 const { typesetBook } = require('../typeset/typeset-book');
 const { BLEED_IN } = require('../../shared/print-rules');
-const { themeFromSettings, validateSettings, withDefaultSettings } = require('./settings');
+const { automaticInside, themeFromSettings, validateSettings, withDefaultSettings } = require('./settings');
 
 const PREVIEW_PPI = 80;
 
@@ -40,57 +40,85 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
   if (!book?.sections?.some((s) => s.type === 'chapter')) return { ok: false, reason: 'no-book', messages: 'There is no book to set yet. Import some chapters first.' };
 
   const timings = {};
-  const theme = themeFromSettings(settings);
   const toSet = withFrontMatter(book, settings, details);
   const bleed_in = settings.bleed ? BLEED_IN : 0;
   fs.mkdirSync(workDir, { recursive: true });
-  const common = { book: toSet, theme, fontPaths: [fontFolder], resourcesPath, targetPages: settings.pin_pages ?? null };
+  const common = { book: toSet, fontPaths: [fontFolder], resourcesPath, targetPages: settings.pin_pages ?? null };
 
   const timestamp = Math.floor(now().getTime() / 1000);
 
-  // Page turns: find the pages that end in the middle of a sentence and start those sentences on the next page. The repair is
-  // set without bleed (the pages fall the same) and gives back a list of steers; the book itself is never changed.
-  let steers = [];
-  let repair = null;
-  // A setting for measuring: where everything lands, without bleed (the pages fall the same).
-  const set = (list) => typesetBook({ ...common, workDir: path.join(workDir, 'repair'), output: path.join(workDir, 'repair.pdf'), steers: list, trace: true, bleed_in: 0, timestamp });
-  if (settings.page_turns !== 'off') {
+  // The inside margin, unless the author set one, comes from the page count, and the page count depends on the margin. A pinned
+  // count is the count. Otherwise the book is set and counted, starting from the narrowest margin, until the count asks for no
+  // wider one: a wider margin can only make the book longer, so this ends.
+  const automatic = settings.inside_in === null;
+  let theme = themeFromSettings(settings, { pages: settings.pin_pages ?? 24 });
+  if (automatic && !settings.pin_pages) {
     const t0 = Date.now();
-    onStep('Setting the pages');
-    const outcome = await repairAll({
-      set,
-      readPdfBytes: (r) => fs.readFileSync(r.output),
-      book: toSet,
-      theme,
-      maxRounds: 4,
-      // Keeping the page count, a move may leave its page at most two lines short, which is the owner's script's limit. With pages
-      // allowed, three.
-      maxPushLines: settings.page_turns === 'keep' ? 2 : 3,
-      keepPages: settings.page_turns === 'keep',
-      keep,
-      onProgress: ({ round, midSentence }) => onStep(`Repairing page turns, round ${round + 1}: ${midSentence} split a sentence`),
-    });
-    steers = outcome.steers;
-    const first = outcome.history[0];
-    if (first?.midSentence !== undefined && outcome.turns) {
-      repair = { mode: settings.page_turns, ...outcome.report, before: first.midSentence, after: outcome.report.left.length, pushes: steers.length, rounds: outcome.history.length - 1, pagesBefore: first.pages, pagesAfter: outcome.final.pages };
+    onStep('Counting the pages');
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const counted = await typesetBook({ ...common, theme, workDir: path.join(workDir, 'count'), output: path.join(workDir, 'count.pdf'), bleed_in: 0, timestamp });
+      if (!counted.ok) return { ok: false, reason: 'typesetter', messages: counted.messages };
+      if (automaticInside(counted.pages) <= theme.margins.inside_in) break;
+      theme = themeFromSettings(settings, { pages: counted.pages });
     }
-    timings.repair = Date.now() - t0;
+    timings.count = Date.now() - t0;
   }
 
-  // Even page bottoms: after the repair, because moving a sentence is what leaves most pages short.
-  let even = null;
-  if (settings.even_bottoms) {
-    const t0 = Date.now();
-    onStep('Evening the page bottoms');
-    const outcome = await evenBottoms({ set: (air) => set([...steers, ...air]), theme });
-    steers = [...steers, ...outcome.steers];
-    even = outcome.report;
-    timings.even = Date.now() - t0;
-  }
+  // Everything that depends on the margin: the repair, the even bottoms and the pages themselves.
+  const setPages = async () => {
+    // Page turns: find the pages that end in the middle of a sentence and start those sentences on the next page. The repair is
+    // set without bleed (the pages fall the same) and gives back a list of steers; the book itself is never changed.
+    let steers = [];
+    let repair = null;
+    // A setting for measuring: where everything lands, without bleed.
+    const set = (list) => typesetBook({ ...common, theme, workDir: path.join(workDir, 'repair'), output: path.join(workDir, 'repair.pdf'), steers: list, trace: true, bleed_in: 0, timestamp });
+    if (settings.page_turns !== 'off') {
+      const t0 = Date.now();
+      onStep('Setting the pages');
+      const outcome = await repairAll({
+        set,
+        readPdfBytes: (r) => fs.readFileSync(r.output),
+        book: toSet,
+        theme,
+        maxRounds: 4,
+        // Keeping the page count, a move may leave its page at most two lines short, which is the owner's script's limit. With
+        // pages allowed, three.
+        maxPushLines: settings.page_turns === 'keep' ? 2 : 3,
+        keepPages: settings.page_turns === 'keep',
+        keep,
+        onProgress: ({ round, midSentence }) => onStep(`Repairing page turns, round ${round + 1}: ${midSentence} split a sentence`),
+      });
+      steers = outcome.steers;
+      const first = outcome.history[0];
+      if (first?.midSentence !== undefined && outcome.turns) {
+        repair = { mode: settings.page_turns, ...outcome.report, before: first.midSentence, after: outcome.report.left.length, pushes: steers.length, rounds: outcome.history.length - 1, pagesBefore: first.pages, pagesAfter: outcome.final.pages };
+      }
+      timings.repair = Date.now() - t0;
+    }
 
-  onStep('Setting the pages');
-  const raw = await typesetBook({ ...common, steers, workDir: path.join(workDir, 'set'), output: path.join(workDir, 'typst.pdf'), bleed_in, timestamp });
+    // Even page bottoms: after the repair, because moving a sentence is what leaves most pages short.
+    let even = null;
+    if (settings.even_bottoms) {
+      const t0 = Date.now();
+      onStep('Evening the page bottoms');
+      const outcome = await evenBottoms({ set: (air) => set([...steers, ...air]), theme });
+      steers = [...steers, ...outcome.steers];
+      even = outcome.report;
+      timings.even = Date.now() - t0;
+    }
+
+    onStep('Setting the pages');
+    const raw = await typesetBook({ ...common, theme, steers, workDir: path.join(workDir, 'set'), output: path.join(workDir, 'typst.pdf'), bleed_in, timestamp });
+    return { raw, steers, repair, even };
+  };
+
+  let pages = await setPages();
+  // Letting pages be added can carry a book into the next band of KDP's table. Then it is set again with that band's margin.
+  for (let again = 0; again < 2 && automatic && pages.raw.ok && automaticInside(pages.raw.pages) > theme.margins.inside_in; again += 1) {
+    theme = themeFromSettings(settings, { pages: pages.raw.pages });
+    pages = await setPages();
+  }
+  const { raw, steers, repair, even } = pages;
   if (!raw.ok) return { ok: false, reason: 'typesetter', messages: raw.messages };
   timings.set = Math.round(raw.compileMs + raw.evalMs);
 
@@ -108,7 +136,7 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
   // from the trim.
   onStep('Making the preview');
   const previewDir = path.join(workDir, 'preview');
-  const previewSource = generateTypst({ ...common, steers, bleed_in: 0 }).source;
+  const previewSource = generateTypst({ ...common, theme, steers, bleed_in: 0 }).source;
   const input = path.join(workDir, 'preview.typ');
   fs.writeFileSync(input, previewSource);
   const pictures = await renderPages({ input, outDir: previewDir, fontPaths: [fontFolder], ppi: PREVIEW_PPI, resourcesPath });
@@ -124,6 +152,7 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
     notes: raw.notes,
     repair,
     even,
+    margins: { inside_in: theme.margins.inside_in, from: automatic ? 'page-count' : 'own' },
     checks: report.results.map(({ id, title, ok, summary, parts, pages }) => ({ id, title, ok, summary, parts, pages })),
     ready: report.ok,
     preview: pictures.ok ? { dir: previewDir, files: pictures.files } : null,

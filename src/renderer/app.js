@@ -3,6 +3,7 @@
 import { openAbout } from './about.js';
 import { createAppearance } from './appearance.js';
 import { turnsReport } from './turns-report.js';
+import { PAPERS, isLargeTrim, pageLimits } from '../shared/print-rules.js';
 import { $, dialogOpen, h, toast } from './dom.js';
 import { createHelp } from './help-ui.js';
 import { createUiTranslator } from './i18n-ui.js';
@@ -64,11 +65,11 @@ function syncControls() {
 
 // ---- reading the settings out of the window, and putting them back ----
 function readSettings() {
-  const trimOption = $('trim').selectedOptions[0];
   const pin = $('pin-pages').value.trim();
+  const inside = $('inside-margin').value.trim();
   return {
     format: $('format').value,
-    trim: { width_in: Number(trimOption?.dataset.w), height_in: Number(trimOption?.dataset.h) },
+    trim: chosenTrim(),
     paper: $('paper').value,
     bleed: $('bleed').checked,
     body_pt: Number($('body-pt').value),
@@ -81,7 +82,26 @@ function readSettings() {
     pin_pages: pin === '' ? null : Number(pin),
     page_turns: $('page-turns').value,
     even_bottoms: $('even-bottoms').checked,
+    inside_in: inside === '' ? null : Number(inside),
   };
+}
+
+// A paperback can also be any size inside KDP's limits: the last choice in the list, with its width and height beneath.
+const CUSTOM = 'custom';
+
+function chosenTrim() {
+  if ($('trim').value === CUSTOM) return { width_in: Number($('trim-width').value), height_in: Number($('trim-height').value), custom: true };
+  const option = $('trim').selectedOptions[0];
+  return { width_in: Number(option?.dataset.w), height_in: Number(option?.dataset.h) };
+}
+
+function showCustom(trim) {
+  const custom = $('trim').value === CUSTOM;
+  $('custom-trim').hidden = !custom;
+  if (custom && trim) {
+    $('trim-width').value = trim.width_in;
+    $('trim-height').value = trim.height_in;
+  }
 }
 
 function fillTrims(format, wanted) {
@@ -92,17 +112,25 @@ function fillTrims(format, wanted) {
     option.dataset.w = t.width_in;
     option.dataset.h = t.height_in;
     return option;
-  }));
+  }), ...(format === 'paperback' ? [Object.assign(document.createElement('option'), { value: CUSTOM, textContent: 'Custom size…' })] : []));
   const index = trims.findIndex((t) => t.width_in === wanted?.width_in && t.height_in === wanted?.height_in);
-  select.selectedIndex = index >= 0 ? index : 0;
+  if (wanted?.custom && format === 'paperback') select.value = CUSTOM;
+  else select.selectedIndex = index >= 0 ? index : 0;
+  showCustom(wanted);
+}
+
+// The papers sold at the chosen size. For a custom size outside KDP's limits all are left, and the settings say what is wrong.
+function papersFor(format, trim) {
+  if (!trim.custom) return state.choices[format].find((t) => t.width_in === trim.width_in && t.height_in === trim.height_in)?.papers ?? [];
+  const sold = PAPERS.filter((paper) => pageLimits(format, trim.width_in, trim.height_in, paper));
+  return (sold.length ? sold : PAPERS).map((id) => ({ id, label: state.paperNames[id] }));
 }
 
 function fillPapers(wanted) {
-  const option = $('trim').selectedOptions[0];
-  const trim = state.choices[$('format').value].find((t) => t.width_in === Number(option.dataset.w) && t.height_in === Number(option.dataset.h));
+  const papers = papersFor($('format').value, chosenTrim());
   const select = $('paper');
-  select.replaceChildren(...trim.papers.map((p) => Object.assign(document.createElement('option'), { value: p.id, textContent: p.label })));
-  const index = trim.papers.findIndex((p) => p.id === wanted);
+  select.replaceChildren(...papers.map((p) => Object.assign(document.createElement('option'), { value: p.id, textContent: p.label })));
+  const index = papers.findIndex((p) => p.id === wanted);
   select.selectedIndex = index >= 0 ? index : 0;
 }
 
@@ -122,8 +150,12 @@ function showSettings() {
   $('pin-pages').value = s.pin_pages ?? '';
   $('page-turns').value = s.page_turns;
   $('even-bottoms').checked = s.even_bottoms;
+  $('inside-margin').value = s.inside_in ?? '';
   const l = state.limits;
-  set('limits', l ? `KDP takes ${l.min} to ${l.max} pages at this trim and paper.` : '');
+  const notes = [];
+  if (l) notes.push(l.custom ? `Press holds this custom size to ${l.min} to ${l.max} pages: KDP publishes no limits for it, and its previewer has the last word.` : `KDP takes ${l.min} to ${l.max} pages at this trim and paper.`);
+  if (isLargeTrim(s.trim.width_in, s.trim.height_in)) notes.push('This is a large trim size, which costs more to print.');
+  $('limits').replaceChildren(...notes.flatMap((note) => [h('span', null, note), ' ']));
 }
 
 // ---- the book ----
@@ -185,6 +217,7 @@ function showBuild(build) {
     sentences.push(`Page turns that split a sentence: ${r.before} before repair, ${r.after} after.`);
     sentences.push(added > 0 ? `Pages added: ${added}.` : 'No page was added.');
   }
+  if (build.margins?.from === 'page-count') sentences.push(`Inside margin: ${build.margins.inside_in} in, from the page count.`);
   if (r?.kept?.length) sentences.push(`Left split on purpose: ${r.kept.length}.`);
   const uneven = build.even ? build.even.running - build.even.onLine : 0;
   if (build.even?.running > 0) sentences.push(uneven ? `Pages that carry on but end above or below the bottom line: ${uneven} of ${build.even.running}.` : 'Every page that carries on ends on the same line.');
@@ -420,10 +453,18 @@ function wire() {
     saveSettings();
   });
   $('trim').addEventListener('change', () => {
+    // A custom size starts from the size that was chosen before it.
+    showCustom(state.settings.trim);
     fillPapers($('paper').value);
     saveSettings();
   });
-  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages', 'page-turns', 'even-bottoms']) $(id).addEventListener('change', saveSettings);
+  for (const id of ['trim-width', 'trim-height']) {
+    $(id).addEventListener('change', () => {
+      fillPapers($('paper').value);
+      saveSettings();
+    });
+  }
+  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages', 'page-turns', 'even-bottoms', 'inside-margin']) $(id).addEventListener('change', saveSettings);
   $('first').addEventListener('click', () => go(0));
   $('prev').addEventListener('click', () => go(spread - 1));
   $('next').addEventListener('click', () => go(spread + 1));

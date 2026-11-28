@@ -50,3 +50,5 @@ the file is encrypted	el archivo está cifrado	le fichier est chiffré	die Datei
 it has bookmarks	tiene marcadores	il contient des signets	sie enthält Lesezeichen
 it has form fields	tiene campos de formulario	il contient des champs de formulaire	sie enthält Formularfelder
 links or annotations on pages {0}	enlaces o anotaciones en las páginas {0}	liens ou annotations aux pages {0}	Links oder Anmerkungen auf den Seiten {0}
+{0} pages; Press holds this custom size to {1} to {2}	{0} páginas; Press limita este tamaño personalizado a entre {1} y {2}	{0} pages ; Press limite ce format personnalisé à {1} à {2}	{0} Seiten; Press begrenzt dieses eigene Format auf {1} bis {2}
+KDP publishes no page limits for a custom size: these are Press’s own, and KDP’s previewer has the last word	KDP no publica límites de páginas para un tamaño personalizado: son los de Press, y el previsualizador de KDP tiene la última palabra	KDP ne publie aucune limite de pages pour un format personnalisé : ce sont celles de Press, et l’outil de prévisualisation de KDP a le dernier mot	KDP nennt für eigene Formate keine Seitengrenzen: Diese stammen von Press, und die KDP-Vorschau hat das letzte Wort

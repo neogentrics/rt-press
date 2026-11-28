@@ -14,11 +14,14 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **Languages**: Spanish, French and German, and right-to-left layouts.
 - **The suite's themes**: Paper, Night, Sepia, Mist, Forest, Dusk, Blue, Red, Yellow and High Contrast, or *Auto*, with the *Solid*, *Metallic* and *Glass* looks and colour-safe colours, from the theme button, *View* and *Preferences → Appearance*. Taken in from the shared theme files, v0.1.0, and measured for contrast in every theme with every look.
 - **Tests for contrast and keyboard reach** in the window, on all three systems.
+- **Custom paperback sizes**, 4 to 8.5 in wide and 6 to 11.69 in tall. KDP publishes no page limits for them, so Press uses its own rule and says so.
+- **An inside margin setting**, and a note that a large size costs more to print.
 - **A page turn report**: what the repair moved, what it couldn't and why, each with its page, and the pages that don't end on the bottom line.
 - **A keep list**: sentences left split across a page turn for suspense. It is saved with the book.
 - **Even page bottoms**, a new setting, on unless turned off: pages whose text carries on end on the same last line where that can be done gently, without moving a word to another page. The build says how many don't.
 
 ### Changed
+- **The inside margin now comes from the page count**: KDP's least for that many pages and 0.375 in more. Books of 151 to 300 pages keep 0.875 in; thinner ones get 0.75 in and longer lines, and thicker ones get more.
 - **Page repair finds many more moves.** Adding no pages, a chapter can now use the blank page that followed it, and a move may leave its page two lines short at most.
 - **Electron 45.5.0**, from 45.4.1.
 - **The third-party notices are checked**: a test fails if a version in them isn't the one Press is built with.

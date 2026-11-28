@@ -36,7 +36,7 @@ books.
 </tr>
 <tr>
 <td><img src="docs/screenshots/checks-fail.png" alt="The checks for a book that is too short: the page count and the inside margin are marked as failed"><br><b>Checked, not hoped.</b> Every check reads the finished file. A book that breaks a rule can't be saved.</td>
-<td><img src="docs/screenshots/settings.png" alt="The settings: edition, trim size, paper, bleed, type size, page numbers, scene break and a pinned page count"><br><b>Only what KDP offers.</b> Pick a trim, and only the papers that come in it are listed.</td>
+<td><img src="docs/screenshots/settings.png" alt="The settings: edition, trim size, paper, bleed, type size, page numbers, scene break, the inside margin and a pinned page count"><br><b>Only what KDP offers.</b> Pick a trim, and only the papers that come in it are listed.</td>
 </tr>
 <tr>
 <td><img src="docs/screenshots/go-to.png" alt="The command box, listing every command with its menu and shortcut"><br><b>Go to anything.</b> <code>Ctrl+K</code> jumps to a chapter. Start with <code>&gt;</code> to run any command by name.</td>
@@ -81,8 +81,8 @@ npm run dist:linux
 | | |
 |---|---|
 | **Bring in your chapters** | A folder of Word (.docx) files, one for each chapter, in order. Chapter titles are read from the files, curly quotes are set from the text around them, and quotation marks that don't pair are listed so you can check them |
-| **Every KDP trim** | Paperback and hardcover, with only the papers and page limits KDP offers for each size |
-| **Set like a book** | Mirrored margins, every chapter starting on a right-hand page, a drop cap, scene breaks, page numbers outside or centred, an optional title page and contents page, and a blank last page |
+| **Every KDP trim** | All 16 paperback sizes, custom paperback sizes and the 5 hardcover sizes, with only the papers KDP offers for each. KDP publishes no page limits for a custom size, so those are Press's own, and it says so |
+| **Set like a book** | Mirrored margins with the inside one taken from the page count, or your own, every chapter starting on a right-hand page, a drop cap, scene breaks, page numbers outside or centred, an optional title page and contents page, and a blank last page |
 | **No sentence split across a page turn** | Where a page ends in the middle of a sentence, the sentence starts on the next page instead, in rounds, and the book is set again each time. By default no page is added: a sentence is only moved where its chapter has room. Or let pages be added, as far as a pinned count allows, or leave the pages as set. What's left behind on a line ends short, like the end of a paragraph, unless it's nearly full already. The repair never changes your words |
 | **A report, and your keep list** | What was moved, what couldn't be and why, each with its page. Put a sentence on your list to leave it split for suspense |
 | **Even page bottoms** | Pages whose text carries on are brought to the same last line by sharing a little space between lines and paragraphs, without moving a word to another page. Pages that can't be done gently are left, and counted |
@@ -101,7 +101,7 @@ npm run dist:linux
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
 | **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
-**Coming next, for 1.0:** every trim size with custom sizes, book themes
+**Coming next, for 1.0:** book themes
 with front and back matter and more fonts, books from Markdown and EPUB, and every KDP rule shown on the page it's on. See the [roadmap](ROADMAP.md).
 
 ## What it won't do

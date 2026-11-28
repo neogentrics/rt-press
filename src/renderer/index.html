@@ -40,6 +40,10 @@
             </select>
           </label>
           <label>Trim size <select id="trim"></select></label>
+          <div id="custom-trim" class="pair" hidden>
+            <label>Width (in) <input id="trim-width" type="number" min="4" max="8.5" step="0.01" /></label>
+            <label>Height (in) <input id="trim-height" type="number" min="6" max="11.69" step="0.01" /></label>
+          </div>
           <label>Paper and ink <select id="paper"></select></label>
           <label class="check"><input id="bleed" type="checkbox" /> Bleed (0.125 in on the top, bottom and outside edges)</label>
           <div class="pair">
@@ -64,6 +68,7 @@
             </select>
           </label>
           <label class="check"><input id="even-bottoms" type="checkbox" /> Even page bottoms</label>
+          <label>Inside margin (in) <input id="inside-margin" type="number" min="0.375" max="2" step="0.001" placeholder="From the page count" /></label>
           <label>Pin the page count <input id="pin-pages" type="number" min="24" max="900" step="1" placeholder="Not pinned" /></label>
           <p id="limits" class="hint"></p>
           <p id="settings-error" class="problem" role="alert" hidden></p>

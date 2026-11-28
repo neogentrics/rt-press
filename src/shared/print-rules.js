@@ -20,8 +20,7 @@ const HARDCOVER = [{ trims: [[5.5, 8.5], [6, 9], [6.14, 9.21], [7, 10], [8.25, 1
 
 const FORMATS = { paperback: PAPERBACK, hardcover: HARDCOVER };
 
-// A custom paperback trim: 4 to 8.5 wide, 6 to 11.69 tall. Paper limits for a custom trim are those of the largest listed
-// size it fits inside, which Press doesn't guess at; it only says the trim is allowed.
+// A custom paperback trim: 4 to 8.5 wide, 6 to 11.69 tall.
 const CUSTOM_PAPERBACK = { width_in: [4, 8.5], height_in: [6, 11.69] };
 
 // The inside margin by page count. KDP gives this for paperback; it has no table for hardcover, so Press uses it for both.
@@ -54,12 +53,38 @@ function isCustomPaperbackTrim(width_in, height_in) {
   return width_in >= CUSTOM_PAPERBACK.width_in[0] && width_in <= CUSTOM_PAPERBACK.width_in[1] && height_in >= CUSTOM_PAPERBACK.height_in[0] && height_in <= CUSTOM_PAPERBACK.height_in[1];
 }
 
-// { min, max } pages for a format, trim and paper; null when KDP offers no such combination.
+// KDP publishes page limits for its listed sizes only. For a custom size none of its pages gives limits, or a way to work them
+// out (read on 27 November 2026), so this is Press's own rule, and it is said to be wherever it is used: a custom size takes the
+// limits of the smallest listed paperback size that is at least as wide and as tall. Where several are that small, or none is
+// large enough, it takes the strictest of them. A paper any of those isn't sold in isn't offered.
+function holdingSizes(width_in, height_in) {
+  const listed = PAPERBACK.flatMap((group) => group.trims.map((trim) => ({ trim, pages: group.pages })));
+  const holding = listed.filter(({ trim: [w, h] }) => w >= width_in - TRIM_TOLERANCE_IN && h >= height_in - TRIM_TOLERANCE_IN);
+  if (!holding.length) return listed;
+  const area = ({ trim: [w, h] }) => w * h;
+  const smallest = Math.min(...holding.map(area));
+  return holding.filter((size) => area(size) < smallest + 1e-6);
+}
+
+// { min, max } pages for a format, trim and paper; null when there is no such combination. For a custom paperback size the
+// answer also carries `custom`: { from: [[width, height], ...] }, the listed sizes whose limits were taken, or `from: []` when
+// they are the strictest of them all.
 function pageLimits(format, width_in, height_in, paper) {
   const entry = trimEntry(format, width_in, height_in);
-  const range = entry?.pages[paper];
-  return range ? { min: range[0], max: range[1] } : null;
+  if (entry) {
+    const range = entry.pages[paper];
+    return range ? { min: range[0], max: range[1] } : null;
+  }
+  if (format !== 'paperback' || !isCustomPaperbackTrim(width_in, height_in)) return null;
+  const sizes = holdingSizes(width_in, height_in);
+  const ranges = sizes.map((size) => size.pages[paper]);
+  if (ranges.some((range) => !range)) return null;
+  const everySize = sizes.length === PAPERBACK.reduce((n, group) => n + group.trims.length, 0);
+  return { min: Math.max(...ranges.map((r) => r[0])), max: Math.min(...ranges.map((r) => r[1])), custom: { from: everySize ? [] : sizes.map((size) => size.trim) } };
 }
+
+// A large trim costs more to print: wider than 6.12 in or taller than 9 in.
+const isLargeTrim = (width_in, height_in) => width_in > 6.12 + 1e-6 || height_in > 9 + 1e-6;
 
 // The inside margin KDP asks for at a page count, or null outside 24 to 828.
 function insideMargin(pageCount) {
@@ -73,4 +98,4 @@ function pageSize(width_in, height_in, bleed) {
   return { width_in: width_in + (bleed ? BLEED_IN : 0), height_in: height_in + (bleed ? 2 * BLEED_IN : 0) };
 }
 
-module.exports = { BLEED_IN, CUSTOM_PAPERBACK, FILE, FORMATS, INSIDE_MARGINS, OTHER_MARGIN_IN, PAPERS, POINTS_PER_INCH, insideMargin, isCustomPaperbackTrim, outsideMargin, pageLimits, pageSize, trimEntry };
+module.exports = { BLEED_IN, CUSTOM_PAPERBACK, FILE, FORMATS, INSIDE_MARGINS, OTHER_MARGIN_IN, PAPERS, POINTS_PER_INCH, insideMargin, isCustomPaperbackTrim, isLargeTrim, outsideMargin, pageLimits, pageSize, trimEntry };

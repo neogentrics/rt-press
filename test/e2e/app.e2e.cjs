@@ -222,6 +222,38 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     assert.deepEqual(pdf.rect(pdf.pages()[0].inherited.MediaBox), [0, 0, 441, 666], 'the saved file is the finished one, 6.125 by 9.25 in');
     assert.ok(pdf.pages().length >= 24);
 
+    // A size of the author's own, inside what KDP prints: its limits are said to be Press's, and the file comes out that size.
+    assert.match(await window.textContent('#build-summary'), /Inside margin: 0\.75 in, from the page count\./);
+    await window.selectOption('#trim', 'custom');
+    await visible(window, '#custom-trim');
+    assert.deepEqual([await window.inputValue('#trim-width'), await window.inputValue('#trim-height')], ['6', '9'], 'it starts from the size that was chosen');
+    await window.fill('#trim-width', '5.5');
+    await window.locator('#trim-width').blur();
+    await window.fill('#trim-height', '8.25');
+    await window.locator('#trim-height').blur();
+    await textIs(window, '#limits', /^Press holds this custom size to 24 to 828 pages: KDP publishes no limits for it/);
+    assert.equal(await window.inputValue('#trim'), 'custom', 'still custom');
+    await window.fill('#trim-width', '3');
+    await window.locator('#trim-width').blur();
+    await visible(window, '#settings-error');
+    assert.match(await window.textContent('#settings-error'), /a custom size is for a paperback, 4 to 8\.5 in wide/);
+    await window.fill('#trim-width', '5.5');
+    await window.locator('#trim-width').blur();
+    await window.waitForSelector('#settings-error', { state: 'hidden' });
+    await rebuild();
+    await window.click('#export');
+    await window.waitForFunction(() => /^Saved /.test(document.getElementById('step').textContent));
+    const own = readPdf(fs.readFileSync(saved));
+    assert.deepEqual(own.rect(own.pages()[0].inherited.MediaBox), [0, 0, 405, 612], '5.5 by 8.25 in, with bleed');
+    // A hardcover comes in the listed sizes only.
+    await window.selectOption('#format', 'hardcover');
+    await window.waitForSelector('#custom-trim', { state: 'hidden' });
+    assert.equal(await window.locator('#trim option[value="custom"]').count(), 0);
+    await window.selectOption('#format', 'paperback');
+    await window.selectOption('#trim', '6 × 9 in');
+    await window.waitForFunction(async () => !(await window.rtPress.getState()).settings.trim.custom);
+    await rebuild();
+
     // Contrast, measured on the real text in light and in dark: the main window, then each of the frame's own windows.
     for (const colorScheme of ['light', 'dark']) {
       await window.emulateMedia({ colorScheme });

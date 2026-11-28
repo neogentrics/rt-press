@@ -131,10 +131,13 @@ function runChecks(buffer, spec) {
   // --- the book ---
   const limits = pageLimits(spec.format, spec.trim.width_in, spec.trim.height_in, spec.paper);
   const countOk = Boolean(limits) && count >= limits.min && count <= limits.max;
-  results.push({
-    id: 'page-count', title: 'Page count is within KDP\'s limits', ok: countOk, pages: [],
-    summary: !limits ? `KDP does not offer ${spec.trim.width_in} × ${spec.trim.height_in} in ${spec.format} on ${spec.paper} paper` : countOk ? `${count} pages, within ${limits.min} to ${limits.max}` : `${count} pages; KDP takes ${limits.min} to ${limits.max} for this trim and paper`,
-  });
+  const counted = !limits ? `KDP does not offer ${spec.trim.width_in} × ${spec.trim.height_in} in ${spec.format} on ${spec.paper} paper`
+    : countOk ? `${count} pages, within ${limits.min} to ${limits.max}`
+      : limits.custom ? `${count} pages; Press holds this custom size to ${limits.min} to ${limits.max}`
+        : `${count} pages; KDP takes ${limits.min} to ${limits.max} for this trim and paper`;
+  // For a custom size KDP publishes no limits, and the check must not pass as though it had read KDP's.
+  const whose = limits?.custom ? 'KDP publishes no page limits for a custom size: these are Press’s own, and KDP’s previewer has the last word' : null;
+  results.push({ id: 'page-count', title: 'Page count is within KDP\'s limits', ok: countOk, pages: [], summary: whose ? `${counted}; ${whose}` : counted, ...(whose ? { parts: [counted, whose] } : {}) });
 
   // --- margins, measured from where the marks fall ---
   const required = insideMargin(count);

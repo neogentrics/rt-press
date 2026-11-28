@@ -233,6 +233,21 @@ The first row went through the app's own steps; the next two through a trial scr
 come from its PDF by a rule that gives 19 for the first row's PDF, against Press's own count of 18. The third rule comes
 closest to the script on both counts.
 
+### Custom sizes, and the inside margin from the page count
+
+✅ The build session's choices, 28 November 2026, open to the owner.
+
+- **A custom size's page limits are Press's own,** because none of KDP's pages gives any: those of the smallest listed size
+  that holds it, or the strictest where that doesn't settle it. The checks and the settings say whose they are. The other way
+  was to hold every custom size to the strictest of all, which would refuse an ordinary small book of 600 pages.
+- **The inside margin, left to the page count, is KDP's table and 0.375 in more.** Taking the table alone would give a thin
+  book 0.375 in at the spine, less than its outside edge. The addition leaves books of 151 to 300 pages at the 0.875 in Press
+  used for every book before. Thinner books now get 0.75 in, so their lines are a little longer, and thicker ones get more.
+  The owner's own theme uses 0.95 in on a 128-page book; the *Inside margin* setting takes that figure.
+- The count that sets the margin is the finished book's, blank pages and all. A pinned count is used as it stands. Otherwise
+  the book is set and counted until the margin and the count agree, and set again if letting pages be added carries it over a
+  step.
+
 ### Theme following between apps
 
 When the theme changes in one app, the linked apps switch too. It needs a small addition to App Link, so a protocol decision, made

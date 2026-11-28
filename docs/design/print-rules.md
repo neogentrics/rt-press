@@ -5,6 +5,11 @@ preset any author can turn on, change or leave off.
 
 Every KDP number below was read from KDP's own help pages on 6 November 2026. They're read again before each release.
 
+**Read again on 27 November 2026,** for custom sizes: *Set Trim Size, Bleed, and Margins*, *Print Options*, the *Paperback
+Submission Guidelines*, *Paperback Printing Cost* and *Create a Paperback Cover*. The custom size range, what makes a trim
+large and the inside margin table were unchanged. **None of the five gives page limits for a custom size, or a way to work
+them out.** The submission guidelines say only that the most pages depend on ink, paper and trim size.
+
 ## KDP: trim and page count
 
 Source: [Set trim size, bleed and margins](https://kdp.amazon.com/en_US/help/topic/GVBQ3CMEQW3W2VL6) and
@@ -23,6 +28,11 @@ Source: [Set trim size, bleed and margins](https://kdp.amazon.com/en_US/help/top
 Custom paperback trim: 4 to 8.5 inches wide, 6 to 11.69 inches tall. Wider than 6.12 or taller than 9 inches is a large
 trim and costs more to print.
 
+**Press's own rule for a custom size's page limits, since KDP publishes none:** those of the smallest listed paperback size
+(by area) that is at least as wide and as tall. Where several are that small, or none is large enough, the strictest of them.
+A paper that size isn't sold in isn't offered. Press says these are its own wherever it uses them, and KDP's previewer has the
+last word.
+
 **Hardcover**: 5.5 × 8.5, 6 × 9, 6.14 × 9.21, 7 × 10 and 8.25 × 11, all 75–550 pages, on white or cream with black ink, or
 premium colour. No groundwood, no standard colour, no custom size.
 
@@ -37,6 +47,10 @@ premium colour. No groundwood, no standard colour, no custom size.
 | 701–828 | 0.875 in | at least 0.25 in | at least 0.375 in |
 
 KDP gives this table for paperback. No KDP page gives one for hardcover, so Press uses it for both until one does.
+
+The table is the least KDP allows, not a design. Left to the page count, Press's inside margin is the table's figure and
+0.375 in more: 0.75 in up to 150 pages, then 0.875, 1, 1.125 and 1.25. An author can set their own, and the check still holds
+it to the table. Press's other margins are 0.625 in outside, 0.8 in at the top and 0.9 in at the bottom.
 
 Bleed is 0.125 in on the top, bottom and outside edges: the page is 0.125 in wider and 0.25 in taller than the trim. If any
 page bleeds, the whole interior is set up with bleed, and it has to be a PDF.

@@ -15,12 +15,34 @@ test('a combination KDP does not offer has no limits', () => {
   assert.equal(rules.pageLimits('hardcover', 6, 9, 'standard-colour'), null);
   assert.equal(rules.pageLimits('hardcover', 6, 9, 'black-groundwood'), null);
   assert.equal(rules.pageLimits('paperback', 8.27, 11.69, 'standard-colour'), null);
-  assert.equal(rules.pageLimits('paperback', 6.2, 9, 'black-white'), null, 'a trim that is not on the list');
+  assert.equal(rules.pageLimits('hardcover', 6.2, 9, 'black-white'), null, 'a hardcover comes in the listed sizes only');
+  for (const [w, h] of [[3.99, 7], [8.51, 9], [6, 5.99], [6, 11.7]]) assert.equal(rules.pageLimits('paperback', w, h, 'black-white'), null, `${w} × ${h} is outside what KDP prints`);
+});
+
+test('all of KDP\'s listed sizes are here: sixteen paperback and five hardcover', () => {
+  const sizes = (format) => rules.FORMATS[format].flatMap((group) => group.trims.map((t) => t.join('×')));
+  assert.deepEqual([new Set(sizes('paperback')).size, new Set(sizes('hardcover')).size], [16, 5]);
+});
+
+test('a custom paperback size takes the limits of the smallest listed size that holds it, and says whose they are', () => {
+  const limits = (w, h, paper = 'black-white') => rules.pageLimits('paperback', w, h, paper);
+  assert.deepEqual(limits(5, 7), { min: 24, max: 828, custom: { from: [[5.06, 7.81]] } });
+  assert.deepEqual(limits(8, 8), { min: 24, max: 800, custom: { from: [[8.25, 8.25]] } });
+  assert.deepEqual(limits(8.4, 8.4), { min: 24, max: 590, custom: { from: [[8.5, 8.5]] } });
+  assert.deepEqual(limits(6, 11.5), { min: 24, max: 780, custom: { from: [[8.27, 11.69]] } });
+  assert.equal(limits(6, 11.5, 'standard-colour'), null, 'the size it takes after is not sold in that paper');
+  // No listed size is as wide and as tall: the strictest of them all.
+  assert.deepEqual(limits(8.5, 11.69, 'black-cream'), { min: 24, max: 550, custom: { from: [] } });
+  assert.deepEqual(limits(4, 11.69), { min: 24, max: 780, custom: { from: [[8.27, 11.69]] } });
+});
+
+test('a large trim is one wider than 6.12 in or taller than 9', () => {
+  assert.deepEqual([[6, 9], [6.12, 9], [6.14, 9.21], [6, 9.01], [5, 8], [8.5, 11]].map(([w, h]) => rules.isLargeTrim(w, h)), [false, false, true, true, false, true]);
 });
 
 test('a trim is matched to the hundredth of an inch, not exactly', () => {
-  assert.notEqual(rules.pageLimits('paperback', 6.001, 8.999, 'black-white'), null);
-  assert.equal(rules.pageLimits('paperback', 6.05, 9, 'black-white'), null);
+  assert.deepEqual(rules.pageLimits('paperback', 6.001, 8.999, 'black-white'), { min: 24, max: 828 });
+  assert.ok(rules.pageLimits('paperback', 6.05, 9, 'black-white').custom, 'further off than that, it is a custom size');
 });
 
 test('the inside margin steps up with the page count, at the edges of each band', () => {
