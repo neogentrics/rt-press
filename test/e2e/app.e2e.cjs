@@ -253,7 +253,7 @@ function pretendFonts() {
     await window.locator('#author').blur();
     await window.click('#build');
     await window.waitForSelector('#results-title:has-text("Ready to save")', { timeout: 120000 });
-    assert.match(await window.textContent('#build-summary'), /all 11 checks passed/);
+    assert.match(await window.textContent('#build-summary'), /all 21 checks passed/);
     assert.match(await window.textContent('#build-summary'), /(No page turn splits a sentence|Page turns that split a sentence: \d+ before repair, \d+ after)/);
     assert.equal(await window.inputValue('#page-turns'), 'keep', 'page turns are mended without adding pages unless the author says otherwise');
     assert.equal(await window.isEnabled('#export'), true);
@@ -567,6 +567,38 @@ function pretendFonts() {
       await gone(window, '#pages');
     }
     await window.emulateMedia({ colorScheme: null });
+
+    // A broken rule is shown on the page it's on: a button for each page, and the page marked in the preview. Page numbers on
+    // the pages of this book are broken by an inside margin too narrow for KDP.
+    await window.fill('#inside-margin', '0.375');
+    await window.fill('#pin-pages', '152');
+    await window.locator('#pin-pages').blur();
+    await window.waitForFunction(async () => (await window.rtPress.getState()).settings.pin_pages === 152);
+    await window.click('#build');
+    await window.waitForSelector('#results-title:has-text("Not ready to save")', { timeout: 120000 });
+    assert.equal(await window.isDisabled('#export'), true, 'a file with a broken rule can\'t be saved');
+    assert.equal(await window.evaluate(() => document.getElementById('checks-box').open), true);
+    const broken = window.locator('#checks li[data-check="inside-margin"]');
+    assert.equal(await broken.getAttribute('class'), 'fail');
+    assert.ok(await broken.locator('button.to-page').count() >= 1);
+    const target = (await broken.locator('button.to-page').nth(1).textContent()).replace('Page ', '');
+    await broken.locator('button.to-page').nth(1).click();
+    await window.waitForFunction((n) => ['left', 'right'].some((side) => document.getElementById(`cap-${side}`).textContent === `Page ${n}` && /Inside margin fits the page count/.test(document.getElementById(`flags-${side}`).textContent) && document.getElementById(`page-${side}`).parentElement.classList.contains('flagged')), target);
+    // A warning is shown the same way, and stops nothing: 152 pages of a short book leave a great many blank at the end.
+    const warned = window.locator('#checks li[data-check="blank-pages"]');
+    assert.equal(await warned.getAttribute('class'), 'advice');
+    assert.equal(await warned.locator('[aria-label="to look at"]').count(), 1);
+    assert.deepEqual(await unnamed(window), []);
+    for (const colorScheme of ['light', 'dark']) {
+      await window.emulateMedia({ colorScheme });
+      assert.deepEqual((await measureContrast(app, window)).failures, [], `${colorScheme}: a failed build meets WCAG AA`);
+    }
+    await window.emulateMedia({ colorScheme: null });
+    await window.fill('#inside-margin', '');
+    await window.fill('#pin-pages', '');
+    await window.locator('#pin-pages').blur();
+    await window.waitForFunction(async () => (await window.rtPress.getState()).settings.pin_pages === null);
+    await rebuild();
 
     // Everything can be reached with the keyboard.
     await window.evaluate(() => document.activeElement?.blur());

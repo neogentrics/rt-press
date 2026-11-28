@@ -78,6 +78,16 @@ test('every check\'s name and every result it can give is translated, passing an
     [makePdf({ pages: pages(24), outlines: true, encrypt: true }), SPEC],
     [makePdf({ pages: on(11, { annots: true }) }), SPEC],
     [makePdf({ pages: on(2, { trim: [9, 9, 423, 639] }) }), SPEC],
+    [makePdf({ pages: on(5, { picture: { pixels: [100, 100], at: [60, 200, 200, 200] } }) }), SPEC],
+    [makePdf({ pages: on(5, { picture: { pixels: [900, 900], at: [60, 200, 60, 60] } }) }), SPEC],
+    [makePdf({ pages: on(4, { graphics: '0.4 w 60 100 m 300 100 l S 0.95 g 60 100 200 20 re f' }) }), SPEC],
+    [makePdf({ pages: on(3, { graphics: '1 w 436 600 m 436 640 l S' }) }), SPEC],
+    [makePdf({ pages: on(8, { graphics: 'BT 3 Tr /F1 12 Tf 1 0 0 1 60 300 Tm <0001> Tj ET' }), layers: true, info: { Title: 'A' }, metadata: true }), SPEC],
+    [makePdf({ pages: pages(24, (n) => ({ text: [body, { x: 60, y: 40, size: 10, string: String(n === 9 ? 11 : n) }] })) }), SPEC],
+    [makePdf({ pages: pages(24, (n) => (n === 1 ? { text: [] } : {})) }), SPEC],
+    [makePdf({ pages: pages(24, (n) => (n === 8 || n === 9 ? { text: [] } : {})) }), SPEC],
+    [makePdf({ pages: pages(40, (n) => (n >= 30 ? { text: [] } : {})) }), SPEC],
+    [makePdf({ pages: on(3, { text: [{ x: 60, y: 400, size: 12, string: 'Lorem ipsum' }] }) }), SPEC],
   ];
   const strings = new Set();
   let failures = 0;
@@ -89,7 +99,16 @@ test('every check\'s name and every result it can give is translated, passing an
       if (!result.ok) failures += 1;
     }
   }
-  assert.ok(failures >= 15, 'the broken files fail in many ways');
+  // The house rules' two, which need the book.
+  const { houseChecks } = require('../src/main/press/pipeline');
+  const unpaired = { sections: [{ id: 'c', title: 'One', document: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '"Open' }] }] } }] };
+  for (const [book, splitWords] of [[unpaired, [3, 7]], [{ sections: [] }, []]]) {
+    for (const result of houseChecks({ book, units: [{ id: 'c', page: 5 }], splitWords })) {
+      strings.add(result.title);
+      strings.add(result.summary);
+    }
+  }
+  assert.ok(failures >= 22, `the broken files fail in many ways: ${failures}`);
   covered([...strings], 'checks');
 });
 

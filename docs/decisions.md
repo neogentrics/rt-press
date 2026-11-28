@@ -339,6 +339,21 @@ carry on and miss the bottom line went from 27 to 17 with the rule above.
 - **In a Story Tracker chapter**, a quotation block is set as an in-story document, since Story Tracker can't yet mark one.
   Colours, highlighting, underlining and strike-through are left out with a notice, since the inside is black.
 
+### The checks
+
+✅ The build session's choices, 28 November 2026, open to the owner, after reading KDP's interior pages again
+([print rules](design/print-rules.md#kdp-the-file)).
+
+- **The PDF carries no details of its own.** KDP's guidelines list metadata among what a file should not contain, so the
+  title, author and dates Press used to write are gone. KDP takes them from the book's listing.
+- **Only a rule KDP states stops a file.** What KDP only recommends (10% grey fills, 600 dpi at most) is pointed out.
+- **Blank pages are pointed out, not refused.** KDP names "excessive blank pages" as a common failure and gives no number.
+  Press's own measure is a blank first page, two together before the end, or more than 10 at the end. A book pinned far
+  above its length trips the last of these, and he may mean it to.
+- **Words are kept whole across page turns** by not breaking that one word in its paragraph, kept only where it moves no
+  chapter (with the page count kept) and splits no more sentences.
+- **The second gate fails CI on any difference** in any line of any page between the three systems.
+
 ### Custom sizes, and the inside margin from the page count
 
 ✅ The build session's choices, 28 November 2026, open to the owner.

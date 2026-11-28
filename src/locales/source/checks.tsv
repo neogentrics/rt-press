@@ -9,7 +9,6 @@ Inside margin fits the page count	El margen interior es adecuado para el número
 Outside, top and bottom margins are enough	Los márgenes exterior, superior e inferior son suficientes	Les marges extérieure, haute et basse sont suffisantes	Außen-, Kopf- und Fußrand reichen aus
 Text is at least 7 pt	El texto mide al menos 7 pt	Le texte fait au moins 7 pt	Der Text ist mindestens 7 pt groß
 File is within KDP's size	El archivo cumple el tamaño máximo de KDP	Le fichier respecte la taille maximale de KDP	Die Datei hält die Größengrenze von KDP ein
-No bookmarks, links, annotations or encryption	Sin marcadores, enlaces, anotaciones ni cifrado	Ni signets, ni liens, ni annotations, ni chiffrement	Keine Lesezeichen, Links, Anmerkungen oder Verschlüsselung
 {0} (page {1})	{0} (página {1})	{0} (page {1})	{0} (Seite {1})
 {0} and {1} more	{0} y {1} más	{0} et {1} autres	{0} und {1} weitere
 all {0} pages are {1} × {2} in	las {0} páginas miden {1} × {2} pulg.	les {0} pages mesurent {1} × {2} po	alle {0} Seiten sind {1} × {2} Zoll groß
@@ -52,3 +51,48 @@ it has form fields	tiene campos de formulario	il contient des champs de formulai
 links or annotations on pages {0}	enlaces o anotaciones en las páginas {0}	liens ou annotations aux pages {0}	Links oder Anmerkungen auf den Seiten {0}
 {0} pages; Press holds this custom size to {1} to {2}	{0} páginas; Press limita este tamaño personalizado a entre {1} y {2}	{0} pages ; Press limite ce format personnalisé à {1} à {2}	{0} Seiten; Press begrenzt dieses eigene Format auf {1} bis {2}
 KDP publishes no page limits for a custom size: these are Press’s own, and KDP’s previewer has the last word	KDP no publica límites de páginas para un tamaño personalizado: son los de Press, y el previsualizador de KDP tiene la última palabra	KDP ne publie aucune limite de pages pour un format personnalisé : ce sont celles de Press, et l’outil de prévisualisation de KDP a le dernier mot	KDP nennt für eigene Formate keine Seitengrenzen: Diese stammen von Press, und die KDP-Vorschau hat das letzte Wort
+Pictures are sharp enough	Las imágenes tienen nitidez suficiente	Les images sont assez nettes	Die Bilder sind scharf genug
+Lines are thick enough	Las líneas son lo bastante gruesas	Les traits sont assez épais	Die Linien sind dick genug
+Grey fills are dark enough	Los rellenos grises son lo bastante oscuros	Les aplats gris sont assez foncés	Graue Flächen sind dunkel genug
+No crop or trim marks	Sin marcas de corte	Aucun repère de coupe	Keine Schnittmarken
+Page numbers are in order	Los números de página están en orden	Les numéros de page se suivent	Die Seitenzahlen sind in Ordnung
+No excessive blank pages	Sin exceso de páginas en blanco	Pas d’excès de pages blanches	Nicht übermäßig viele leere Seiten
+No placeholder text	Sin texto de relleno	Aucun texte de remplissage	Kein Platzhaltertext
+No bookmarks, links, annotations, hidden things or encryption	Sin marcadores, enlaces, anotaciones, elementos ocultos ni cifrado	Aucun signet, lien, annotation, élément caché ni chiffrement	Keine Lesezeichen, Links, Anmerkungen, versteckten Inhalte oder Verschlüsselung
+No document details inside the file	Sin datos del documento dentro del archivo	Aucune information sur le document dans le fichier	Keine Dokumentangaben in der Datei
+No word is split across a page turn	Ninguna palabra queda partida entre dos páginas	Aucun mot n’est coupé d’une page à l’autre	Kein Wort wird über einen Seitenwechsel getrennt
+Every quotation mark has its partner	Cada comilla tiene su pareja	Chaque guillemet a son pendant	Jedes Anführungszeichen hat sein Gegenstück
+no pictures	no hay imágenes	aucune image	keine Bilder
+every picture has at least {0} dpi	todas las imágenes tienen al menos {0} ppp	chaque image a au moins {0} ppp	jedes Bild hat mindestens {0} dpi
+pictures need at least {0} dpi; found {1}	las imágenes necesitan al menos {0} ppp; hay {1}	les images demandent au moins {0} ppp ; trouvé : {1}	Bilder brauchen mindestens {0} dpi; gefunden: {1}
+a picture has more than the {0} dpi KDP recommends at most: {1}	una imagen supera los {0} ppp que KDP recomienda como máximo: {1}	une image dépasse les {0} ppp que KDP recommande au plus : {1}	ein Bild hat mehr als die von KDP höchstens empfohlenen {0} dpi: {1}
+no line is thinner than {0} pt	ninguna línea tiene menos de {0} pt	aucun trait ne fait moins de {0} pt	keine Linie ist dünner als {0} pt
+a line needs to be at least {0} pt; found {1}	una línea necesita al menos {0} pt; hay {1}	un trait demande au moins {0} pt ; trouvé : {1}	eine Linie braucht mindestens {0} pt; gefunden: {1}
+no grey fill is fainter than {0}%	ningún relleno gris es más claro que el {0} %	aucun aplat gris n’est plus clair que {0} %	keine graue Fläche ist heller als {0} %
+KDP recommends grey fills of at least {0}%; found {1}	KDP recomienda rellenos grises de al menos el {0} %; hay {1}	KDP recommande des aplats gris d’au moins {0} % ; trouvé : {1}	KDP empfiehlt graue Flächen ab {0} %; gefunden: {1}
+no marks for cutting	no hay marcas de corte	aucun repère de coupe	keine Schnittmarken
+a line is drawn outside the trim, as crop marks are	hay una línea fuera del corte, como las marcas de corte	un trait est tracé hors de la coupe, comme un repère de coupe	eine Linie liegt außerhalb des Beschnitts, wie eine Schnittmarke
+every page number is its page, even on the left and odd on the right	cada número de página es el de su página, pares a la izquierda e impares a la derecha	chaque numéro est celui de sa page, pairs à gauche et impairs à droite	jede Seitenzahl entspricht ihrer Seite, gerade links, ungerade rechts
+no page numbers	no hay números de página	aucun numéro de page	keine Seitenzahlen
+a page number is not its page: numbered {0}	un número de página no corresponde a su página: {0}	un numéro ne correspond pas à sa page : {0}	eine Seitenzahl passt nicht zu ihrer Seite: {0}
+every blank page is one the layout needs, or one of the few at the end	cada página en blanco es de las que pide la maquetación, o de las pocas del final	chaque page blanche est exigée par la mise en page, ou fait partie des quelques-unes de la fin	jede leere Seite wird vom Satz gebraucht oder gehört zu den wenigen am Ende
+no blank pages	no hay páginas en blanco	aucune page blanche	keine leeren Seiten
+KDP lists excessive blank pages as a common reason a file fails, and gives no number. By Press’s own measure: the first page is blank	KDP cita el exceso de páginas en blanco como motivo habitual de rechazo, y no da un número. Según el criterio de Press: la primera página está en blanco	KDP cite l’excès de pages blanches parmi les causes fréquentes de refus, sans donner de nombre. Selon la mesure de Press : la première page est blanche	KDP nennt übermäßig viele leere Seiten als häufigen Ablehnungsgrund, ohne eine Zahl zu nennen. Nach dem Maßstab von Press: die erste Seite ist leer
+KDP lists excessive blank pages as a common reason a file fails, and gives no number. By Press’s own measure: {0} blank pages together	KDP cita el exceso de páginas en blanco como motivo habitual de rechazo, y no da un número. Según el criterio de Press: {0} páginas en blanco seguidas	KDP cite l’excès de pages blanches parmi les causes fréquentes de refus, sans donner de nombre. Selon la mesure de Press : {0} pages blanches d’affilée	KDP nennt übermäßig viele leere Seiten als häufigen Ablehnungsgrund, ohne eine Zahl zu nennen. Nach dem Maßstab von Press: {0} leere Seiten hintereinander
+KDP lists excessive blank pages as a common reason a file fails, and gives no number. By Press’s own measure: {0} blank pages at the end	KDP cita el exceso de páginas en blanco como motivo habitual de rechazo, y no da un número. Según el criterio de Press: {0} páginas en blanco al final	KDP cite l’excès de pages blanches parmi les causes fréquentes de refus, sans donner de nombre. Selon la mesure de Press : {0} pages blanches à la fin	KDP nennt übermäßig viele leere Seiten als häufigen Ablehnungsgrund, ohne eine Zahl zu nennen. Nach dem Maßstab von Press: {0} leere Seiten am Ende
+no text left to be filled in	no queda texto por completar	aucun texte à compléter	kein noch auszufüllender Text
+text that looks left to be filled in: “{0}”	texto que parece pendiente de completar: «{0}»	un texte qui semble rester à compléter : « {0} »	Text, der noch auszufüllen scheint: „{0}“
+it has layers	tiene capas	il contient des calques	sie hat Ebenen
+text that is not shown on pages {0}	texto que no se muestra en las páginas {0}	du texte non affiché aux pages {0}	nicht sichtbarer Text auf den Seiten {0}
+the file carries no details of its own	el archivo no lleva datos propios	le fichier ne porte aucune information sur lui-même	die Datei enthält keine eigenen Angaben
+the file carries its own details: {0}	el archivo lleva datos propios: {0}	le fichier porte des informations sur lui-même : {0}	die Datei enthält eigene Angaben: {0}
+every quotation mark pairs	todas las comillas tienen pareja	tous les guillemets vont par paires	alle Anführungszeichen sind gepaart
+quotation marks that don’t pair, in what begins here	hay comillas sin pareja en lo que empieza aquí	des guillemets sans pendant dans ce qui commence ici	ungepaarte Anführungszeichen in dem, was hier beginnt
+no word is split across a page turn	ninguna palabra queda partida entre dos páginas	aucun mot n’est coupé d’une page à l’autre	kein Wort wird über einen Seitenwechsel getrennt
+a word is split across a page turn	hay una palabra partida entre dos páginas	un mot est coupé d’une page à l’autre	ein Wort wird über einen Seitenwechsel getrennt
+Keeping words whole across page turns	Manteniendo enteras las palabras entre páginas	Mots gardés entiers d’une page à l’autre	Wörter an Seitenwechseln zusammenhalten
+Keeping words whole across page turns…	Manteniendo enteras las palabras entre páginas…	Mots gardés entiers d’une page à l’autre…	Wörter an Seitenwechseln zusammenhalten …
+KDP refuses a file with emoji in its name. Save it under another name.	KDP rechaza un archivo con emojis en el nombre. Guárdalo con otro nombre.	KDP refuse un fichier dont le nom contient des émojis. Enregistrez-le sous un autre nom.	KDP lehnt eine Datei mit Emojis im Namen ab. Speichern Sie sie unter einem anderen Namen.
+to look at	por revisar	à vérifier	zu prüfen
+and {0} more	y {0} más	et {0} de plus	und {0} weitere
+Checks with something to look at: {0}.	Comprobaciones con algo que revisar: {0}.	Contrôles avec un point à vérifier : {0}.	Prüfungen mit Hinweisen: {0}.

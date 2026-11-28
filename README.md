@@ -95,7 +95,7 @@ npm run dist:linux
 | **Even page bottoms** | Pages whose text carries on are brought to the same last line by sharing a little space between lines and paragraphs, without moving a word to another page. Pages that can't be done gently are left, and counted |
 | **Bleed done the KDP way** | 0.125 in on the top, bottom and outside edges, none at the spine, with the page boxes written |
 | **Pin the page count** | Keep a published page count, so an existing cover still fits |
-| **Check before you save** | Eleven checks on the finished file: page size, page boxes, fonts embedded and none Type 3, nothing transparent, page count, inside and outer margins, text size, file size, and no bookmarks, links or encryption |
+| **Check before you save** | KDP's interior rules, checked on the finished file: pages, margins, bleed, fonts, transparency and layers, pictures, lines, page numbers, crop marks, hidden things, placeholder text and more. Each finding is shown on its page, and a broken rule stops the file being saved. KDP's own previewer still has the last word |
 | **See it first** | The whole book as facing pages, in about a second |
 | **Fast** | A 128-page book is set, finished and checked in about a second. Repairing its page turns takes from about ten seconds to two minutes, by the choice made |
 | **Your choices are kept** | The book, its details and your settings are saved, and are there when you open the app again |
@@ -108,7 +108,7 @@ npm run dist:linux
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
 | **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
-**Coming next, for 1.0:** every KDP rule, each shown on the page it's on. See the [roadmap](ROADMAP.md).
+**Next for 1.0:** a last pass over the roadmap's list. See the [roadmap](ROADMAP.md).
 
 ## What it won't do
 

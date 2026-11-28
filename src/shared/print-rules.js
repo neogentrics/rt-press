@@ -39,7 +39,14 @@ const FILE = {
   min_line_pt: 0.75,
   min_grey_percent: 10,
   min_picture_dpi: 300,
+  // KDP sets no most, and recommends staying under this so the file doesn't grow too large.
+  recommended_picture_dpi: 600,
 };
+
+// KDP lists "excessive blank pages" among the common reasons a file fails, and gives no number. These are Press's own measure,
+// for a warning: a book's layout never needs two blank pages together before its end, or a blank first page, and past this
+// many at the end it is worth a look.
+const BLANKS = { together: 1, at_end: 10 };
 
 const TRIM_TOLERANCE_IN = 0.005;
 const same = (a, b) => Math.abs(a - b) <= TRIM_TOLERANCE_IN;
@@ -98,4 +105,4 @@ function pageSize(width_in, height_in, bleed) {
   return { width_in: width_in + (bleed ? BLEED_IN : 0), height_in: height_in + (bleed ? 2 * BLEED_IN : 0) };
 }
 
-module.exports = { BLEED_IN, CUSTOM_PAPERBACK, FILE, FORMATS, INSIDE_MARGINS, OTHER_MARGIN_IN, PAPERS, POINTS_PER_INCH, insideMargin, isCustomPaperbackTrim, isLargeTrim, outsideMargin, pageLimits, pageSize, trimEntry };
+module.exports = { BLANKS, BLEED_IN, CUSTOM_PAPERBACK, FILE, FORMATS, INSIDE_MARGINS, OTHER_MARGIN_IN, PAPERS, POINTS_PER_INCH, insideMargin, isCustomPaperbackTrim, isLargeTrim, outsideMargin, pageLimits, pageSize, trimEntry };

@@ -111,7 +111,7 @@ test('building a book that is long enough makes a file that passes every check, 
   const steps = [];
   const build = await s.build((step) => steps.push(step));
   assert.equal(build.ok, true, build.messages);
-  assert.deepEqual(steps, ['Counting the pages', 'Evening the page bottoms', 'Setting the pages', 'Finishing the file', 'Checking the file', 'Making the preview']);
+  assert.deepEqual(steps, ['Counting the pages', 'Keeping words whole across page turns', 'Evening the page bottoms', 'Setting the pages', 'Finishing the file', 'Checking the file', 'Making the preview']);
   assert.ok(build.pages >= 24, `${build.pages} pages`);
   assert.equal(build.ready, true, JSON.stringify(build.checks.filter((c) => !c.ok)));
   assert.equal(build.previewReady, true);
@@ -127,7 +127,8 @@ test('building a book that is long enough makes a file that passes every check, 
   const doc = readPdf(fs.readFileSync(out));
   assert.equal(doc.pages().length, build.pages);
   assert.deepEqual(doc.rect(doc.pages()[0].inherited.MediaBox), [0, 0, 441, 666]);
-  assert.equal(Buffer.from(doc.dictOf(doc.trailer.Info).Title.bytes).toString('latin1'), 'A Made-Up Book');
+  assert.equal(doc.trailer.Info, undefined, 'KDP asks for no details inside the file');
+  assert.match(s.exportTo(path.join(scratch, 'my book \u{1F600}.pdf')).error, /emoji in its name/);
 });
 
 test('a book that is too short for KDP is built and shown, but not saved', { skip }, async () => {

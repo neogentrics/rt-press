@@ -4,14 +4,13 @@
 //  - bleed: Typst adds it on all four edges, KDP wants it on the top, bottom and outside only, so the inside edge of each
 //    page is cut back to the trim line, and the page is moved so its lower left corner is the origin again
 //  - the page boxes: a TrimBox (Typst writes it) and a BleedBox (it doesn't), both agreeing with the page
-//  - the file's details: title, author, subject and keywords, and who made it
-//  - what a printer rejects: bookmarks, links and other annotations, the structure tags and the second copy of the details
-//    that Typst writes, and anything no page needs
+//  - what a printer rejects: bookmarks, links and other annotations, the structure tags, every detail about the file that
+//    Typst writes (KDP lists metadata among what a file should not contain; the book's title and author come from its
+//    listing there), and anything no page needs
 const { Name, PdfString, Ref, readPdf } = require('./read');
-const { textString, writePdf } = require('./write');
+const { writePdf } = require('./write');
 
 const POINTS_PER_INCH = 72;
-const PRODUCER = 'RT Press';
 
 const rounded = (n) => Math.round(n * 1000) / 1000;
 
@@ -36,10 +35,8 @@ function reachable(objects, roots) {
 
 // options:
 //   bleed_in        0 when the interior has no bleed, otherwise the bleed Typst was told to add on every edge
-//   details         { title, author, subject, keywords } for the file's details (each optional)
-//   date            a Date for the creation and modification times; the file's own are kept when it is left out
 // Returns { data, changes } where `changes` lists what was done.
-function finishPdf(buffer, { bleed_in = 0, details = {}, date = null } = {}) {
+function finishPdf(buffer, { bleed_in = 0 } = {}) {
   const doc = readPdf(buffer);
   const objects = new Map();
   for (const [num, value] of doc.objects) {
@@ -103,33 +100,15 @@ function finishPdf(buffer, { bleed_in = 0, details = {}, date = null } = {}) {
   if (annotated) changes.push(`removed links and other annotations from ${annotated} pages`);
   objects.set(rootRef.num, root);
 
-  // --- the file's details ---
-  const old = doc.dictOf(doc.trailer.Info) ?? {};
-  const stamp = (d) => `D:${d.toISOString().replace(/[-:T]/g, '').slice(0, 14)}Z`;
-  const info = {};
-  if (details.title) info.Title = textString(details.title);
-  else if (old.Title) info.Title = old.Title;
-  if (details.author) info.Author = textString(details.author);
-  if (details.subject) info.Subject = textString(details.subject);
-  if (details.keywords) info.Keywords = textString(details.keywords);
-  info.Creator = textString(PRODUCER);
-  info.Producer = textString(PRODUCER);
-  const created = date ? textString(stamp(date)) : (old.CreationDate ?? null);
-  if (created) info.CreationDate = created;
-  const modified = date ? textString(stamp(date)) : (old.ModDate ?? created);
-  if (modified) info.ModDate = modified;
-  const infoRef = add(info);
-  changes.push('document details written');
-
   // --- only what a page needs ---
-  const keep = reachable(objects, [root, info]);
+  if (doc.trailer.Info !== undefined) changes.push('the file’s own details were left out');
+  const keep = reachable(objects, [root]);
   keep.add(rootRef.num);
-  keep.add(infoRef.num);
   const before = objects.size;
   for (const num of [...objects.keys()]) if (!keep.has(num)) objects.delete(num);
   if (before !== objects.size) changes.push(`${before - objects.size} objects no page needs were left out`);
 
-  return { data: writePdf({ objects, trailer: { Root: rootRef, Info: infoRef } }), changes };
+  return { data: writePdf({ objects, trailer: { Root: rootRef } }), changes };
 }
 
 module.exports = { finishPdf };

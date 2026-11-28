@@ -412,6 +412,7 @@ class Session {
   exportTo(file) {
     if (!this.last?.ok) return { error: 'There is no finished file yet. Build the book first.' };
     if (!this.last.ready) return { error: `The file did not pass: ${this.last.checks.filter((c) => !c.ok).map((c) => c.summary).join('; ')}` };
+    if (/\p{Extended_Pictographic}/u.test(path.basename(file))) return { error: 'KDP refuses a file with emoji in its name. Save it under another name.' };
     fs.writeFileSync(file, this.last.pdf);
     return { ok: true, file, bytes: this.last.pdf.length };
   }

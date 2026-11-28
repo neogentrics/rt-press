@@ -66,8 +66,15 @@ function tied(content) {
   return content.map((node, i) => (node.type === 'text' ? { ...node, text: tie(node.text, content[i - 1]?.text?.at(-1), content[i + 1]?.text?.[0]) } : node));
 }
 
-function inlineMarkup(content = [], dashStays = false) {
-  return (dashStays ? tied(content) : content).map((node) => (node.type === 'hardBreak' ? '#linebreak()' : run(node.text, node.marks))).join('');
+// One piece of text, with any of `whole` in it held together in a box, which no line breaks inside.
+function runKeeping(text, marks, whole) {
+  if (!whole.length) return run(text, marks);
+  const pattern = new RegExp(`(${whole.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'u');
+  return text.split(pattern).map((piece, i) => (!piece ? '' : i % 2 ? `#box[${run(piece, marks)}]` : run(piece, marks))).join('');
+}
+
+function inlineMarkup(content = [], dashStays = false, whole = []) {
+  return (dashStays ? tied(content) : content).map((node) => (node.type === 'hardBreak' ? '#linebreak()' : runKeeping(node.text, node.marks, whole))).join('');
 }
 
 // Splits a paragraph's runs into words that keep the space after them, each still carrying its marks. A space that no line
@@ -246,6 +253,7 @@ function splitContent(content, cuts) {
 //                   { type: 'tighten', section, block, tracking_pt }   sets that block with its letters closer (or looser, if positive)
 //                   { type: 'feather', id, gap_pt, leading_pt }        gives one paragraph (or one piece of a cut one) a little
 //                                                                      more space before it and between its lines
+//                   { type: 'whole-word', section, block, word }       never breaks that word where it stands in that block
 //   targetPages   pin the page count (a printed spine is sized for it); the book is padded with blank pages to reach it
 function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, bleed_in = 0, trace = false, steers = [] }) {
   const bookProblems = validateBook(book);
@@ -353,6 +361,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
   const blockIds = new Map();
   const paraId = (section, node, suffix = '') => `${section.id}#${blockIds.get(node)}${suffix}`;
   const idArg = (section, node, suffix = '') => (trace ? `, id: ${str(paraId(section, node, suffix))}` : '');
+  const wholeIn = (section, node) => steers.filter((x) => x.type === 'whole-word' && x.section === section.id && x.block === blockIds.get(node)).map((x) => x.word);
   const feathers = new Map(steers.filter((x) => x.type === 'feather').map((x) => [x.id, x]));
   // A little air for one paragraph, so that its page ends on the same line as the others.
   const feathered = (id, code) => {
@@ -373,7 +382,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
     usesRuns('body', node.content, section.title || section.id);
     usesHyphens(node.content, section.title || section.id);
     const tighten = steers.find((x) => x.type === 'tighten' && x.section === section.id && x.block === blockIds.get(node));
-    const inner = inlineMarkup(node.content, dashStays);
+    const inner = inlineMarkup(node.content, dashStays, wholeIn(section, node));
     return feathered(paraId(section, node), `#para(indent: ${!first}${idArg(section, node)})[${tighten ? `#text(tracking: ${pt(tighten.tracking_pt)})[${inner}]` : inner}]`);
   }
 
@@ -399,7 +408,7 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
       }
       const indent = k === 0 ? !first : false;
       const suffix = k ? `.${k}` : '';
-      out.push(feathered(paraId(section, node, suffix), `#para(indent: ${indent}${idArg(section, node, suffix)})[${inlineMarkup(piece, dashStays)}${tail}]`));
+      out.push(feathered(paraId(section, node, suffix), `#para(indent: ${indent}${idArg(section, node, suffix)})[${inlineMarkup(piece, dashStays, wholeIn(section, node))}${tail}]`));
     });
     return out.join('\n\n');
   }

@@ -182,4 +182,37 @@ function findMidSentenceTurns({ result, pdf, book, theme }) {
   };
 }
 
-module.exports = { cutLines, findMidSentenceTurns, locate, textArea };
+// Every page that ends in the middle of a word, one the typesetter hyphenated or one with a hyphen of its own, whose rest is
+// overleaf. Returns [{ page, section, block, word }]: the word as the book has it, in the paragraph the page ends in, or with
+// `word` null where it couldn't be found.
+function findSplitWords({ result, pdf, book, theme }) {
+  const doc = readPdf(pdf);
+  const area = textArea(theme);
+  const byId = new Map();
+  for (const section of book.sections) if (section.document) section.document.content.forEach((block, index) => byId.set(`${section.id}#${index}`, { section, block, index }));
+  const traced = new Map();
+  for (const line of result.trace.lines) if (line.y > area.top - 2 && line.y < area.bottom + 2) traced.set(line.page, [...(traced.get(line.page) ?? []), line]);
+  const starts = new Set(result.units.map((u) => u.page));
+  const pages = doc.pages();
+  const bodyLines = (number) => textLines(doc, pages[number - 1]).filter((l) => Math.abs(l.size - theme.body.size_pt) < 0.6 && area.height - l.y > area.top - 2 && area.height - l.y < area.bottom + 2 && l.text.trim());
+  const found = [];
+  for (const [number, lines] of [...traced].sort((a, b) => a[0] - b[0])) {
+    if (!traced.has(number + 1) || starts.has(number + 1)) continue;
+    const last = bodyLines(number).at(-1)?.text.trim();
+    if (!last || !/\p{L}[\u00AD\u2010-]$/u.test(last)) continue;
+    const next = bodyLines(number + 1)[0]?.text.trim() ?? '';
+    // The two halves, without the punctuation that stands against them.
+    const head = /[^\s\u2014\u2013]*$/u.exec(last.slice(0, -1))[0].replace(/^[^\p{L}\p{N}]+/u, '');
+    const tail = /^[\p{L}\p{N}\u2019'-]*/u.exec(next)[0];
+    const lastTraced = lines.reduce((a, b) => (b.y > a.y ? b : a));
+    const owner = ownerOf(result.trace.paras, number, lastTraced.y);
+    const id = owner ? idOf(owner.text) : null;
+    const home = id ? byId.get(id.replace(/\.\d+$/, '')) : null;
+    const words = home ? flat(home.block).split(/[\s\u2014\u2013]+/u).map((w) => w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '')) : [];
+    const word = head && tail ? words.find((w) => w.includes(`${head}${tail}`) || w.includes(`${head}-${tail}`)) ?? null : null;
+    found.push({ page: number, section: home?.section.id ?? null, block: home?.index ?? null, word });
+  }
+  return found;
+}
+
+module.exports = { cutLines, findMidSentenceTurns, findSplitWords, locate, textArea };

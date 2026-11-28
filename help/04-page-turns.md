@@ -35,6 +35,10 @@ With *Mend, adding no pages*, a chapter can run onto the blank page that followe
 
 Repairing takes longer than setting the book: for a short novel, anything from a few seconds to two minutes.
 
+## Words stay whole
+
+No page that carries on ends in the middle of a word. Where one would, RT Press keeps that word whole and sets the book again, as long as that moves no chapter and splits no more sentences. If it can't, the checks say which page.
+
 ## Even page bottoms
 
 A page that ends early leaves the facing pages uneven. With **Even page bottoms** on, every page whose text carries on overleaf is brought down to the same last line, where that can be done gently. The spare space is shared out: a little more between the lines, and before the paragraphs on that page. No word moves to another page.

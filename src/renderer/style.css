@@ -314,8 +314,35 @@ details {
 .fail .mark {
   color: var(--del-text);
 }
+.advice .mark {
+  color: var(--text);
+}
 .fail {
   font-weight: 600;
+}
+.check-pages {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline-start: 0.4rem;
+}
+.check-pages button {
+  padding: 0.05rem 0.45rem;
+  font-size: 0.78rem;
+}
+/* What the checks found on a page, under it, and an outline round a page that fails one. */
+.page-flags {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.page-flags li {
+  color: var(--text);
+}
+.sheet.flagged img {
+  outline: 3px solid var(--del-text);
+  outline-offset: -3px;
 }
 .pager {
   display: flex;
@@ -364,7 +391,7 @@ details {
   background: #fff;
   box-shadow: 0 1px 6px var(--page-shadow);
 }
-.sheet figcaption:empty {
+.sheet.blank figcaption {
   display: none;
 }
 .sheet.blank {

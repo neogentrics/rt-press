@@ -8,6 +8,8 @@ const { finishPdf } = require('../pdf/finish');
 const { renderPages } = require('../typesetter');
 const { evenBottoms } = require('../steer/even');
 const { repairAll } = require('../steer/repair');
+const { keepWordsWhole } = require('../steer/words');
+const { quoteBalanceIssues, smartQuotes } = require('../../shared/quotes');
 const { checkFonts } = require('../typeset/check-fonts');
 const computerFonts = require('../typeset/computer-fonts');
 const { resolveFont } = require('../typeset/resolve-fonts');
@@ -75,6 +77,26 @@ function prepareFonts({ book, theme, fontFolder, workDir, computerFontFolders })
     fontPaths: files.length ? [fontFolder, copies] : [fontFolder],
     fonts: all.map(({ asked, family, source, why, reason }) => ({ asked, family, source, why, reason })),
   };
+}
+
+// The house rules a finished file alone can't answer: they need the book, or where its words fell. Neither stops the file.
+function houseChecks({ book, units, splitWords }) {
+  const listed = (at) => (at.length > 12 ? `${at.slice(0, 12).join(', ')} and ${at.length - 12} more` : at.join(', '));
+  const house = (id, title, findings, passed, failed) => {
+    const at = [...new Set(findings.map((f) => f.page))].sort((a, b) => a - b);
+    return { id, title, ok: true, house: true, ...(findings.length ? { advice: true } : {}), summary: findings.length ? `${failed} (page ${listed(at)})` : passed, pages: at, findings };
+  };
+  const startOf = new Map(units.map((u) => [u.id, u.page]));
+  // The book's own words, with straight quotes read as they will be curled.
+  const unpaired = book.sections.filter((section) => section.document && startOf.has(section.id)).flatMap((section) => {
+    const paragraphs = section.document.content.flatMap((b) => (b.type === 'document' ? b.content : b.type === 'paragraph' ? [b] : []));
+    const issues = quoteBalanceIssues(paragraphs.map((p) => smartQuotes((p.content ?? []).map((n) => n.text ?? ' ').join('')).text));
+    return issues.length ? [{ page: startOf.get(section.id), message: section.title }] : [];
+  });
+  return [
+    house('split-words', 'No word is split across a page turn', splitWords.map((page) => ({ page, message: 'ends inside a word' })), 'no word is split across a page turn', 'a word is split across a page turn'),
+    house('quotes-paired', 'Every quotation mark has its partner', unpaired, 'every quotation mark pairs', 'quotation marks that don’t pair, in what begins here'),
+  ];
 }
 
 // Returns { ok, ... }. When it can't set the book, { ok: false, reason, messages }; otherwise the finished PDF and everything
@@ -157,6 +179,13 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
       timings.repair = Date.now() - t0;
     }
 
+    // No word is left split across a page turn. After the repair, since moving a sentence moves where the pages end.
+    const t3 = Date.now();
+    onStep('Keeping words whole across page turns');
+    const words = await keepWordsWhole({ set: (more) => set([...steers, ...more]), readPdfBytes: (r) => fs.readFileSync(r.output), book: toSet, theme, keepPages: settings.page_turns !== 'grow' || Boolean(settings.pin_pages) });
+    steers = [...steers, ...words.steers];
+    timings.words = Date.now() - t3;
+
     // Even page bottoms: after the repair, because moving a sentence is what leaves most pages short.
     let even = null;
     if (settings.even_bottoms) {
@@ -170,7 +199,7 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
 
     onStep('Setting the pages');
     const raw = await typesetBook({ ...common, theme, steers, workDir: path.join(workDir, 'set'), output: path.join(workDir, 'typst.pdf'), bleed_in, timestamp });
-    return { raw, steers, repair, even };
+    return { raw, steers, repair, even, splitWords: words.left };
   };
 
   let pages = await setPages();
@@ -179,13 +208,13 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
     theme = themeFor(pages.raw.pages);
     pages = await setPages();
   }
-  const { raw, steers, repair, even } = pages;
+  const { raw, steers, repair, even, splitWords } = pages;
   if (!raw.ok) return { ok: false, reason: 'typesetter', messages: raw.messages };
   timings.set = Math.round(raw.compileMs + raw.evalMs);
 
   onStep('Finishing the file');
   const t1 = Date.now();
-  const finished = finishPdf(fs.readFileSync(raw.output), { bleed_in, details: { title: details.title || book.title, author: details.author, subject: '', keywords: '' }, date: now() });
+  const finished = finishPdf(fs.readFileSync(raw.output), { bleed_in });
   timings.finish = Date.now() - t1;
 
   onStep('Checking the file');
@@ -215,7 +244,7 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
     even,
     fonts: found.fonts,
     margins: { inside_in: theme.margins.inside_in, from: automatic ? 'page-count' : 'own' },
-    checks: report.results.map(({ id, title, ok, summary, parts, pages }) => ({ id, title, ok, summary, parts, pages })),
+    checks: [...report.results, ...houseChecks({ book, units: raw.units, splitWords })].map(({ id, title, ok, advice, house, summary, parts, pages: at, findings }) => ({ id, title, ok, summary, parts, pages: at, findings: findings ?? [], ...(advice ? { advice } : {}), ...(house ? { house } : {}) })),
     ready: report.ok,
     preview: pictures.ok ? { dir: previewDir, files: pictures.files } : null,
     previewMessages: pictures.ok ? '' : pictures.messages,
@@ -224,4 +253,4 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
   };
 }
 
-module.exports = { buildBook, withFrontMatter };
+module.exports = { buildBook, houseChecks, withFrontMatter };

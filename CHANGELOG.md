@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 Work toward 1.0.0. Nothing here is a release yet.
 
 ### Added
+- **Every interior rule on KDP's pages is checked** on the finished file: picture resolution, line width, crop marks, hidden text and layers, page numbers, placeholder text and document details join the checks there were. Rules KDP only recommends, and blank pages, for which it gives no number, are pointed out without stopping the file.
+- **Each finding is shown on its page**: a button for each page, and the page marked in the preview.
+- **Words are kept whole across page turns**, where that moves no chapter and splits no more sentences.
+- **A warning for quotation marks that don't pair.**
+- **The same pages on every system**, measured: CI builds the same made-up books on Windows, Mac and Linux and compares every line of every page.
 - **A whole book from one file**: a Word file split by its headings (in any language Word is in) or its chapter lines, a Markdown file, or an EPUB. What a printed page can't hold is named in the import notes.
 - **`.rtbook` files** from RT Story Tracker can be opened. Such a book is read-only here, and the file is deleted once the book is safely in Press's encrypted project, because it holds the book unencrypted. RT Story Tracker doesn't write these files yet; [what Press reads](docs/design/rtbook.md) says what it will need.
 - **A book brought in again keeps your design, keep list and own pages**, and the next build says which pages changed and which chapters moved. Press asks before replacing words corrected here.
@@ -35,6 +40,8 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **Even page bottoms**, a new setting, on unless turned off: pages whose text carries on end on the same last line where that can be done gently, without moving a word to another page. The build says how many don't.
 
 ### Changed
+- **The PDF carries no title, author or dates of its own.** KDP lists metadata among what a file should not contain.
+- **Saving refuses a file name with emoji**, which KDP rejects.
 - **Headings, scene breaks and documents inside the story take a whole number of lines**, so the text under them stays on the lines a full page has, and many more pages end on the bottom line.
 - **Straight quotes are curled when the pages are set**, for the book's language. The book Press keeps has your words as written.
 - **Ornaments are set in Noto Sans Symbols 2**, and the large first letter in the title font, sized from the fonts' own capitals.

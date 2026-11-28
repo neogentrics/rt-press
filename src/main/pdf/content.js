@@ -1,6 +1,7 @@
 'use strict';
-// Where a page's marks are. Reads a page's content stream and gives the box around everything drawn (text, lines, fills,
-// pictures) and the size of its smallest text. It follows the drawing state (transforms, text matrices, font widths) but is not
+// Where a page's marks are, and what they are. Reads a page's content stream and gives the box around everything drawn (text,
+// lines, fills, pictures), the size of its smallest text, how sharp each picture is where it is drawn, the lines drawn and how
+// thick, the faintest grey filled, and whether any text is there but not shown. It follows the drawing state (transforms, text matrices, font widths) but is not
 // a renderer: a glyph is taken to reach 0.8 of its size above the baseline and 0.2 below it, and a clipping path is ignored.
 const { PdfString, parseValue } = require('./read');
 
@@ -61,7 +62,29 @@ function fontMetrics(doc, fontRef) {
   return { wide: false, width: (code) => (code - first >= 0 && code - first < list.length ? list[code - first] : missing) || 500 };
 }
 
-// The marks on a page (or on a form it draws). Returns { box, minTextPt, texts, empty }:
+// How dark a fill colour is, from 0 (white) to 1 (black), where it is a grey: by itself, as equal red, green and blue, or as
+// black ink alone. Any other colour gives null.
+function darkness(op, n) {
+  const same = (a, b) => Math.abs(a - b) < 0.004;
+  if (op === 'g') return 1 - n[0];
+  if (op === 'rg') return same(n[0], n[1]) && same(n[1], n[2]) ? 1 - n[0] : null;
+  if (op === 'k') return same(n[0], 0) && same(n[1], 0) && same(n[2], 0) ? n[3] : null;
+  // A colour in a named space: one number is a grey, three are red, green and blue, four are inks.
+  if (n.length === 1) return 1 - n[0];
+  if (n.length === 3) return darkness('rg', n);
+  if (n.length === 4) return darkness('k', n);
+  return null;
+}
+
+// How many pixels a picture has to the inch where it is drawn: the fewer of across and down.
+function dpiOf(doc, dict, ctm) {
+  const pixels = [doc.resolve(dict.Width ?? dict.W), doc.resolve(dict.Height ?? dict.H)];
+  const inches = [Math.hypot(ctm[0], ctm[1]) / 72, Math.hypot(ctm[2], ctm[3]) / 72];
+  if (!pixels.every((v) => typeof v === 'number' && v > 0) || !inches.every((v) => v > 0)) return null;
+  return Math.min(pixels[0] / inches[0], pixels[1] / inches[1]);
+}
+
+// The marks on a page (or on a form it draws). Returns what pageMarks returns:
 //  box         { x0, y0, x1, y1 } in page units, or null on a blank page
 //  minTextPt   the smallest text size drawn, or null if there is no text
 function measureStream(doc, data, resources, matrix, out, depth) {
@@ -80,6 +103,9 @@ function measureStream(doc, data, resources, matrix, out, depth) {
   let scale = 1;
   let leading = 0;
   let rise = 0;
+  let lineWidth = 1;
+  let fill = 1; // how dark the fill colour is; black to begin with
+  let render = 0; // how text is painted; 3 is not at all
   let path = new Box();
   let current = [0, 0];
   const operands = [];
@@ -90,11 +116,15 @@ function measureStream(doc, data, resources, matrix, out, depth) {
     path.add(px, py);
     current = [x, y];
   };
-  const paint = () => {
+  const paint = ({ stroked = false, filled = false } = {}) => {
     if (!path.empty) {
       out.box.add(path.x0, path.y0);
       out.box.add(path.x1, path.y1);
       out.marks += 1;
+      out.shapes += 1;
+      // A line's width as it is drawn: the width set, scaled as the page is.
+      if (stroked && out.strokes.length < 500) out.strokes.push({ widthPt: lineWidth * Math.sqrt(Math.abs(ctm[0] * ctm[3] - ctm[1] * ctm[2])), box: { x0: path.x0, y0: path.y0, x1: path.x1, y1: path.y1 } });
+      if (filled && fill !== null && fill > 0.001 && (out.faintestFill === null || fill < out.faintestFill)) out.faintestFill = fill;
     }
     path = new Box();
   };
@@ -108,6 +138,7 @@ function measureStream(doc, data, resources, matrix, out, depth) {
     }
     const m = mul(tm, ctm);
     const size_ = size * Math.hypot(m[2], m[3]);
+    if (bytes.length && render === 3) out.hiddenText = true;
     if (bytes.length) {
       for (const [x, y] of [[0, -DESCENT * size + rise], [advance, ASCENT * size + rise]]) {
         const [px, py] = apply(m, x, y);
@@ -139,14 +170,23 @@ function measureStream(doc, data, resources, matrix, out, depth) {
     switch (op) {
       case 'BI': {
         const end = s.indexOf('EI', i);
+        const header = s.slice(i, s.indexOf('ID', i));
+        const size = (key, long) => Number(new RegExp(`/(?:${key}|${long})\\s+(\\d+)`).exec(header)?.[1]);
+        const inline = dpiOf(doc, { Width: size('W', 'Width'), Height: size('H', 'Height') }, ctm);
+        if (inline !== null) out.pictures.push({ dpi: inline });
         i = end < 0 ? s.length : end + 2;
         const unit = [apply(ctm, 0, 0), apply(ctm, 1, 1)];
         for (const [x, y] of unit) out.box.add(x, y);
         out.marks += 1;
         break;
       }
-      case 'q': stack.push([ctm, size, metrics]); break;
-      case 'Q': [ctm, size, metrics] = stack.pop() ?? [ctm, size, metrics]; break;
+      case 'q': stack.push([ctm, size, metrics, lineWidth, fill, render]); break;
+      case 'Q': [ctm, size, metrics, lineWidth, fill, render] = stack.pop() ?? [ctm, size, metrics, lineWidth, fill, render]; break;
+      case 'w': lineWidth = n[0]; break;
+      case 'Tr': render = n[0]; break;
+      case 'g': case 'rg': case 'k': fill = darkness(op, n); break;
+      // A pattern or a shading as a fill is no grey.
+      case 'sc': case 'scn': fill = operands.every((o) => typeof o === 'number') ? darkness(op, n) : null; break;
       case 'cm': ctm = mul(n.slice(0, 6), ctm); break;
       case 'BT': tm = [1, 0, 0, 1, 0, 0]; tlm = tm; break;
       case 'Tf': {
@@ -181,12 +221,16 @@ function measureStream(doc, data, resources, matrix, out, depth) {
       case 'v': point(n[0], n[1]); point(n[2], n[3]); break;
       case 'y': point(n[0], n[1]); point(n[2], n[3]); break;
       case 're': point(n[0], n[1]); point(n[0] + n[2], n[1] + n[3]); break;
-      case 'S': case 's': case 'f': case 'F': case 'f*': case 'B': case 'B*': case 'b': case 'b*': paint(); break;
+      case 'S': case 's': paint({ stroked: true }); break;
+      case 'f': case 'F': case 'f*': paint({ filled: true }); break;
+      case 'B': case 'B*': case 'b': case 'b*': paint({ stroked: true, filled: true }); break;
       case 'n': path = new Box(); break;
       case 'Do': {
         const xobject = doc.resolve(xobjects[operands[0]?.name]);
         const kind = doc.resolve(xobject?.dict?.Subtype)?.name;
         if (kind === 'Image') {
+          const dpi = dpiOf(doc, xobject.dict, ctm);
+          if (dpi !== null) out.pictures.push({ dpi });
           for (const [x, y] of [[0, 0], [1, 1]]) out.box.add(...apply(ctm, x, y));
           out.marks += 1;
         } else if (kind === 'Form' && depth < MAX_DEPTH) {
@@ -202,15 +246,16 @@ function measureStream(doc, data, resources, matrix, out, depth) {
   }
 }
 
+// Returns { box, minTextPt, marks, pictures: [{ dpi }], strokes: [{ widthPt, box }], faintestFill, hiddenText }.
 function pageMarks(doc, page) {
-  const out = { box: new Box(), minTextPt: null, marks: 0 };
+  const out = { box: new Box(), minTextPt: null, marks: 0, shapes: 0, pictures: [], strokes: [], faintestFill: null, hiddenText: false };
   const contents = doc.resolve(page.dict.Contents);
   const streams = (Array.isArray(contents) ? contents : [contents]).map((c) => doc.data(c)).filter(Boolean);
   if (streams.length) {
     const joined = Buffer.concat(streams.flatMap((d) => [d, Buffer.from('\n')]));
     measureStream(doc, joined, page.resources, [1, 0, 0, 1, 0, 0], out, 0);
   }
-  return { box: out.box.empty ? null : { x0: out.box.x0, y0: out.box.y0, x1: out.box.x1, y1: out.box.y1 }, minTextPt: out.minTextPt, marks: out.marks };
+  return { ...out, box: out.box.empty ? null : { x0: out.box.x0, y0: out.box.y0, x1: out.box.x1, y1: out.box.y1 } };
 }
 
 module.exports = { pageMarks };

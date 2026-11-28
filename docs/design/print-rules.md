@@ -10,6 +10,12 @@ Submission Guidelines*, *Paperback Printing Cost* and *Create a Paperback Cover*
 large and the inside margin table were unchanged. **None of the five gives page limits for a custom size, or a way to work
 them out.** The submission guidelines say only that the most pages depend on ink, paper and trim size.
 
+**Read again on 28 November 2026,** for the interior checks: the *Paperback Submission Guidelines*, *Set Trim Size, Bleed,
+and Margins* and *Print Options*. Three things this page had wrong or missing, now corrected below: the guidelines list
+**metadata** among what a file should not contain; the 10% grey fill is a **recommendation**; and **no page gives a number
+for blank pages**. They list "excessive blank pages" and "missing pages" among common reasons a file fails. The guidelines
+are written for paperbacks; no page read gives interior rules of their own for hardcovers.
+
 ## KDP: trim and page count
 
 Source: [Set trim size, bleed and margins](https://kdp.amazon.com/en_US/help/topic/GVBQ3CMEQW3W2VL6) and
@@ -59,13 +65,29 @@ page bleeds, the whole interior is set up with bleed, and it has to be a PDF.
 
 Source: [Paperback submission guidelines](https://kdp.amazon.com/en_US/help/topic/G201857950).
 
-- Single pages, not spreads; every page the same way up.
-- Every font embedded; transparency and layers flattened.
-- Pictures at least 300 dpi (600 at most is recommended); text at least 7 pt; lines at least 0.75 pt; grey fills at least 10%.
-- No crop marks, bookmarks, comments, annotations, hidden objects, placeholder text, or locked or encrypted files.
-- Page numbers in order, even on the left and odd on the right; roman numerals allowed in front matter.
-- No missing or blank pages, beyond those a book's layout needs.
-- At most 650 MB.
+| KDP's rule | How Press checks it | Stops the file? |
+|---|---|---|
+| Single pages, not spreads; every page the same way up | Every page is the size of the trim and bleed, and none is turned | Yes |
+| Every font embedded | Read from each page's fonts; Type 3 fonts are refused too | Yes |
+| Transparency and layers flattened | No transparent graphics, soft masks or blend modes, and no layers | Yes |
+| Pictures at least 300 dpi | Each picture's pixels against the size it is drawn at | Yes |
+| No maximum; 600 dpi recommended at most | The same measure | No, points it out |
+| Lines at least 0.75 pt | Each line's width as drawn | Yes |
+| Grey fills at least 10% (**recommended**) | Each grey fill | No, points it out |
+| Text at least 7 pt | Each piece of text as drawn | Yes |
+| No crop or trim marks | No line drawn wholly outside the trim | Yes |
+| No bookmarks, comments, annotations or invisible objects | Read from the file; text drawn invisible counts | Yes |
+| No placeholder text | "Lorem ipsum", "TODO", "TK TK", "XXXX", and words in square brackets such as "[insert …]" | Yes |
+| No metadata | The file has no details dictionary and no XMP | Yes |
+| Not locked or encrypted | Read from the file | Yes |
+| Page numbers in order, even on the left and odd on the right; roman numerals may open the book | A number at the foot of a page must be that page's place in the file | Yes |
+| No excessive or missing blank pages | **No number is given.** Press points out a blank first page, two blank pages together before the end, or more than 10 at the end | **No**: the numbers are Press's own |
+| At most 650 MB | The file's size | Yes |
+| No emoji in the file's name | Checked when saving | Refuses the name |
+
+Not checked: "PDF creation logos or watermarks" (Press adds none, but nothing reads a page for one), and whether pages
+are missing from the author's own book. A right-to-left book is not something KDP prints, except in three languages Press
+doesn't set.
 
 ## KDP: covers
 
@@ -101,7 +123,9 @@ distance from the spine given as 6.3 mm on one page and 6 mm on another. Press t
 ## House rules
 
 The owner's rules, taken from how his books are built. They're a preset: on for him, offered to everyone, each one a
-setting.
+setting. In 1.0, titles on the right, the blank even last page, links (none are printed), pinning, page turns with the keep
+list, even bottoms, the dash rule and folio position are settings or always so; unpaired quotation marks and a word split
+across a page turn are pointed out after a build. Press also keeps words whole across page turns.
 
 | Rule | Setting |
 |---|---|

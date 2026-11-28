@@ -41,6 +41,8 @@ let practising = false;
 let building = false;
 let spread = 0;
 let pageCount = 0;
+// What the checks found, by page, to be marked on the pages of the preview: Map(page → [check titles]).
+let flags = new Map();
 const pictures = new Map();
 
 // ---- the bars above the page: the practice book, a storage problem, a new version ----
@@ -288,6 +290,8 @@ async function quickPreview() {
       if (result.reason === 'out-of-date' && !building) previewWanted = true;
     } else if (result.ok) {
       pageCount = result.pages;
+      // What the checks found was found on the pages as they were built.
+      flags = new Map();
       pictures.clear();
       spread = Math.min(spread, spreadCount() - 1);
       await showSpread();
@@ -389,6 +393,7 @@ function showBuild(build) {
     return;
   }
   const failed = build.checks.filter((c) => !c.ok);
+  const advised = build.checks.filter((c) => c.advice);
   set('results-title', failed.length ? 'Not ready to save' : 'Ready to save');
   $('checks-box').open = failed.length > 0;
   const seconds = ((build.timings.set + build.timings.preview + build.timings.check + build.timings.finish + (build.timings.repair ?? 0) + (build.timings.even ?? 0)) / 1000).toFixed(1);
@@ -398,6 +403,7 @@ function showBuild(build) {
     failed.length ? `${build.pages} pages, ${failed.length} of ${build.checks.length} checks failed.` : `${build.pages} pages, all ${build.checks.length} checks passed.`,
     `Built in ${seconds} s.`,
   ];
+  if (advised.length) sentences.splice(1, 0, `Checks with something to look at: ${advised.length}.`);
   if (r && r.after === 0) sentences.push(r.kept?.length ? 'No other page turn splits a sentence.' : 'No page turn splits a sentence.');
   if (r && r.after > 0) {
     sentences.push(`Page turns that split a sentence: ${r.before} before repair, ${r.after} after.`);
@@ -409,16 +415,9 @@ function showBuild(build) {
   const uneven = build.even ? build.even.running - build.even.onLine : 0;
   if (build.even?.running > 0) sentences.push(uneven ? `Pages that carry on but end above or below the bottom line: ${uneven} of ${build.even.running}.` : 'Every page that carries on ends on the same line.');
   $('build-summary').replaceChildren(...sentences.flatMap((sentence) => [h('span', null, sentence), ' ']));
-  $('checks').replaceChildren(...build.checks.map((c) => {
-    const li = document.createElement('li');
-    li.className = c.ok ? 'pass' : 'fail';
-    const mark = document.createElement('span');
-    mark.className = 'mark';
-    mark.textContent = c.ok ? '✔' : '✖';
-    mark.setAttribute('aria-label', c.ok ? 'passed' : 'failed');
-    li.append(mark, ' ', h('span', null, c.title), ': ', ...(c.parts ?? [c.summary]).flatMap((part, i) => [i ? '; ' : '', h('span', null, part)]));
-    return li;
-  }));
+  flags = new Map();
+  for (const c of [...failed, ...advised]) for (const number of c.pages) flags.set(number, [...(flags.get(number) ?? []), { title: c.title, failed: !c.ok }]);
+  $('checks').replaceChildren(...build.checks.map(checkRow));
   drawTurnsReport(build);
   showRefresh(build.refresh);
   pageCount = build.pages;
@@ -427,15 +426,33 @@ function showBuild(build) {
   if (build.previewReady) showSpread();
 }
 
+// One check: whether it passed, failed or has something to look at, what it found, and a way to each page it found it on.
+const CHECK_STATES = { pass: ['✔', 'passed'], fail: ['✖', 'failed'], advice: ['⚠', 'to look at'] };
+const SHOWN_PAGES = 12;
+function checkRow(check, index) {
+  const state_ = !check.ok ? 'fail' : check.advice ? 'advice' : 'pass';
+  const [sign, said] = CHECK_STATES[state_];
+  const pages = state_ === 'pass' ? [] : check.pages;
+  const title = `check-title-${index}`;
+  return h('li', { class: state_, 'data-check': check.id },
+    h('span', { class: 'mark', role: 'img', 'aria-label': said }, sign), ' ',
+    h('span', { id: title }, check.title), ': ',
+    (check.parts ?? [check.summary]).flatMap((part, i) => [i ? '; ' : '', h('span', null, part)]),
+    pages.length ? h('span', { class: 'check-pages' },
+      pages.slice(0, SHOWN_PAGES).map((number) => h('button', { type: 'button', class: 'to-page', 'aria-describedby': title, onclick: () => showPage(number) }, `Page ${number}`)),
+      pages.length > SHOWN_PAGES ? h('span', null, `and ${pages.length - SHOWN_PAGES} more`) : null) : null);
+}
+
+function showPage(number) {
+  go(Math.floor(number / 2));
+  $('preview').scrollIntoView({ block: 'nearest' });
+}
+
 // ---- the page turn report, and the list of turns to leave split ----
 function drawTurnsReport(build) {
   const box = $('turns-box');
   box.hidden = !build.repair?.moved;
   if (box.hidden) return;
-  const showPage = (number) => {
-    go(Math.floor(number / 2));
-    $('preview').scrollIntoView({ block: 'nearest' });
-  };
   $('turns-report').replaceChildren(...turnsReport({ build, keepList: state.keepList ?? [], change: changeKept, showPage }));
 }
 
@@ -473,6 +490,9 @@ async function showSpread() {
     img.hidden = !src;
     if (src) img.src = src;
     $(`cap-${side}`).textContent = number ? `Page ${number}` : '';
+    const found = (number && flags.get(number)) || [];
+    $(`flags-${side}`).replaceChildren(...found.map((flag) => h('li', { class: flag.failed ? 'fail' : 'advice' }, h('span', { 'aria-hidden': 'true' }, flag.failed ? '✖ ' : '⚠ '), h('span', null, flag.title))));
+    $(`page-${side}`).parentElement.classList.toggle('flagged', found.some((flag) => flag.failed));
     $(`cap-${side}`).parentElement.classList.toggle('blank', !number);
   }
   const shown = [left, right].filter(Boolean);

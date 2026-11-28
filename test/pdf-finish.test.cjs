@@ -16,7 +16,6 @@ const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'rtpress-finish-test-'));
 test.after(() => fs.rmSync(scratch, { recursive: true, force: true, maxRetries: 5 }));
 const skip = !sources().every(({ from }) => fs.existsSync(from)) && 'run "npm install"';
 const SPEC = { format: 'paperback', trim: { width_in: 6, height_in: 9 }, paper: 'black-white', bleed: true };
-const DATE = new Date(Date.UTC(2026, 10, 18));
 
 let raw;
 async function typstPdf() {
@@ -30,11 +29,11 @@ async function typstPdf() {
 
 test('Typst\'s own file fails the page and the cleanliness checks, which is why it is finished', { skip }, async () => {
   const failed = runChecks(await typstPdf(), SPEC).results.filter((r) => !r.ok).map((r) => r.id);
-  assert.deepEqual(failed, ['page-size', 'page-boxes', 'clean']);
+  assert.deepEqual(failed, ['page-size', 'page-boxes', 'clean', 'no-metadata']);
 });
 
 test('the finished file passes every check', { skip }, async () => {
-  const { data, changes } = finishPdf(await typstPdf(), { bleed_in: 0.125, details: { title: 'A Made-Up Book', author: 'A. Writer' }, date: DATE });
+  const { data, changes } = finishPdf(await typstPdf(), { bleed_in: 0.125 });
   const run = runChecks(data, SPEC);
   assert.deepEqual(run.results.filter((r) => !r.ok), []);
   assert.ok(changes.some((c) => /bleed on the inside edge cut from 32 pages/.test(c)));
@@ -67,17 +66,15 @@ test('the marks stay where they were, measured from the trim', { skip }, async (
   });
 });
 
-test('the file\'s details are written, with accents as UTF-16, and the file says who made it', { skip }, async () => {
-  const doc = readPdf(finishPdf(await typstPdf(), { bleed_in: 0.125, details: { title: 'Café', author: 'A. Writer', subject: 'A novel', keywords: 'one, two' }, date: DATE }).data);
-  const info = doc.dictOf(doc.trailer.Info);
-  const text = (s) => (s.bytes[0] === 0xfe ? Buffer.from(s.bytes.subarray(2)).swap16().toString('utf16le') : s.bytes.toString('latin1'));
-  assert.equal(text(info.Title), 'Café');
-  assert.equal(text(info.Author), 'A. Writer');
-  assert.equal(text(info.Subject), 'A novel');
-  assert.equal(text(info.Keywords), 'one, two');
-  assert.equal(text(info.Producer), 'RT Press');
-  assert.equal(text(info.CreationDate), 'D:20261118000000Z');
-  assert.equal(doc.dictOf(doc.trailer.Root).Metadata, undefined, 'no second copy of the details');
+test('the file carries no details of its own, as KDP asks: no title, author, dates or maker', { skip }, async () => {
+  const before = readPdf(await typstPdf());
+  assert.ok(before.dictOf(before.trailer.Info), 'Typst writes some');
+  const finished = finishPdf(await typstPdf(), { bleed_in: 0.125 });
+  const doc = readPdf(finished.data);
+  assert.equal(doc.trailer.Info, undefined);
+  assert.equal(doc.dictOf(doc.trailer.Root).Metadata, undefined);
+  for (const left of ['/Title', '/Author', '/Producer', '/CreationDate', 'xmpmeta']) assert.equal(finished.data.includes(left), false, left);
+  assert.ok(finished.changes.some((c) => /details were left out/.test(c)));
 });
 
 test('bookmarks, links and tags are gone, and nothing is left that no page needs', { skip }, async () => {
@@ -90,15 +87,15 @@ test('bookmarks, links and tags are gone, and nothing is left that no page needs
 });
 
 test('the same file finishes to the same bytes', { skip }, async () => {
-  const a = finishPdf(await typstPdf(), { bleed_in: 0.125, details: { title: 'T' }, date: DATE }).data;
-  const b = finishPdf(await typstPdf(), { bleed_in: 0.125, details: { title: 'T' }, date: DATE }).data;
+  const a = finishPdf(await typstPdf(), { bleed_in: 0.125 }).data;
+  const b = finishPdf(await typstPdf(), { bleed_in: 0.125 }).data;
   assert.equal(a.compare(b), 0);
 });
 
 test('a book with no bleed keeps its page and is still cleaned', { skip }, async () => {
   const fonts = prepare({ folder: path.join(scratch, 'fonts') });
   const result = await typesetBook({ book: fakeBook({ chapters: 6 }), theme: fakeTheme, workDir: path.join(scratch, 'plain'), output: path.join(scratch, 'plain.pdf'), fontPaths: [fonts], fontMap: TEST_FONTS, targetPages: 32, timestamp: 1794960000 });
-  const { data, changes } = finishPdf(fs.readFileSync(result.output), { bleed_in: 0, date: DATE });
+  const { data, changes } = finishPdf(fs.readFileSync(result.output), { bleed_in: 0 });
   assert.equal(changes.some((c) => /bleed/.test(c)), false);
   assert.deepEqual(runChecks(data, { ...SPEC, bleed: false }).results.filter((r) => !r.ok), []);
 });

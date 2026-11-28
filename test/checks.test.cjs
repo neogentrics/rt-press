@@ -16,7 +16,8 @@ test('a good file passes every check', () => {
   assert.deepEqual(run.results.filter((r) => !r.ok), []);
   assert.equal(run.ok, true);
   assert.equal(run.pages, 24);
-  assert.deepEqual(ids(run.results), ['page-size', 'page-boxes', 'fonts-embedded', 'no-type3', 'no-transparency', 'page-count', 'inside-margin', 'outer-margins', 'text-size', 'file-size', 'clean']);
+  assert.deepEqual(ids(run.results), ['page-size', 'page-boxes', 'fonts-embedded', 'no-type3', 'no-transparency', 'page-count', 'inside-margin', 'outer-margins', 'text-size', 'picture-resolution', 'line-weight', 'grey-fill', 'crop-marks', 'page-numbers', 'blank-pages', 'placeholder', 'file-size', 'clean', 'no-metadata']);
+  assert.deepEqual(run.results.filter((r) => r.advice), []);
 });
 
 test('a page of the wrong size is named', () => {
@@ -113,4 +114,90 @@ test('a file with no bleed may carry boxes only if they are the page', () => {
 
 test('a file that is not a book at all is refused, not passed', () => {
   assert.throws(() => runChecks(Buffer.from('not a pdf'), SPEC));
+});
+
+// A line of plain words on page `n`, well inside the page.
+const says = (string, y = 400) => ({ x: 60, y, size: 12, string });
+const only = (n, extra) => good(24, (page) => (page === n ? extra : {}));
+const advised = (pdf, spec = SPEC) => runChecks(pdf, spec).results.filter((r) => r.advice);
+
+test('a picture under 300 dpi where it is printed fails; one far over what KDP recommends is only pointed out', () => {
+  // 600 pixels across 2 in is 300 dpi; across 3 in it is 200.
+  const at = (inches) => only(5, { picture: { pixels: [600, 600], at: [60, 200, inches * 72, inches * 72] } });
+  assert.deepEqual(failing(makePdf({ pages: at(2) })), []);
+  const soft = failing(makePdf({ pages: at(3) }));
+  assert.deepEqual(ids(soft), ['picture-resolution']);
+  assert.match(soft[0].summary, /at least 300 dpi; found 200 dpi \(page 5\)/);
+  assert.deepEqual(soft[0].findings, [{ page: 5, message: '200 dpi' }]);
+  // Stretched one way more than the other, the fewer pixels to the inch count.
+  assert.deepEqual(ids(failing(makePdf({ pages: only(5, { picture: { pixels: [600, 600], at: [60, 200, 144, 216] } }) }))), ['picture-resolution']);
+  const heavy = advised(makePdf({ pages: at(0.5) }));
+  assert.deepEqual(ids(heavy), ['picture-resolution']);
+  assert.equal(runChecks(makePdf({ pages: at(0.5) }), SPEC).ok, true, 'advice stops nothing');
+});
+
+test('a line under 0.75 pt fails, as scaled on the page; a faint grey fill is pointed out and stops nothing', () => {
+  assert.deepEqual(failing(makePdf({ pages: only(4, { graphics: '0.75 w 60 100 m 300 100 l S' }) })), []);
+  const thin = failing(makePdf({ pages: only(4, { graphics: '0.4 w 60 100 m 300 100 l S' }) }));
+  assert.deepEqual(ids(thin), ['line-weight']);
+  assert.deepEqual(thin[0].findings, [{ page: 4, message: '0.4 pt' }]);
+  assert.deepEqual(ids(failing(makePdf({ pages: only(4, { graphics: 'q 0.5 0 0 0.5 0 0 cm 1 w 200 200 m 600 200 l S Q' }) }))), ['line-weight'], 'a 1 pt line drawn at half size');
+  for (const grey of ['0.95 g 60 100 200 20 re f', '0.96 0.96 0.96 rg 60 100 200 20 re f', '0 0 0 0.05 k 60 100 200 20 re f']) {
+    const run = runChecks(makePdf({ pages: only(6, { graphics: grey }) }), SPEC);
+    assert.deepEqual([run.ok, ids(run.results.filter((r) => r.advice))], [true, ['grey-fill']], grey);
+  }
+  for (const dark of ['0.8 g 60 100 200 20 re f', '1 g 60 100 200 20 re f', '0.9 0.2 0.2 rg 60 100 200 20 re f']) assert.deepEqual(advised(makePdf({ pages: only(6, { graphics: dark }) })), [], dark);
+});
+
+test('crop marks, hidden text, layers and details inside the file each fail', () => {
+  // A line drawn in the bleed, outside the trim.
+  const bleedPages = good(24, (n) => ({ size: [441, 666], trim: n % 2 ? [0, 9, 432, 657] : [9, 9, 441, 657], bleedBox: [0, 0, 441, 666], text: [{ x: 70, y: 400, size: 12 }], ...(n === 3 ? { graphics: '0.75 w 436 600 m 436 660 l S' } : {}) }));
+  // (A mark out there is inside no margin either.)
+  assert.deepEqual(ids(failing(makePdf({ pages: bleedPages }), { ...SPEC, bleed: true })), ['outer-margins', 'crop-marks']);
+  const unseen = failing(makePdf({ pages: only(8, { graphics: 'BT 3 Tr /F1 12 Tf 1 0 0 1 60 300 Tm <0001> Tj ET' }) }));
+  assert.deepEqual([ids(unseen), unseen[0].pages], [['clean'], [8]]);
+  assert.match(unseen[0].summary, /text that is not shown on pages 8/);
+  assert.match(failing(makePdf({ pages: good(), layers: true }))[0].summary, /it has layers/);
+  const described = failing(makePdf({ pages: good(), info: { Title: 'A Book', Author: 'A. Writer' } }));
+  assert.deepEqual(ids(described), ['no-metadata']);
+  assert.match(described[0].summary, /Title, Author/);
+  assert.deepEqual(ids(failing(makePdf({ pages: good(), metadata: true }))), ['no-metadata']);
+});
+
+test('a page number has to be its page: even on the left, odd on the right, roman only before the figures', () => {
+  const numbered = (label) => good(24, (n) => ({ text: [body, ...(label(n) === null ? [] : [says(label(n), 40)])] }));
+  assert.deepEqual(failing(makePdf({ pages: numbered((n) => (n < 3 ? null : String(n))) })), []);
+  assert.deepEqual(failing(makePdf({ pages: numbered((n) => `- ${n} -`) })), []);
+  assert.deepEqual(failing(makePdf({ pages: numbered((n) => (n <= 4 ? ['i', 'ii', 'iii', 'iv'][n - 1] : String(n))) })), []);
+  const off = failing(makePdf({ pages: numbered((n) => String(n === 9 ? 10 : n)) }));
+  assert.deepEqual([ids(off), off[0].findings], [['page-numbers'], [{ page: 9, message: 'numbered 10' }]]);
+  assert.deepEqual(ids(failing(makePdf({ pages: numbered((n) => (n === 12 ? 'xii' : String(n))) }))), ['page-numbers']);
+  // A number in the text is not a page number.
+  assert.deepEqual(failing(makePdf({ pages: only(7, { text: [says('1984', 300)] }) })), []);
+});
+
+test('blank pages past Press’s own measure are pointed out, as KDP gives no number, and stop nothing', () => {
+  const blank = (...pages) => makePdf({ pages: good(40, (n) => (pages.includes(n) ? { text: [] } : {})) });
+  assert.deepEqual(advised(blank(6, 8, 39, 40)), []);
+  for (const [pages, said] of [[[1], 'the first page is blank'], [[8, 9], '2 blank pages together'], [Array.from({ length: 11 }, (_, i) => 30 + i), '11 blank pages at the end']]) {
+    const run = runChecks(blank(...pages), SPEC);
+    const found = run.results.find((r) => r.id === 'blank-pages');
+    assert.deepEqual([run.ok, found.advice, found.findings[0].message, found.pages], [true, true, said, pages], said);
+    assert.match(found.summary, /gives no number/);
+  }
+  assert.deepEqual(advised(blank(...Array.from({ length: 10 }, (_, i) => 31 + i))), [], 'ten at the end are let be');
+  // A page with only its number is blank; one with a picture is not.
+  assert.equal(advised(makePdf({ pages: good(24, (n) => (n === 8 || n === 9 ? { text: [says(String(n), 40)] } : {})) })).length, 1);
+  assert.deepEqual(advised(makePdf({ pages: good(24, (n) => (n === 8 || n === 9 ? { text: [], picture: { pixels: [1500, 1500], at: [60, 200, 300, 300] } } : {})) })), []);
+});
+
+test('text left to be filled in fails, and the words a story really uses don’t', () => {
+  for (const left of ['Lorem ipsum dolor', '[Insert your dedication here]', 'ISBN 978-XXXXXXXXXX', 'TODO', 'the date is TKTK']) {
+    const found = failing(makePdf({ pages: only(3, { text: [says(left)] }) }));
+    assert.deepEqual(ids(found), ['placeholder'], left);
+    assert.deepEqual(found[0].pages, [3]);
+  }
+  for (const fine of ['She marked it XXX on the map.', 'He read the [sic] twice.', 'To do it again', '[ ]', 'a toddler’s todo list', '[He pauses.]']) {
+    assert.deepEqual(failing(makePdf({ pages: only(3, { text: [says(fine)] }) })), [], fine);
+  }
 });

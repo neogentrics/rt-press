@@ -1,12 +1,15 @@
 'use strict';
 // Checks a finished PDF against the printer's rules. Every check reads the file itself (its page boxes, its fonts, where its
 // marks fall), never the settings that made it, so a check can't pass on a promise. Each gives one result:
-//   { id, title, ok, summary, pages }     `pages` lists the pages at fault (or the first few, when many are)
+//   { id, title, ok, summary, pages, findings }   `pages` lists the pages at fault; `findings` says what is on each of the
+//                                                 first of them, as [{ page, message }]
+// A result with `advice: true` is something to look at that doesn't stop the file: what the printer only recommends.
 // A result whose summary lists several findings also gives them one by one in `parts`, so each can be shown in its own words.
 // A file is ready when every result is ok.
 const { pageMarks } = require('../pdf/content');
 const { readPdf } = require('../pdf/read');
-const { BLEED_IN, FILE, POINTS_PER_INCH, insideMargin, outsideMargin, pageLimits, pageSize } = require('../../shared/print-rules');
+const { textLines } = require('../pdf/text');
+const { BLANKS, BLEED_IN, FILE, POINTS_PER_INCH, insideMargin, outsideMargin, pageLimits, pageSize } = require('../../shared/print-rules');
 
 const TOLERANCE_PT = 0.5;
 const SHOWN = 12;
@@ -14,10 +17,32 @@ const near = (a, b) => Math.abs(a - b) <= TOLERANCE_PT;
 const inches = (pt) => Math.round((pt / POINTS_PER_INCH) * 1000) / 1000;
 const list = (pages) => (pages.length > SHOWN ? `${pages.slice(0, SHOWN).join(', ')} and ${pages.length - SHOWN} more` : pages.join(', '));
 
-function result(id, title, failures, passed, failed) {
+const FINDINGS = 200;
+
+function result(id, title, failures, passed, failed, { advice = false } = {}) {
   const pages = [...new Set(failures.map((f) => f.page).filter((p) => p !== undefined))];
-  return { id, title, ok: failures.length === 0, summary: failures.length === 0 ? passed : `${failed}${pages.length ? ` (page ${list(pages)})` : ''}`, pages, failures: failures.slice(0, 50) };
+  return {
+    id, title,
+    ok: advice || failures.length === 0,
+    ...(advice && failures.length ? { advice: true } : {}),
+    summary: failures.length === 0 ? passed : `${failed}${pages.length ? ` (page ${list(pages)})` : ''}`,
+    pages,
+    findings: failures.filter((f) => f.page !== undefined).slice(0, FINDINGS),
+  };
 }
+
+// Where a page number stands: below the text, within this much of the foot of the trimmed page. Press's own bottom margin is
+// 0.9 in, so no line of text reaches down here.
+const FOOT_PT = 0.8 * POINTS_PER_INCH;
+const ROMAN = /^[ivxlcdm]+$/i;
+function romanValue(text) {
+  const values = { i: 1, v: 5, x: 10, l: 50, c: 100, d: 500, m: 1000 };
+  const digits = [...text.toLowerCase()].map((c) => values[c]);
+  return digits.reduce((total, value, i) => total + (value < (digits[i + 1] ?? 0) ? -value : value), 0);
+}
+
+// Words left in a file to be filled in later.
+const PLACEHOLDERS = [/lorem\s+ipsum/i, /dolor\s+sit\s+amet/i, /\[\s*(?:insert|add|your|todo|tbd|tk|placeholder|isbn|name|title|author|date|year|url|link)\b[^\]]{0,60}\]/i, /\bTK ?TK\b/, /\b(?:TODO|FIXME)\b/, /\bXXXX+\b/];
 
 // Resources a page draws with: its own, and those of the forms it draws, to a sensible depth.
 function* resourceSets(doc, resources, depth = 0) {
@@ -146,10 +171,56 @@ function runChecks(buffer, spec) {
   const outerFailures = [];
   const smallText = [];
   let smallest = Infinity;
+  const soft = []; // pictures under the printer's resolution
+  const heavy = []; // pictures over what it recommends
+  const thin = [];
+  const faint = [];
+  const hidden = [];
+  const cropMarks = [];
+  const placeholders = [];
+  const wrongNumbers = [];
+  const blank = [];
+  let numbered = 0;
+  let arabic = false;
+  let sharpest = null;
   for (const page of pages) {
     const media = doc.rect(page.inherited.MediaBox);
     const trim = doc.rect(page.dict.TrimBox) ?? media;
     const marks = pageMarks(doc, page);
+    const lines = textLines(doc, page).filter((l) => l.text.trim());
+
+    for (const { dpi } of marks.pictures) {
+      if (sharpest === null || dpi < sharpest) sharpest = dpi;
+      if (dpi < FILE.min_picture_dpi - 0.5) soft.push({ page: page.number, message: `${Math.floor(dpi)} dpi` });
+      else if (dpi > FILE.recommended_picture_dpi + 0.5) heavy.push({ page: page.number, message: `${Math.round(dpi)} dpi` });
+    }
+    const thinnest = Math.min(...marks.strokes.map((l) => l.widthPt));
+    if (thinnest < FILE.min_line_pt - 0.005) thin.push({ page: page.number, message: `${Math.round(thinnest * 100) / 100} pt` });
+    if (marks.faintestFill !== null && marks.faintestFill < FILE.min_grey_percent / 100 - 0.001) faint.push({ page: page.number, message: `${Math.max(1, Math.round(marks.faintestFill * 100))}%` });
+    if (marks.hiddenText) hidden.push({ page: page.number, message: 'text that is not shown' });
+    if (!trim) continue;
+
+    // A line drawn wholly outside the trim is a mark for the cutter, which the printer adds itself.
+    const beyond = ({ box }) => box.x1 < trim[0] - TOLERANCE_PT || box.x0 > trim[2] + TOLERANCE_PT || box.y1 < trim[1] - TOLERANCE_PT || box.y0 > trim[3] + TOLERANCE_PT;
+    if (marks.strokes.some(beyond)) cropMarks.push({ page: page.number, message: 'a line outside the trim' });
+
+    const whole = lines.map((l) => l.text.trim()).reduce((text, line) => (/[\u00AD-]$/.test(text) ? text.slice(0, -1) + line : `${text} ${line}`), '');
+    const found = PLACEHOLDERS.map((pattern) => pattern.exec(whole)?.[0]).find(Boolean);
+    if (found) placeholders.push({ page: page.number, message: found });
+
+    const foot = lines.filter((l) => l.y < trim[1] + FOOT_PT);
+    const folio = foot.map((l) => l.text).join('').replace(/[\s\u00A0\u2060\u2013\u2014\u2022\u00B7|.-]/g, '');
+    if (/^\d{1,4}$/.test(folio) || (ROMAN.test(folio) && folio.length < 10)) {
+      numbered += 1;
+      const isArabic = /^\d/.test(folio);
+      const value = isArabic ? Number(folio) : romanValue(folio);
+      // Every page's number is its place in the file, so an even number is on a left-hand page and an odd one on a right.
+      // Roman numerals may open a book, and don't come back once its figures have begun.
+      if (value !== page.number || (!isArabic && arabic)) wrongNumbers.push({ page: page.number, message: `numbered ${folio}` });
+      if (isArabic) arabic = true;
+    }
+    if (lines.length === foot.length && !marks.pictures.length && !marks.shapes) blank.push(page.number);
+
     if (marks.minTextPt !== null && marks.minTextPt < smallest) smallest = marks.minTextPt;
     if (marks.minTextPt !== null && marks.minTextPt < FILE.min_text_pt - 0.05) smallText.push({ page: page.number, message: `${Math.round(marks.minTextPt * 10) / 10} pt` });
     if (!marks.box || !trim) continue;
@@ -166,6 +237,29 @@ function runChecks(buffer, spec) {
   results.push(result('outer-margins', 'Outside, top and bottom margins are enough', outerFailures, `at least ${outsideMargin(spec.bleed)} in on every page`, `at least ${outsideMargin(spec.bleed)} in is needed; found ${outerFailures[0]?.message}`));
   results.push(result('text-size', 'Text is at least 7 pt', smallText, smallest === Infinity ? 'no text' : `the smallest text is ${Math.round(smallest * 10) / 10} pt`, `text under ${FILE.min_text_pt} pt: ${smallText[0]?.message}`));
 
+  // --- what is drawn ---
+  results.push(result('picture-resolution', 'Pictures are sharp enough', soft, sharpest === null ? 'no pictures' : `every picture has at least ${FILE.min_picture_dpi} dpi`, `pictures need at least ${FILE.min_picture_dpi} dpi; found ${soft[0]?.message}`));
+  if (heavy.length && !soft.length) results[results.length - 1] = result('picture-resolution', 'Pictures are sharp enough', heavy, '', `a picture has more than the ${FILE.recommended_picture_dpi} dpi KDP recommends at most: ${heavy[0]?.message}`, { advice: true });
+  results.push(result('line-weight', 'Lines are thick enough', thin, `no line is thinner than ${FILE.min_line_pt} pt`, `a line needs to be at least ${FILE.min_line_pt} pt; found ${thin[0]?.message}`));
+  results.push(result('grey-fill', 'Grey fills are dark enough', faint, `no grey fill is fainter than ${FILE.min_grey_percent}%`, `KDP recommends grey fills of at least ${FILE.min_grey_percent}%; found ${faint[0]?.message}`, { advice: true }));
+  results.push(result('crop-marks', 'No crop or trim marks', cropMarks, 'no marks for cutting', 'a line is drawn outside the trim, as crop marks are'));
+
+  // --- the pages in order ---
+  results.push(result('page-numbers', 'Page numbers are in order', wrongNumbers, numbered ? 'every page number is its page, even on the left and odd on the right' : 'no page numbers', `a page number is not its page: ${wrongNumbers[0]?.message}`));
+  const tooMany = [];
+  for (let i = 0; i < blank.length; ) {
+    let j = i;
+    while (j + 1 < blank.length && blank[j + 1] === blank[j] + 1) j += 1;
+    const run = blank.slice(i, j + 1);
+    const atEnd = run.at(-1) === count;
+    const message = run[0] === 1 ? 'the first page is blank' : atEnd && run.length > BLANKS.at_end ? `${run.length} blank pages at the end` : !atEnd && run.length > BLANKS.together ? `${run.length} blank pages together` : null;
+    if (message) tooMany.push(...run.map((page) => ({ page, message })));
+    i = j + 1;
+  }
+  // With no number from KDP to hold a file to, this warns and doesn't stop it.
+  results.push(result('blank-pages', 'No excessive blank pages', tooMany, blank.length ? 'every blank page is one the layout needs, or one of the few at the end' : 'no blank pages', `KDP lists excessive blank pages as a common reason a file fails, and gives no number. By Press’s own measure: ${tooMany[0]?.message}`, { advice: true }));
+  results.push(result('placeholder', 'No placeholder text', placeholders, 'no text left to be filled in', `text that looks left to be filled in: “${placeholders[0]?.message}”`));
+
   // --- the file ---
   results.push({ id: 'file-size', title: 'File is within KDP\'s size', ok: buffer.length <= FILE.max_bytes, pages: [], summary: `${(buffer.length / 1024 / 1024).toFixed(1)} MB of ${FILE.max_bytes / 1024 / 1024} MB` });
   const root = doc.dictOf(doc.trailer.Root) ?? {};
@@ -173,9 +267,16 @@ function runChecks(buffer, spec) {
   if (doc.trailer.Encrypt !== undefined) extras.push('the file is encrypted');
   if (root.Outlines !== undefined) extras.push('it has bookmarks');
   if (root.AcroForm !== undefined) extras.push('it has form fields');
+  if (root.OCProperties !== undefined) extras.push('it has layers');
+  if (hidden.length) extras.push(`text that is not shown on pages ${list(hidden.map((f) => f.page))}`);
   const annotated = pages.filter((p) => (doc.resolve(p.dict.Annots) ?? []).length).map((p) => p.number);
   if (annotated.length) extras.push(`links or annotations on pages ${list(annotated)}`);
-  results.push({ id: 'clean', title: 'No bookmarks, links, annotations or encryption', ok: extras.length === 0, pages: annotated, summary: extras.length ? extras.join('; ') : 'none of them', ...(extras.length > 1 ? { parts: extras } : {}) });
+  const unclean = [...new Set([...annotated, ...hidden.map((f) => f.page)])].sort((a, b) => a - b);
+  results.push({ id: 'clean', title: 'No bookmarks, links, annotations, hidden things or encryption', ok: extras.length === 0, pages: unclean, findings: unclean.map((page) => ({ page, message: annotated.includes(page) ? 'a link or other annotation' : 'text that is not shown' })), summary: extras.length ? extras.join('; ') : 'none of them', ...(extras.length > 1 ? { parts: extras } : {}) });
+  // KDP's guidelines list metadata among the things a file should not contain.
+  const info = doc.dictOf(doc.trailer.Info) ?? {};
+  const described = [...Object.keys(info), ...(root.Metadata !== undefined ? ['XMP'] : [])];
+  results.push({ id: 'no-metadata', title: 'No document details inside the file', ok: described.length === 0, pages: [], summary: described.length ? `the file carries its own details: ${described.join(', ')}` : 'the file carries no details of its own' });
 
   return { ok: results.every((r) => r.ok), results, pages: count };
 }

@@ -18,8 +18,10 @@ function fontObject(kind, add) {
   throw new Error(kind);
 }
 
-// pages: [{ size: [w, h] (points), text: [{ x, y, size }], font, graphics: string, extGState, annots, trim: [..], bleedBox: [..] }]
-function makePdf({ pages, outlines = false, encrypt = false }) {
+// pages: [{ size: [w, h] (points), text: [{ x, y, size, string }], font, graphics: string, extGState, annots, trim: [..],
+//   bleedBox: [..], picture: { pixels: [w, h], at: [x, y, width, height] } }]. `string` is what the text says; without it,
+//   one unnamed letter is shown.
+function makePdf({ pages, outlines = false, encrypt = false, info = null, metadata = false, layers = false }) {
   const objects = new Map();
   let next = 1;
   const add = (value) => {
@@ -37,7 +39,14 @@ function makePdf({ pages, outlines = false, encrypt = false }) {
     if (!fontCache.has(fontKind)) fontCache.set(fontKind, add(fontObject(fontKind, add)));
     const resources = { Font: { F1: fontCache.get(fontKind) } };
     if (spec.extGState) resources.ExtGState = { G1: add(spec.extGState) };
-    const ops = [spec.graphics ?? '', ...(spec.text ?? []).map((t) => `BT /F1 ${t.size ?? 12} Tf 1 0 0 1 ${t.x} ${t.y} Tm <0001> Tj ET`)];
+    const written = (t) => (t.string === undefined ? '<0001>' : `(${t.string.replace(/[\\()]/g, '\\$&')})`);
+    const ops = [spec.graphics ?? '', ...(spec.text ?? []).map((t) => `BT /F1 ${t.size ?? 12} Tf 1 0 0 1 ${t.x} ${t.y} Tm ${written(t)} Tj ET`)];
+    if (spec.picture) {
+      const [width, height] = spec.picture.pixels;
+      resources.XObject = { I1: add(stream('x', { Type: name('XObject'), Subtype: name('Image'), Width: width, Height: height })) };
+      const [x, y, across, down] = spec.picture.at;
+      ops.push(`q ${across} 0 0 ${down} ${x} ${y} cm /I1 Do Q`);
+    }
     const contents = add(stream(ops.join('\n')));
     const page = { Type: name('Page'), Parent: pagesRef, MediaBox: [0, 0, w, h], Resources: resources, Contents: contents };
     if (spec.trim) page.TrimBox = spec.trim;
@@ -51,6 +60,9 @@ function makePdf({ pages, outlines = false, encrypt = false }) {
   objects.set(rootRef.num, catalog);
   const trailer = { Root: rootRef };
   if (encrypt) trailer.Encrypt = add({ Filter: name('Standard') });
+  if (info) trailer.Info = add(Object.fromEntries(Object.entries(info).map(([key, value]) => [key, new PdfString(Buffer.from(value, 'latin1'))])));
+  if (metadata) catalog.Metadata = add(stream('<x:xmpmeta/>', { Type: name('Metadata') }));
+  if (layers) catalog.OCProperties = { OCGs: [] };
   return writePdf({ objects, trailer });
 }
 
