@@ -100,7 +100,7 @@ it, before the 1.0 work below.
 | A book in each trim size passes KDP's previewer | **Not done.** It needs the owner's KDP account |
 | One word changed in RT Story Tracker moves only its page | Passed in the tests with an `.rtbook` made by the test. Story Tracker can't send one yet |
 | Menus, Help and About in RT Markdown Reader's words, and every theme with every look passing contrast | Passes in CI on all three systems |
-| Installs on a clean computer with nothing else | **Not tried by hand.** CI builds all three installers and runs the app inside each |
+| Installs on a clean computer with nothing else | **Not tried by hand.** CI builds the Windows, Mac and Linux installers and runs the app as built for each (on a Mac, the Apple silicon one). It doesn't run an installer |
 | Updates from the release before without losing anything | A project made by 0.1.0-alpha.0's own code opened with every chapter, word and setting. Installing over an old install wasn't tried |
 | Tests pass on Windows, Mac and Linux | They run in CI on every push |
 

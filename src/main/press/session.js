@@ -30,6 +30,28 @@ function chapterFiles(folder) {
   return ordered.map((x, i) => ({ number: byNumber ? x.num : i + 1, file: path.join(folder, x.n) }));
 }
 
+// How much of two books' text is the same: the part of the smaller one's paragraphs that the other has too. Quotes are left
+// out of the comparison, since one reading of a file may have curled them and another not.
+function sharedText(a, b) {
+  const paragraphs = (book) => new Set(book.sections.filter((s) => s.type === 'chapter').flatMap((s) => textOfNode(s.document).split('\n'))
+    .map((line) => line.replace(/["'\u2018-\u201F\u00AB\u00BB\u202F]/gu, '').trim()).filter((line) => line.length >= 20));
+  const [one, two] = [paragraphs(a), paragraphs(b)];
+  const [fewer, more] = one.size <= two.size ? [one, two] : [two, one];
+  return fewer.size ? [...fewer].filter((line) => more.has(line)).length / fewer.size : 0;
+}
+const SAME_BOOK = 0.2;
+
+// Whether a book just read is the one already here, read again. RT Story Tracker says which book it is. A file or a folder
+// says only its name, which two books can share, so it must also be in the same place or hold much of the same text. A project
+// from before Press kept a book's source is known by its text alone.
+function sameBook(before, after) {
+  if (!before) return false;
+  const [was, is] = [before.source, after.source];
+  if (!was?.key) return sharedText(before, after) >= SAME_BOOK;
+  if (was.key !== is.key) return false;
+  return is.type === 'story-tracker' || (Boolean(was.path) && was.path === is.path) || sharedText(before, after) >= SAME_BOOK;
+}
+
 class Session {
   constructor({ store, workDir, fontFolder, computerFontFolders = null, resourcesPath = null, themes = new ThemeShelf(), now = () => new Date() }) {
     this.themes = themes;
@@ -120,7 +142,7 @@ class Session {
     const name = path.basename(folder);
     const key = `word-folder:${name.toLowerCase()}`;
     const book = assembleBook({ title: name, chapters: imported.chapters, language: this.settings.language });
-    book.source = { type: 'files', from: 'word-folder', key, name };
+    book.source = { type: 'files', from: 'word-folder', key, name, path: path.resolve(folder) };
     return this.takeBook({
       book,
       details: { title: name },
@@ -147,6 +169,7 @@ class Session {
       return { error: error.message };
     }
     const name = path.basename(file);
+    if (read.book.source.type === 'files') read.book.source.path = path.resolve(file);
     const answer = this.takeBook({
       book: read.book,
       details: read.details,
@@ -174,7 +197,7 @@ class Session {
   // Puts a book that was just read in the project. The same book again is a refresh: the design, the keep list and the pages
   // added here stay. Another book takes the place of the one that is here.
   takeBook({ book, details, language = null, cover = null, report, confirmed }) {
-    const same = Boolean(this.book?.source?.key) && this.book.source.key === book.source.key;
+    const same = sameBook(this.book, book);
     if (!confirmed && this.hasBook) {
       if (same && this.book.edited) return { confirm: 'corrections' };
       if (!same && (this.book.edited || this.book.sections.some((s) => s.own && !s.generated && (s.type === 'part' || s.document?.content.length)))) return { confirm: 'another' };
@@ -197,9 +220,11 @@ class Session {
       this.store.set('layout', null);
       this.store.set('compare_with', null);
     }
-    // A title and an author typed before the first book came in are kept.
-    const typed = this.hasBook && !same ? { title: '', subtitle: '', author: this.details.author } : this.details;
-    this.details = { title: typed.title || details.title || '', subtitle: typed.subtitle || details.subtitle || '', author: typed.author || details.author || '' };
+    // What was typed here stays with the same book, and what was typed before the first book came in stays too. Another book
+    // has its own title; its author's name is the one in its file, or where it has none, the name that was here.
+    const another = this.hasBook && !same;
+    const typed = another ? { title: '', subtitle: '', author: '' } : this.details;
+    this.details = { title: typed.title || details.title || '', subtitle: typed.subtitle || details.subtitle || '', author: typed.author || details.author || (another ? this.details.author : '') };
     // A book that came with its own title page switches keeps them as they are set.
     this.book = bookPages.followSwitches(next, settings);
     this.settings = settings;

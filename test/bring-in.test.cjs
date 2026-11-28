@@ -170,3 +170,51 @@ test('one word changed in the source changes only its page', { skip }, async () 
   assert.ok(page >= rebuilt.startPages['st-practice-3'] && page < rebuilt.startPages['st-practice-4'], `page ${page} is in the third chapter`);
   assert.equal((await s.build()).refresh, null, 'said once, after the refresh');
 });
+
+// Found by rereading how "the same book" was decided: by the file's or the folder's name alone.
+const story = (words, count = 8) => `# One\n\n${Array.from({ length: count }, (_, i) => `The ${words} came to paragraph ${i} of the first part and stayed a while.`).join('\n\n')}\n`;
+const inFolder = (folder, name, text) => {
+  const dir = path.join(scratch, folder);
+  fs.mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, name);
+  fs.writeFileSync(file, text);
+  return file;
+};
+
+test('two different books whose files share a name are two books: nothing of one reaches the other', () => {
+  const s = session();
+  s.openFile(inFolder('first', 'manuscript.md', story('ferryman')));
+  const added = s.addPage('dedication');
+  s.editPage(added.page, { text: 'For the ferryman’s mother.' });
+  s.setKept('A sentence of the first book.', true);
+  const other = inFolder('second', 'manuscript.md', story('lighthouse keeper'));
+  assert.deepEqual(s.openFile(other), { confirm: 'another' });
+  const next = s.openFile(other, { confirmed: true });
+  assert.deepEqual([next.refreshed, kinds(next), next.keepList], [false, ['title-page', 'chapter'], []]);
+});
+
+test('a book moved to another folder, or saved there after revising, is still the same book', () => {
+  const s = session();
+  s.openFile(inFolder('drafts', 'novel.md', story('ferryman')));
+  const added = s.addPage('dedication');
+  // Most paragraphs rewritten, some left as they were.
+  const revised = `${story('ferryman', 3)}\n${Array.from({ length: 5 }, (_, i) => `A wholly new paragraph, number ${i}, written for the second draft.`).join('\n\n')}\n`;
+  const again = s.openFile(inFolder('final', 'novel.md', revised));
+  assert.equal(again.refreshed, true);
+  assert.ok(again.pages.some((p) => p.id === added.page));
+  // The very same file is the same book however much of it changed.
+  const rewritten = s.openFile(inFolder('final', 'novel.md', story('stranger')));
+  assert.equal(rewritten.refreshed, true);
+});
+
+test('another book brings its own author; one without an author keeps the name that was there', () => {
+  const s = session();
+  s.openFile(markdown('x.md', `---\nauthor: First Writer\n---\n${story('ferryman')}`));
+  let next = s.openFile(markdown('y.md', `---\nauthor: Second Writer\n---\n${story('lighthouse keeper')}`), { confirmed: true });
+  assert.equal(next.details.author, 'Second Writer');
+  next = s.openFile(markdown('z.md', story('baker')), { confirmed: true });
+  assert.equal(next.details.author, 'Second Writer');
+  const fresh = session();
+  fresh.setDetails({ title: '', author: 'Typed First' });
+  assert.equal(fresh.openFile(markdown('x.md', `---\nauthor: In The File\n---\n${story('ferryman')}`)).details.author, 'Typed First', 'what was typed before any book is kept');
+});

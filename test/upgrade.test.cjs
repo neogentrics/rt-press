@@ -8,6 +8,7 @@ const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 const { Session } = require('../src/main/press/session');
+const { toText } = require('../src/shared/page-text');
 const { openStore } = require('../src/main/press/store');
 const { practiceBook } = require('../src/main/press/practice');
 const { prepare, sources } = require('../src/main/typeset/bundled-fonts');
@@ -40,6 +41,14 @@ test('a project made by 0.1.0-alpha.0 opens with every word and every setting, a
   assert.deepEqual(session.book.sections.filter((s) => s.type === 'chapter'), sections, 'every chapter, with every word');
   assert.deepEqual(state.pages.slice(0, 3).map((p) => p.kind ?? p.type), ['title-page', 'contents', 'chapter'], 'the two switches are now pages that can be moved');
   assert.equal(state.pages[2].editable, true, 'its chapters can be corrected');
+  // Bringing the same words in again, as a file now, is the same book: the settings that belong to it stay.
+  assert.equal(session.setSettings({ ...session.settings, pin_pages: 64 }).error, undefined);
+  const file = path.join(scratch, 'again.md');
+  fs.writeFileSync(file, sections.map((s) => `# ${s.title}\n\n${toText(s.document).replace(/[“”]/g, '"')}`).join('\n\n'));
+  const again = session.openFile(file);
+  assert.deepEqual([again.confirm, again.refreshed, again.settings.pin_pages], [undefined, true, 64]);
+  assert.equal(session.setSettings({ ...session.settings, pin_pages: null }).error, undefined);
+
   const built = await session.build();
   assert.equal(built.ok, true, built.messages);
   assert.equal(built.ready, true, JSON.stringify(built.checks.filter((c) => !c.ok)));

@@ -41,6 +41,6 @@ Its words stay as Story Tracker has them: change them there, send the book again
 
 ## Bringing a book in again
 
-When it is the same book (the same file or folder, or the same book in Story Tracker), the pages you added go back where they were. After the next build, RT Press says which pages changed and which chapters now start somewhere else. A different book takes the place of the one that is open, and RT Press asks first if you would lose work.
+When it is the same book, the pages you added go back where they were. For files, that means a file or folder of the same name that is in the same place or holds much of the same text. For Story Tracker, it means the same book there. After the next build, RT Press says which pages changed and which chapters now start somewhere else. A different book takes the place of the one that is open, and RT Press asks first if you would lose work.
 
 RT Press holds one book at a time.

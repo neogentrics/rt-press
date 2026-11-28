@@ -172,7 +172,8 @@ Sans Symbols 2 has one style: a book that asks either for more is stopped, not f
 
 **Size:** the fonts are 8.4 million bytes unpacked. On Linux they made the AppImage 3.5 MiB bigger, to 151.9 MiB, and the
 `.deb` 2.4 MiB bigger, to 120.2 MiB (an earlier version of this entry said MB; a MiB is 1,048,576 bytes). CI measures all
-three systems' installers on every push.
+three systems' installers on every push. With all of 1.0, on 28 November: Windows 136.5 MiB; Mac 141.7 MiB (Apple
+silicon) and 150.1 MiB (Intel); Linux 152.0 MiB (AppImage) and 121.1 MiB (`.deb`).
 
 **Where they come from:** the OFL fonts from the `@expo-google-fonts` packages on npm, which carry Google Fonts' files whole,
 each pinned to an exact version. TeX Gyre Pagella isn't on npm and CTAN's mirrors aren't dependable, so its four files are in
@@ -340,8 +341,9 @@ carry on and miss the bottom line went from 27 to 17 with the rule above.
   export model. Story Tracker doesn't write the file yet.
 - **Deleting the .rtbook** is the plan's own rule. Press deletes it only after the book is saved in the project, and says
   so, or says that it couldn't. A file Press can't read is left alone. Word, Markdown and EPUB files are never changed.
-- **The same book** is the same book id from Story Tracker, or the same file or folder name from files. Anything else is
-  another book, which takes the place of the one that is open.
+- **The same book** is the same book id from Story Tracker. From files it is a file or folder of the same name that is also
+  in the same place or shares at least a fifth of its paragraphs: a name alone could be two books called *manuscript*.
+  Anything else is another book, which takes the place of the one that is open.
 - **Press asks first** when bringing a book in would undo corrections made here, or would drop pages written here for
   another book.
 - **The matter in Story Tracker's book details** (copyright, dedication, acknowledgements, about the author, also by, stay
