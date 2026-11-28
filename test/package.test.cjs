@@ -51,6 +51,29 @@ test('the licences of what ships travel with the app, and the notices name each 
   }
 });
 
+// The notices ship with the app, so a version in them has to be the version that ships. A change of version, such as one of
+// Dependabot's, fails here until THIRD_PARTY_NOTICES.md says the same.
+test('every version in the notices is the version Press is built with', () => {
+  const root = path.join(__dirname, '..');
+  const lock = require('../package-lock.json');
+  const { TYPST_VERSION } = require('../src/shared/typst-version');
+  const lines = fs.readFileSync(path.join(root, 'THIRD_PARTY_NOTICES.md'), 'utf8').split(/\r?\n/).filter((l) => l.startsWith('|'));
+  const rows = lines.map((l) => l.split('|').slice(1, -1).map((cell) => cell.trim())).filter(([name]) => name !== 'Component' && !/^-+$/.test(name));
+  const locked = (name) => lock.packages[`node_modules/${name}`]?.version;
+  const listed = new Set();
+  for (const [label, version] of rows) {
+    // A row may say more about a package in brackets, and two rows are known by what they are rather than by a package's name.
+    const name = label.split(' (')[0];
+    const used = name === 'Typst' ? TYPST_VERSION : locked(name === 'EB Garamond' ? '@fontsource/eb-garamond' : name);
+    assert.ok(used, `"${name}" is in the notices, but nothing says which version Press uses`);
+    assert.equal(version.split(' ')[0], used, `THIRD_PARTY_NOTICES.md says ${name} is ${version.split(' ')[0]}, and Press is built with ${used}`);
+    listed.add(name);
+  }
+  // And nothing that ships is left out: the packages the app needs to run, and Electron itself.
+  for (const name of [...Object.keys(pkg.dependencies), 'electron']) assert.ok(listed.has(name), `${name} ships with the app and has no row in the notices`);
+  assert.ok(listed.has('Typst') && listed.has('EB Garamond'), 'the typesetter and the font ship too');
+});
+
 test('the release workflow builds all three systems, tests them, opens each built app and publishes a hyphenated version as a pre-release', () => {
   const text = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'release.yml'), 'utf8');
   for (const script of ['dist:win', 'dist:mac', 'dist:linux']) assert.match(text, new RegExp(script));
