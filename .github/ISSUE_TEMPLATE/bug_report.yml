@@ -1,0 +1,39 @@
+name: Bug report
+description: A page, a check or the app shows something wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please don't paste your unpublished manuscript, ISBNs, accounts or logins. Describe what you did, or use a made-up book.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect to see, and what did you see instead? Screenshots help a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps that cause it
+      description: What you clicked or entered, in order.
+  - type: input
+    id: setup
+    attributes:
+      label: Trim size and paper
+      description: Only if it is about a page, the page count or the cover.
+      placeholder: "6 x 9, cream"
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: The version in the name of the file you installed, or in Help, About.
+      placeholder: "0.1.0-alpha.0"
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Windows 11, Windows 10, macOS, Linux]
+    validations:
+      required: true

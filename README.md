@@ -9,12 +9,10 @@ books.
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/neogentrics/rt-press/ci.yml?branch=main&style=for-the-badge&label=tests&labelColor=150e22)](https://github.com/neogentrics/rt-press/actions/workflows/ci.yml)
 [![Platforms](https://img.shields.io/badge/windows%20%7C%20macOS%20%7C%20linux-b79cff?style=for-the-badge&labelColor=150e22)](#what-it-runs-on)
-[![Status](https://img.shields.io/badge/status-step%20zero-9b1c31?style=for-the-badge&labelColor=150e22)](ROADMAP.md#step-zero--prove-the-typesetter)
+[![Status](https://img.shields.io/badge/status-building%201.0-9b1c31?style=for-the-badge&labelColor=150e22)](ROADMAP.md)
 [![Price](https://img.shields.io/badge/price-free-f2b417?style=for-the-badge&labelColor=150e22)](LICENSE)
 
-> **Status: step zero.** The plan was approved on 17 November 2026, and the typesetter is being proved on a real book.
-> There's nothing to download yet. Start with the [roadmap](ROADMAP.md), or follow the work in
-> [the issues](https://github.com/neogentrics/rt-press/issues).
+> **Status: building version 1.0.** Step zero passed its tests, and an alpha, [0.1.0-alpha.0](https://github.com/neogentrics/rt-press/releases/tag/v0.1.0-alpha.0), is out as a pre-release for testing (unsigned, for Windows, Mac and Linux). The work toward 1.0 is on the `v1.0` branch and arrives here when it is ready. Start with the [roadmap](ROADMAP.md), see [what's new](CHANGELOG.md), or follow the work in [the issues](https://github.com/neogentrics/rt-press/issues).
 
 ## What it will do
 
