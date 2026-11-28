@@ -60,7 +60,7 @@ export function createHelp({ run }) {
           h('div', { class: 'help-hero' },
             h('h2', null, 'New here?'),
             h('p', null, 'The hands-on tutorial shows you around in a few minutes, on a practice book.'),
-            h('p', null, h('button', { type: 'button', class: 'primary', id: 'help-tour', onclick: () => act('tutorial') }, 'Start the tutorial'))),
+            h('p', null, h('button', { type: 'button', class: 'primary big-btn', id: 'help-tour', onclick: () => act('tutorial') }, 'Start the tutorial'))),
           h('p', { class: 'help-quick' }, QUICK.map((s) => guides.find((g) => g.slug === s)).filter(Boolean).map((g) => h('button', { type: 'button', translate: 'no', onclick: () => show(g.slug) }, g.title))),
           h('div', { translate: 'no', lang: 'en' }, faq ? render(faq) : []));
       }

@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { FOLDER, readSharedTheme, writeLock } = require('../../src/main/theme/loader');
-const { TOKENS, effectiveLook } = require('../../src/shared/themes');
+const { TOKENS, describeTheme, effectiveLook } = require('../../src/shared/themes');
 const measureContrast = require('./contrast.cjs');
 const { base, command, gone, launch, madeUpChapters, opened, packaged, root, textIs, unnamed, visible } = require('./harness.cjs');
 
@@ -33,10 +33,13 @@ async function systemSettings(window) {
 // A small screen, as on a laptop or a test machine: the dialogs scroll, and half-hidden text is measured too.
 const smallWindow = (app) => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setContentSize(1024, 620));
 
-const onRoot = (window) => window.evaluate(() => ({ theme: document.documentElement.getAttribute('data-theme'), look: document.documentElement.getAttribute('data-surface'), colors: document.documentElement.getAttribute('data-colors') }));
-const rootIs = async (window, theme, look, colors = null) => {
-  await window.waitForFunction(([t, l, c]) => ['data-theme', 'data-surface', 'data-colors'].every((name, i) => document.documentElement.getAttribute(name) === [t, l, c][i]), [theme, look, colors], { timeout: 5000 }).catch(() => {});
-  assert.deepEqual(await onRoot(window), { theme, look, colors });
+// The attributes the shared themes' guide asks for on the root element. `safe` is whether the colour-safe colours are on.
+const ATTRIBUTES = ['data-theme', 'data-tone', 'data-surface', 'data-colors'];
+const onRoot = (window) => window.evaluate((names) => names.map((name) => document.documentElement.getAttribute(name)), ATTRIBUTES);
+const rootIs = async (window, theme, look, safe = false) => {
+  const wanted = theme ? [theme, describeTheme(theme).tone === 'dark' ? 'dark' : 'light', look, safe ? 'safe' : 'normal'] : [null, null, null, null];
+  await window.waitForFunction(([names, values]) => names.every((name, i) => document.documentElement.getAttribute(name) === values[i]), [ATTRIBUTES, wanted], { timeout: 5000 }).catch(() => {});
+  assert.deepEqual(await onRoot(window), wanted);
 };
 const missingTokens = (window) => window.evaluate((tokens) => tokens.filter((t) => !getComputedStyle(document.documentElement).getPropertyValue(t).trim()), TOKENS);
 const checked = (app, id) => app.evaluate(({ Menu }, i) => Menu.getApplicationMenu().getMenuItemById(i)?.checked ?? null, id);
@@ -49,11 +52,11 @@ async function withBook(window) {
   await window.click('#build');
   await window.waitForSelector('#results-title:has-text("Ready to save")', { timeout: 120000 });
   await window.waitForFunction(() => document.getElementById('page-right').naturalWidth > 0);
-  await window.evaluate(() => { document.getElementById('checks-box').open = true; });
+  await window.evaluate(() => { for (const id of ['checks-box', 'turns-box']) document.getElementById(id).open = true; });
 }
 
 // Every theme with every look, with and without the colour-safe colours, chosen from the menus. Returns what fell short.
-async function matrix(app, window, offered, { except = [] } = {}) {
+async function matrix(app, window, offered, { except = [], windows = [] } = {}) {
   const short = [];
   let combinations = 0;
   for (const { id: theme } of offered.themes) {
@@ -65,7 +68,7 @@ async function matrix(app, window, offered, { except = [] } = {}) {
         if (offered.colorSafe && (await checked(app, 'color-safe')) !== safe) await command(window, 'color-safe');
         const drawn = effectiveLook(look, theme, offered.looks);
         const where = `${theme}, ${look}${safe ? ', colour-safe' : ''}`;
-        await rootIs(window, theme, drawn, safe ? 'safe' : null);
+        await rootIs(window, theme, drawn, safe);
         assert.deepEqual(await missingTokens(window), [], `${where}: the theme defines every token`);
         const found = await measureContrast(app, window);
         assert.ok(found.measured > 60, `${where}: ${found.measured} pieces of text and icons measured`);
@@ -84,6 +87,15 @@ async function matrix(app, window, offered, { except = [] } = {}) {
           short.push(...(await measureContrast(app, window)).failures.map((f) => `${where}, theme pop-up: ${f}`));
           await window.keyboard.press('Escape');
           await window.waitForSelector('#theme-menu', { state: 'hidden' });
+          // And the app's other windows, where they're asked for.
+          for (const name of windows) {
+            await command(window, name);
+            await visible(window, 'dialog[open]');
+            await new Promise((resolve) => setTimeout(resolve, 150));
+            short.push(...(await measureContrast(app, window)).failures.map((f) => `${where}, ${name}: ${f}`));
+            await window.keyboard.press('Escape');
+            await gone(window, 'dialog[open]');
+          }
         }
       }
     }
@@ -131,7 +143,7 @@ async function fixtureThemes(chapters) {
     await window.click('#theme-menu button[data-value="metallic"]');
     await rootIs(window, 'dark', 'metallic');
     await window.check('#pop-colorsafe');
-    await rootIs(window, 'dark', 'metallic', 'safe');
+    await rootIs(window, 'dark', 'metallic', true);
     await window.keyboard.press('Escape');
     await window.waitForSelector('#theme-menu', { state: 'hidden' });
 
@@ -181,7 +193,7 @@ async function fixtureThemes(chapters) {
 
     await command(window, 'theme-unreadable');
     await command(window, 'look-metallic');
-    await rootIs(window, 'unreadable', 'metallic', (await checked(app, 'color-safe')) ? 'safe' : null);
+    await rootIs(window, 'unreadable', 'metallic', await checked(app, 'color-safe'));
     const bad = await measureContrast(app, window);
     assert.ok(bad.failures.length > 3, `the measurement catches a theme that can't be read: ${bad.failures.length} caught`);
 
@@ -207,7 +219,7 @@ async function fixtureThemes(chapters) {
   app = await launch(own);
   try {
     const { window, errors } = await opened(app);
-    await rootIs(window, 'dark', 'metallic', 'safe');
+    await rootIs(window, 'dark', 'metallic', true);
     assert.deepEqual(errors, []);
   } finally {
     await app.close();
@@ -219,7 +231,7 @@ async function fixtureThemes(chapters) {
   app = await launch({ ...own, RTPRESS_THEME_DIR: tampered });
   try {
     const { window, errors } = await opened(app);
-    await rootIs(window, null, null);
+    await rootIs(window, null);
     // What is left is the choice there is without the suite's themes: the system's light or dark.
     assert.equal(await app.evaluate(({ Menu }) => Boolean(Menu.getApplicationMenu().getMenuItemById('theme-contrast'))), false, 'none of the refused themes is in the menu');
     assert.match(await window.textContent('#bars'), /The suite’s themes weren’t loaded\.theme\.css does not match theme\.lock/);
@@ -250,7 +262,7 @@ async function suiteThemes(chapters) {
     await visible(window, '#tour-welcome');
     await window.click('#tour-not-now');
     await withBook(window);
-    const all = await matrix(app, window, offered);
+    const all = await matrix(app, window, offered, { windows: ['help-center', 'go-to', 'about'] });
     assert.deepEqual(all.short, [], 'every one of the suite\'s themes meets WCAG AA with every look');
     assert.deepEqual(errors, [], 'the window reported no errors');
     console.log(`themes: ${offered.source} ${offered.tag} passed, ${all.combinations} combinations`);

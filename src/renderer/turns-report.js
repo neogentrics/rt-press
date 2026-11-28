@@ -21,7 +21,7 @@ export function turnsReport({ build, keepList, change, showPage }) {
     return h('button', { type: 'button', class: 'keep', 'data-keep': String(!kept), onclick: () => change(sentence, !kept) }, kept ? 'Mend it again' : 'Keep split');
   };
   const row = (entry, extra) => h('li', null,
-    entry.page ? h('button', { type: 'button', class: 'link page', onclick: () => showPage(entry.page) }, `Page ${entry.page}`) : null,
+    entry.page ? h('button', { type: 'button', class: 'link to-page', onclick: () => showPage(entry.page) }, `Page ${entry.page}`) : null,
     entry.title ? h('span', { class: 'where', translate: 'no' }, entry.title) : null,
     entry.sentence ? h('q', { translate: 'no' }, entry.sentence) : entry.line ? h('span', { class: 'line', translate: 'no' }, `…${entry.line}`) : null,
     extra ? h('span', { class: 'why' }, extra) : null,
@@ -41,6 +41,6 @@ export function turnsReport({ build, keepList, change, showPage }) {
     group('turns-moved', `Moved to the next page: ${repair.moved.length}`, repair.moved, (e) => row(e)),
     group('turns-idle', `On your list, but at no page turn now: ${idle.length}`, idle, (sentence) => row({ sentence })),
     pages.length ? h('section', { id: 'turns-uneven' }, h('h3', null, `Pages ending above or below the bottom line: ${pages.length}`),
-      h('p', { class: 'page-list' }, pages.map((n) => h('button', { type: 'button', class: 'link page', onclick: () => showPage(n) }, `Page ${n}`)))) : null,
+      h('p', { class: 'page-list' }, pages.map((n) => h('button', { type: 'button', class: 'link to-page', onclick: () => showPage(n) }, `Page ${n}`)))) : null,
   ].filter(Boolean);
 }

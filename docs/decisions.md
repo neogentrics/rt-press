@@ -103,6 +103,9 @@ Audio Studio. Press never records, edits or checks audio.
 
 ✅ **Decided 27 November 2026, by the planning session at the owner's invitation: 1.0 ships with light and dark, and the ten shared themes and the looks come in 1.1.** The shared themes file isn't ready (the repo holds only a README until RT Markdown Reader's look update merges), and a 1.0 shouldn't wait on another app. The loader, tokens and lock check are built in 1.0, so 1.1 adds the files, not a new design. If the shared file is ready before 1.0 is tagged, it goes into 1.0.
 
+✅ **It was, the same day: `recon-theme` was tagged v0.1.0, so the ten themes and the looks are in 1.0.** *Customize Theme* and
+keeping themes in the shared folder are not built, and stay in 1.1.
+
 ### The icon
 
 ✅ **Approved 27 November 2026: the unfolded book cover on a dark tile.** The owner rejected the first draft because it looked
@@ -167,32 +170,34 @@ all of them. So Press takes in the suite's one shared themes file (tokens, theme
 keeping its own copy, and keeps themes it adds or loads in the shared folder for every app. The file lives in the private
 repo `neogentrics/recon-theme`. A script copies it into Press at a pinned tag and writes a `theme.lock` (a hash of the copied
 files); Press commits both, so building never needs access to the private repo, and a test fails if the copy was edited by
-hand or no longer matches the lock. The files move in after RT Markdown Reader's 3.13.x look update merges. Until then
-RT Markdown Reader's files are the source, and Press does no theme work until the planning session says go.
+hand or no longer matches the lock. The files arrived on 27 November, as `recon-theme` v0.1.0.
 
-### How Press takes the themes in, until the shared repo says otherwise
+### How Press takes the themes in
 
-✅ Built by the build session, 27 November 2026, on the planning session's go for everything that doesn't depend on the colours.
-The shared repo has no files yet and names no file or lock format, so these are Press's choices, to be checked against the
-files when they arrive:
+✅ The build session, 27 November 2026, first built without the files and then matched to `recon-theme` v0.1.0 and its guide.
 
-- `npm run theme:sync -- --tag <version>` copies the repo at that tag (all but documents and dot files, with LF line endings)
-  into `src/theme/` and writes `theme.lock`: the source, the tag, a SHA-256 for each file, and one hash over that list. The old
-  copy is replaced only once the new one passes the app's own check.
+- `npm run theme:sync -- --tag <version>` copies the files the repo's `modules.json` lists (`theme.css`, `glass.css`,
+  `metallic.css` and `brand.js`), byte for byte but for line endings, into `src/theme/`, and writes `theme.lock`: the source,
+  the tag, a SHA-256 for each file, and one hash over that list. The lock's shape is Press's own, since the repo names none.
+  The old copy is replaced only once the new one passes the app's own check.
 - The app, the build and the tests read the copy the same way. A changed, added, missing or linked file, or a stylesheet that
   imports or fetches anything, refuses the whole copy. The window then keeps the system's colours, light or dark, and says why.
-- Which themes, looks and colour-safe choices exist is read from the selectors the theming file prescribes on the root element
-  (`data-theme`, `data-surface`, `data-colors`). `theme.css` is applied first, then the other stylesheets by name.
-- With no themes in the build, the theme button, *View → Theme* and Preferences offer *Auto*, *Paper* and *Night*, the suite's
-  names for its light and dark. They are the system's own colours, asked of Electron, not a palette of Press's. Their ids are
-  the suite's, so a choice carries over to its Paper and Night when the themes arrive. There is no *Look* or colour-safe
-  choice until then.
-- Press has no colours of its own for a theme to fall back on. The stand-in colours apply only while no theme is on the window,
-  so a theme that leaves a token out fails the tests instead of being quietly filled in.
+- On the root element Press sets what the guide asks: `data-theme`, `data-tone`, `data-surface` and `data-colors`. It uses the
+  class names the looks style.
+- The shared files are not edited. Where Press's window met them badly, Press's own styles changed: the toolbar and sidebar
+  take their text colour from their own tokens; text in the main area sits on sheets of the page colour, never on the desk;
+  the Help Center's list isn't painted as a bar; and a few faint labels use a stronger text token.
+- **One setting of the Glass look is changed.** Press's page preview is white in every theme, and showed through glass dialogs
+  as a pale patch behind their words. Press dims more behind a dialog, and in dark themes sets `--g-pane`, the share of a
+  pane that is its own colour, to 94% (the look's own is 74%).
+- With no usable themes in a build, the theme button, *View → Theme* and Preferences offer *Auto*, *Paper* and *Night* as the
+  system's own light and dark.
+- The stand-in colours apply only while no theme is on the window, so a theme that leaves a token out fails the tests instead
+  of being quietly filled in.
 - Contrast is measured as RT Markdown Reader measures its looks: each piece of text and each icon against the worst pixel
-  behind it, in a picture of the real window.
-- Not built: Reader's *Typeface* and *Customize colours & fonts…*, and themes kept in the suite's shared folder. *Page width*
-  has no use in a print preview.
+  behind it, in a picture of the real window, in every theme with every look.
+- Not built: *Customize Theme* (`brand.js` is copied but not used), *Typeface*, and themes kept in the suite's shared folder.
+  *Page width* has no use in a print preview.
 
 ### The line left before a moved sentence
 

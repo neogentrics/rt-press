@@ -13,7 +13,7 @@ RT Press lays out a finished book for print, checks it against your printer's ru
 
 ## Finding your way around
 
-- **The toolbar** has the things you use most: import, build, save, Go to, the theme button, Preferences and help. The theme button keeps the window light or dark, or has it follow your system (*Auto*).
+- **The toolbar** has the things you use most: import, build, save, Go to, the theme button, Preferences and help. The theme button sets the window's theme and look; *Auto* follows your system's light or dark. These colour the app around your book, not the book: the page preview stays white.
 - **Go to** (`Ctrl+K`, or `Cmd+K` on a Mac) jumps to a chapter. Type `>` there to run any command by name.
 - **The menus** hold commands. Every setting for the app is in [Preferences](#do=preferences).
 

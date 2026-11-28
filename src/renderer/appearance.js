@@ -1,5 +1,5 @@
-// The window's theme and look, applied the way the suite's theming file says: data-theme, data-surface and data-colors="safe" on
-// the root element, which the shared themes file's stylesheet answers to. The same choices are offered by the theme button (a
+// The window's theme and look, applied the way the suite's theming file and the shared themes' own guide say: data-theme,
+// data-tone, data-surface and data-colors on the root element, which the shared stylesheets answer to. The same choices are offered by the theme button (a
 // pop-up with Theme, Look and Colour-safe colours, in RT Markdown Reader's words) and by Preferences → Appearance. Nothing here
 // names a colour.
 import { effectiveLook, effectiveTheme } from '../shared/themes.js';
@@ -21,11 +21,13 @@ export function createAppearance({ changed }) {
     const root = document.documentElement;
     const theme = info.state === 'ready' ? effectiveTheme(info.settings.theme, info.themes, media.dark.matches) : null;
     const set = (name, value) => (value ? root.setAttribute(name, value) : root.removeAttribute(name));
+    const tone = info.themes.find((t) => t.id === theme)?.tone ?? null;
     set('data-theme', theme);
+    set('data-tone', theme ? (tone === 'dark' ? 'dark' : 'light') : null);
     set('data-surface', theme ? effectiveLook(info.settings.surface, theme, info.looks, Object.fromEntries(Object.entries(media).map(([k, q]) => [k, q.matches]))) : null);
-    set('data-colors', theme && info.colorSafe && info.settings.colorSafe ? 'safe' : null);
+    set('data-colors', theme ? (info.colorSafe && info.settings.colorSafe ? 'safe' : 'normal') : null);
     // The system's own parts (lists, scroll bars) follow the theme's light or dark.
-    root.style.colorScheme = info.themes.find((t) => t.id === theme)?.tone ?? '';
+    root.style.colorScheme = theme ? tone ?? '' : '';
     for (const view of views) view();
   }
 
@@ -50,7 +52,7 @@ export function createAppearance({ changed }) {
   const segment = (labelId, label, options, current, pick) => h('div', { class: 'pop-row' },
     h('div', { class: 'pop-label', id: labelId }, label),
     h('div', { class: 'seg', role: 'group', 'aria-labelledby': labelId },
-      options.map((o) => h('button', { type: 'button', 'data-value': o.value, 'aria-pressed': String(current === o.value), title: o.title ?? null, onclick: () => pick(o.value) }, o.text))));
+      options.map((o) => h('button', { type: 'button', class: current === o.value ? 'active' : null, 'data-value': o.value, 'aria-pressed': String(current === o.value), title: o.title ?? null, onclick: () => pick(o.value) }, o.text))));
 
   // The theme shown as chosen: Auto when the saved one isn't among those offered.
   const chosenTheme = () => (info.themes.some((t) => t.id === info.settings.theme) ? info.settings.theme : 'system');

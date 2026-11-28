@@ -13,7 +13,7 @@ const { syncTheme } = require('../scripts/theme-copy.cjs');
 const { menuTemplate } = require('../src/main/menu');
 const { FOLDER, LOCK, readSharedTheme, writeLock } = require('../src/main/theme/loader');
 const { createTranslator } = require('../src/shared/i18n');
-const { TOKENS, describeTheme, effectiveLook, effectiveTheme, orderLooks, orderThemes } = require('../src/shared/themes');
+const { KNOWN_THEMES, TOKENS, describeTheme, effectiveLook, effectiveTheme, orderLooks, orderThemes } = require('../src/shared/themes');
 
 const root = path.join(__dirname, '..');
 const fixture = path.join(__dirname, 'fixtures', 'theme');
@@ -96,6 +96,15 @@ test('what Press carries in src/theme matches its lock and defines the looks and
   assert.notEqual(read.state, 'refused', read.reason);
 });
 
+test('Press carries the suite\'s ten themes, both looks and the colour-safe colours, as they were tagged', () => {
+  const read = readSharedTheme(FOLDER);
+  assert.deepEqual([read.state, read.source], ['ready', 'neogentrics/recon-theme'], read.reason);
+  assert.match(read.tag, /^v\d+\.\d+\.\d+$/);
+  assert.deepEqual(read.themes.map((t) => t.id), KNOWN_THEMES.map((t) => t.id));
+  assert.deepEqual(read.looks.map((l) => l.id), ['solid', 'metallic', 'glass']);
+  assert.equal(read.colorSafe, true);
+});
+
 test('the made-up themes define every one of the suite\'s tokens', () => {
   const css = fs.readFileSync(path.join(fixture, 'theme.css'), 'utf8');
   const blocks = [...css.matchAll(/:root\[data-theme="([a-z]+)"\] \{([^}]*)\}/g)];
@@ -152,7 +161,9 @@ test('the window\'s stylesheet takes every colour from the suite\'s tokens', () 
   assert.match(interim, /:root:not\(\[data-theme\]\) \{/);
   assert.deepEqual([...interim.matchAll(/^\s*(--[a-z0-9-]+):/gm)].map((m) => m[1]).sort(), [...TOKENS].sort());
   const rest = (css.slice(0, start) + css.slice(end)).replace(/\/\*[\s\S]*?\*\//g, '');
-  assert.deepEqual([...rest.matchAll(/^\s*(--[a-z0-9-]+):/gm)].map((m) => m[1]), [], 'no colour is defined anywhere else');
+  // The one setting of a look that Press changes: how much of a Glass pane is its own colour. It is a share, not a colour.
+  assert.deepEqual([...rest.matchAll(/^\s*(--[a-z0-9-]+):\s*([^;]+);/gm)].map((m) => `${m[1]}: ${m[2]}`), ['--g-pane: 94%'], 'no colour is defined anywhere else');
+  assert.match(fs.readFileSync(path.join(root, 'src', 'theme', 'glass.css'), 'utf8'), /var\(--g-pane\)/, 'the Glass look still has that setting');
   for (const [, name] of rest.matchAll(/var\((--[a-z0-9-]+)/g)) assert.ok(TOKENS.includes(name), `${name} is not one of the suite's tokens`);
   // The one colour written out is the paper under the picture of a printed page.
   const literal = [...rest.matchAll(/#[0-9a-fA-F]{3,8}\b(?![^{};]*\{)|\b(?:rgba?|hsla?|oklch|oklab)\(|\b(?:Canvas|CanvasText|Mark)\b/g)].map((m) => m[0]);
@@ -170,11 +181,22 @@ function themeRepo() {
   const commit = (tag) => { git(repo, 'add', '-A'); git(repo, 'commit', '--quiet', '-m', tag); git(repo, 'tag', tag); };
   fs.writeFileSync(path.join(repo, 'README.md'), '# Themes\n');
   commit('v0');
-  for (const name of fs.readdirSync(fixture)) fs.writeFileSync(path.join(repo, name), fs.readFileSync(path.join(fixture, name), 'utf8').replace(/\r?\n/g, '\r\n'));
-  fs.writeFileSync(path.join(repo, '.gitignore'), 'x\n');
+  // Laid out as the suite's theme repo is: the files an app copies are in theme/ and named in modules.json; the rest stays.
+  fs.mkdirSync(path.join(repo, 'theme'));
+  fs.mkdirSync(path.join(repo, 'test'));
+  for (const name of fs.readdirSync(fixture)) fs.writeFileSync(path.join(repo, 'theme', name), fs.readFileSync(path.join(fixture, name), 'utf8').replace(/\r?\n/g, '\r\n'));
+  const list = (files) => fs.writeFileSync(path.join(repo, 'modules.json'), JSON.stringify({ theme: { files } }));
+  list(fs.readdirSync(fixture));
+  fs.writeFileSync(path.join(repo, 'theme', 'README.md'), '# How to use them\n');
+  fs.writeFileSync(path.join(repo, 'test', 'reference.css'), 'a {}\n');
+  fs.writeFileSync(path.join(repo, 'package.json'), '{}\n');
   commit('v1');
-  fs.appendFileSync(path.join(repo, 'looks.css'), '@import "elsewhere.css";\r\n');
+  fs.appendFileSync(path.join(repo, 'theme', 'looks.css'), '@import "elsewhere.css";\r\n');
   commit('v2');
+  list(['../package.json']);
+  commit('v3');
+  list(['missing.css']);
+  commit('v4');
   return repo;
 }
 
@@ -185,12 +207,14 @@ test('taking themes in copies one version, with LF lines and a lock that holds, 
   assert.equal(fs.existsSync(into), false);
   const result = syncTheme({ repo, tag: 'v1', into });
   assert.deepEqual([result.tag, result.files], ['v1', 3]);
-  assert.deepEqual(fs.readdirSync(into).sort(), ['colorsafe.css', 'looks.css', LOCK, 'theme.css'].sort(), 'no documents or dot files');
+  assert.deepEqual(fs.readdirSync(into).sort(), ['colorsafe.css', 'looks.css', LOCK, 'theme.css'].sort(), 'only what modules.json lists');
   assert.ok(!fs.readFileSync(path.join(into, 'theme.css'), 'utf8').includes('\r'));
   const read = readSharedTheme(into);
   assert.deepEqual([read.state, read.tag, read.source], ['ready', 'v1', 'neogentrics/recon-theme']);
   const held = crypto.createHash('sha256').update(fs.readFileSync(path.join(into, LOCK))).digest('hex');
   assert.throws(() => syncTheme({ repo, tag: 'v2', into }), /Press can't use these themes: looks\.css imports another file/);
+  assert.throws(() => syncTheme({ repo, tag: 'v3', into }), /lists something that is not a theme file/);
+  assert.throws(() => syncTheme({ repo, tag: 'v4', into }), /lists missing\.css, which isn't a file/);
   assert.throws(() => syncTheme({ repo, tag: 'v9', into }), /couldn't be fetched at v9/);
   assert.throws(() => syncTheme({ repo, tag: '--upload-pack=x', into }), /Say which version/);
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(into, LOCK))).digest('hex'), held, 'the copy already there is kept');

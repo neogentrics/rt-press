@@ -128,10 +128,10 @@ decided = [
     ('From alpha to 1.0', 'Through a beta. A version tag, which publishes a build, is pushed only when you say so.'),
     ('One major version per platform', 'KDP is version 1 and everything added for it is a 1.x release. Each new platform makes the next major version: Lulu 2.x, IngramSpark 3.x, Barnes & Noble Press 4.x, Google Play Books 5.x. Inside one, x.0 is its rules and interiors, x.1 its paperback cover, x.2 its hardcover, x.3 what only it has. Chosen 27 November.'),
     ('Audiobooks', 'Press does not make them: RT Audio Studio does the audio. Press supplies the square audiobook cover and the narration text, one file per chapter, from 1.6, for an author who records their own narration. Chosen 27 November.'),
-    ('Shared themes in 1.1', 'Version 1.0 ships light and dark; the ten shared themes and the looks come in 1.1, because the shared themes file is not ready. The plumbing is built in 1.0. If the file is ready first, it goes into 1.0. Decided 27 November.'),
+    ('The shared themes', 'In 1.0: their files were tagged before 1.0 was, which was the condition. All ten themes and the three looks pass the contrast test in the app. Customize Theme stays in 1.1.'),
     ('The icon', 'The unfolded book cover on a dark tile, with a striped spine, crop marks and a barcode. The first draft looked like the other apps icons, so it was redrawn. Approved 27 November.'),
     ('Who keeps the plan', 'The session that builds Press keeps the README, roadmap and decisions true as it goes.'),
-    ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs. The files move in after Reader's 3.13.x look update merges."),
+    ("Where the shared themes file lives", "In the private repo neogentrics/recon-theme. Press copies it in with a script at a pinned tag and commits a theme.lock, so building never needs access, and a test fails if the copy differs."),
     ("Alphas for testing", "You asked on 22 November for CI to create alpha releases like the other apps. 0.1.0-alpha.0 is the first: a pre-release built by the release workflow, unsigned, for you to test."),
     ("Fonts for the comparison", "Open stand-in fonts for now, since the test book's own fonts aren't on the build machine. The page count won't match your PDF exactly, so what doesn't depend on the font is compared. Revisited if an exact match turns out to matter."),
     ('The repo is public', 'So the Bench page can link it, and the suite can list it. Nothing private is in it: your book and build script stay in a folder git ignores.'),
@@ -165,7 +165,7 @@ page = f'''<!DOCTYPE html>
 <div class="kicker"><span class="pulse" aria-hidden="true"></span>1.0 is being built</div>
 <h1 id="nowh">The icon and the suite's frame are done. Page quality is built.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
-<ul><li><b>Done</b><span>V1 and V2 of 8: the new icon, and menus, Help, the tutorial, About, Preferences, updates and three more languages. The window has Auto, light and dark; the ten shared themes are in 1.1.</span></li>
+<ul><li><b>Done</b><span>V1 and V2 of 8: the new icon, and menus, Help, the tutorial, About, Preferences, updates and three more languages. The window has the suite's ten themes and three looks.</span></li>
 <li><b>Now</b><span>V3 is built and waits for your judgement. On the test book Press leaves fewer split sentences than your script, and more uneven pages. One choice is yours: how hard the repair should try, against how even the pages stay.</span></li>
 <li><b>An alpha is out</b><span>0.1.0-alpha.0, from before V1. No new build is published until you ask for one. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>

@@ -33,8 +33,10 @@ function collect() {
         // What shows through a scrolling box stops inside its border (and short of its scroll bar), so a half-hidden line is
         // never measured against the border.
         const outer = node.getBoundingClientRect();
-        const [x, y] = [outer.left + node.clientLeft, outer.top + node.clientTop];
-        [left, top, right, bottom] = [Math.max(left, x), Math.max(top, y), Math.min(right, x + node.clientWidth), Math.min(bottom, y + node.clientHeight)];
+        // Two pixels further in: the looks draw a bright line a pixel or two wide just inside a panel's edge, which text only
+        // crosses while it is being scrolled out of sight.
+        const [x, y] = [outer.left + node.clientLeft + 2, outer.top + node.clientTop + 2];
+        [left, top, right, bottom] = [Math.max(left, x), Math.max(top, y), Math.min(right, x + node.clientWidth - 4), Math.min(bottom, y + node.clientHeight - 4)];
       }
       if (node.matches('dialog, [popover]')) break;
     }
@@ -52,6 +54,8 @@ function collect() {
     if (element.closest('[hidden], :disabled, .visually-hidden, option') || (element.closest('[popover]') && !element.closest('[popover]:popover-open'))) continue;
     const style = getComputedStyle(element);
     if (style.visibility !== 'visible') continue;
+    // What isn't drawn at all, such as the inside of a closed section, still has a place on the page but isn't measured.
+    if (!element.checkVisibility({ contentVisibilityAuto: true, visibilityProperty: true })) continue;
     let opacity = 1;
     for (let node = element; node; node = node.parentElement) opacity *= Number(getComputedStyle(node).opacity);
     if (opacity === 0) continue;

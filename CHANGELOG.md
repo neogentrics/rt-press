@@ -12,7 +12,7 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **An icon of its own**: an unfolded book cover, with a striped spine, crop marks and a barcode.
 - **The window**: an icon toolbar, *Go to*, *About*, *Preferences*, update notices, a Help Center and a first-run tutorial.
 - **Languages**: Spanish, French and German, and right-to-left layouts.
-- **Light, dark and Auto**: a theme button, *View → Theme* and *Preferences → Appearance* offer *Auto*, *Paper* and *Night*, the system's own light and dark. The loader and checks are ready for the suite's shared themes file; the ten shared themes and the looks come in 1.1.
+- **The suite's themes**: Paper, Night, Sepia, Mist, Forest, Dusk, Blue, Red, Yellow and High Contrast, or *Auto*, with the *Solid*, *Metallic* and *Glass* looks and colour-safe colours, from the theme button, *View* and *Preferences → Appearance*. Taken in from the shared theme files, v0.1.0, and measured for contrast in every theme with every look.
 - **Tests for contrast and keyboard reach** in the window, on all three systems.
 - **A page turn report**: what the repair moved, what it couldn't and why, each with its page, and the pages that don't end on the bottom line.
 - **A keep list**: sentences left split across a page turn for suspense. It is saved with the book.

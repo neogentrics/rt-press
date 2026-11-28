@@ -8,7 +8,7 @@ import { icon } from './icons.js';
 function tool({ id, name, accelerator, drawing, onClick, text, primary, platform }) {
   const shortcut = accelerator ? ` (${prettyShortcut(accelerator, platform)})` : '';
   // "tb-btn" is Reader's name for a toolbar button, so the suite's looks can find these too.
-  return h('button', { type: 'button', id, class: `tool tb-btn${primary ? ' primary' : ''}`, title: `${name}${shortcut}`, 'aria-label': text ? null : name, onclick: onClick },
+  return h('button', { type: 'button', id, class: `tool tb-btn${primary ? ' primary tb-primary' : ''}`, title: `${name}${shortcut}`, 'aria-label': text ? null : name, onclick: onClick },
     icon(drawing), text ? h('span', null, text) : null);
 }
 

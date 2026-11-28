@@ -189,8 +189,8 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     const moved = window.locator('#turns-moved li');
     assert.ok(await moved.count() >= 1, 'the made-up book has sentences that were moved');
     const sentence = await moved.first().locator('q').textContent();
-    const there = (await moved.first().locator('button.page').textContent()).replace('Page ', '');
-    await moved.first().locator('button.page').click();
+    const there = (await moved.first().locator('button.to-page').textContent()).replace('Page ', '');
+    await moved.first().locator('button.to-page').click();
     await window.waitForFunction((n) => ['cap-left', 'cap-right'].some((id) => document.getElementById(id).textContent === `Page ${n}`), there);
     assert.deepEqual(await unnamed(window), []);
     await moved.first().locator('button.keep').click();

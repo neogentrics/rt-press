@@ -74,7 +74,7 @@
       <main class="main">
         <p id="step" class="step" role="status" aria-live="polite"></p>
 
-        <section id="results" hidden>
+        <section id="results" class="page card" hidden>
           <h2 id="results-title">Checks</h2>
           <p id="build-summary"></p>
           <details id="checks-box">
@@ -88,7 +88,7 @@
         </section>
 
         <section id="preview" hidden>
-          <div class="pager">
+          <div class="pager page card">
             <button id="first" type="button" aria-label="First spread">First</button>
             <button id="prev" type="button" aria-label="Previous spread">Back</button>
             <span id="spread-label" aria-live="polite"></span>
@@ -102,7 +102,7 @@
           </div>
         </section>
 
-        <div id="empty" class="empty">
+        <div id="empty" class="empty page card">
           <p>Import your chapters to begin.</p>
           <p><button type="button" id="import-empty" class="primary">Import Chapters…</button></p>
         </div>

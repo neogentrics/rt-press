@@ -7,15 +7,26 @@ const path = require('node:path');
 const { readSharedTheme, writeLock } = require('../src/main/theme/loader');
 
 const SOURCE = 'neogentrics/recon-theme';
-const SKIP = /(^|\/)\.|(^|\/)(README|LICENSE|CHANGELOG)[^/]*$|\.md$/i;
+const NAME = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
 const TEXT = /\.(css|json|js|cjs|mjs|txt|svg)$/i;
 
-function walk(folder, within = '') {
-  return fs.readdirSync(path.join(folder, within), { withFileTypes: true }).flatMap((entry) => {
-    const name = within ? `${within}/${entry.name}` : entry.name;
-    if (SKIP.test(name) || entry.isSymbolicLink()) return [];
-    return entry.isDirectory() ? walk(folder, name) : [name];
-  });
+// The files an app copies are the ones the theme repo's modules.json lists under "theme"; they sit in its theme folder. The
+// rest of the repo, such as its tests, stays there.
+function listed(clone, tag) {
+  const none = () => new Error(`There are no theme files at ${tag} yet.`);
+  let names;
+  try {
+    names = JSON.parse(fs.readFileSync(path.join(clone, 'modules.json'), 'utf8')).theme.files;
+  } catch {
+    throw none();
+  }
+  if (!Array.isArray(names) || !names.length) throw none();
+  for (const name of names) {
+    if (typeof name !== 'string' || !NAME.test(name)) throw new Error(`modules.json lists something that is not a theme file: ${JSON.stringify(name)}`);
+    const file = path.join(clone, 'theme', name);
+    if (!fs.existsSync(file) || !fs.lstatSync(file).isFile()) throw new Error(`modules.json lists ${name}, which isn't a file in the theme folder at ${tag}.`);
+  }
+  return names;
 }
 
 // Copies the repo at `tag` into `into` and locks it. The old copy is only replaced once the new one has passed the app's own check.
@@ -29,13 +40,12 @@ function syncTheme({ repo, tag, into, source = SOURCE }) {
     } catch (error) {
       throw new Error(`The themes couldn't be fetched at ${tag}: ${String(error.stderr ?? error.message).trim()}`);
     }
-    const names = walk(clone);
-    if (!names.some((n) => n.endsWith('.css'))) throw new Error(`There are no theme files at ${tag} yet.`);
+    const names = listed(clone, tag);
     const staged = path.join(work, 'staged');
     for (const name of names) {
       const to = path.join(staged, name);
       fs.mkdirSync(path.dirname(to), { recursive: true });
-      const data = fs.readFileSync(path.join(clone, name));
+      const data = fs.readFileSync(path.join(clone, 'theme', name));
       fs.writeFileSync(to, TEXT.test(name) ? data.toString('utf8').replace(/\r\n/g, '\n') : data);
     }
     writeLock(staged, { source, tag });

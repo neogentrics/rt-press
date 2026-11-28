@@ -30,7 +30,9 @@ export function openDialog({ id, label, labelledby, className = '', children, on
   const old = $(id);
   old?.close();
   old?.remove();
-  const dialog = h('dialog', { id, class: className, 'aria-label': label, 'aria-labelledby': labelledby }, children);
+  // "shortcuts" and "big-btn" are what the suite's looks call a dialog and its main button (Reader's names).
+  const dialog = h('dialog', { id, class: `shortcuts ${className}`.trim(), 'aria-label': label, 'aria-labelledby': labelledby }, children);
+  for (const button of dialog.querySelectorAll('button.primary')) button.classList.add('big-btn');
   dialog.addEventListener('close', () => {
     dialog.remove();
     onClose?.();

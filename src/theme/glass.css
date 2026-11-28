@@ -1,0 +1,127 @@
+/* Glass (3.9, rebuilt in 3.13.1): any theme, with its panels and page frosted over colour. The bars, dialogs and pop-ups are
+   panes of frosted glass: a white sheen, a bright line along the top edge, a pale rim and a deep shadow. Every toolbar button
+   is a small pane of its own, the current tab is a raised one, and the search boxes have a glow in the accent colour. The
+   strengths follow the finish Recon Browser has (another of our own apps), as far as the text stays readable.
+
+   As in metallic.css, how strong each layer is comes from the lightness of the text on that surface: dark text means a light
+   surface, which can take a lot of white, and light text means a dark one, where white soon makes the words hard to read.
+
+   The page and the editor get no sheen. Never for printing or exports, and not with High Contrast, forced colours, or for
+   people who've asked their computer for less transparency or more contrast. test/e2e/metallic.e2e.cjs measures the text
+   on it, for every theme. */
+
+@media screen and (prefers-reduced-transparency: no-preference) and (forced-colors: none) and (prefers-contrast: no-preference) {
+  /* ---- which text is on the surface */
+  :root[data-surface="glass"]:not([data-theme="contrast"]) :is(.toolbar, .tabstrip, .sidebar, .speak-bar, .audio-job) { --g-ink: var(--text-soft); }
+  :root[data-surface="glass"]:not([data-theme="contrast"]) :is(dialog.shortcuts, .popover, .find-bar, .palette, .tab.active, .seg button.active, input, select, textarea, .seg) { --g-ink: var(--text); }
+
+  /* ---- the strength of each layer, from --g-ink's lightness (l, from 0 to 1) */
+  :root[data-surface="glass"]:not([data-theme="contrast"]) :is(.toolbar, .tabstrip, .sidebar, .speak-bar, .audio-job, dialog.shortcuts, .popover, .find-bar, .palette, .tab.active, .seg button.active, input, select, textarea, .seg) {
+    --g-hi: oklch(from var(--g-ink) 1 0 0 / clamp(.14, calc(.74 - .8 * l), .55));             /* the sheen, where the light falls */
+    --g-lo: oklch(from var(--g-ink) 1 0 0 / clamp(.02, calc(.187 - .222 * l), .14));          /* and where it has faded to */
+    --g-pane-hi: oklch(from var(--g-ink) 1 0 0 / clamp(.09, calc(.85 - 1.01 * l), .55));    /* the same on a dialog, where there's more small grey text */
+    --g-line: oklch(from var(--g-ink) 1 0 0 / clamp(.30, calc(1.217 - 1.222 * l), .85));      /* the bright line along the top edge */
+    --g-plate: oklch(from var(--g-ink) l c h / clamp(.02, calc(.10 - .085 * l), .07));        /* a button's own pane, tinted toward its text: barely on a dark bar, where that only brightens what white words sit on */
+    --g-drop: oklch(from var(--g-ink) .15 0 0 / clamp(.18, calc(-.033 + .711 * l), .50));     /* the shadow under a bar or a button */
+    --g-deep: oklch(from var(--g-ink) .1 0 0 / clamp(.35, calc(.083 + .889 * l), .70));       /* the long shadow under a dialog */
+    --g-field: oklch(from var(--g-ink) 1 0 0 / clamp(0, calc((.6 - l) * 4), .88));            /* a search box on a light surface is nearly white */
+    --g-well: oklch(from var(--g-ink) .15 0 0 / clamp(.10, calc(-.033 + .444 * l), .30));
+    --g-rim: color-mix(in srgb, var(--chrome-border) 60%, transparent);   /* soft: the sheen and the top line make the shape, not an outline */
+    --g-sheen: linear-gradient(180deg, var(--g-hi) 0%, var(--g-lo) 100%);
+    --g-sheen-panel: linear-gradient(145deg, var(--g-pane-hi) 0%, var(--g-lo) 100%);
+  }
+
+  /* how much of a dialog is its own colour: the rest is what's behind it, blurred. A dim backdrop shows through a light
+     pane as grey, so light themes keep more of their own. */
+  :root[data-surface="glass"]:not([data-theme="contrast"]) { --g-pane: 89%; }
+  :root[data-surface="glass"][data-tone="dark"]:not([data-theme="contrast"]) { --g-pane: 74%; }
+
+  :root[data-surface="glass"]:not([data-theme="contrast"]) {
+    body { background: var(--glass-desk); }
+
+    :is(.toolbar, .tabstrip, .sidebar) {
+      background: var(--g-sheen), color-mix(in srgb, var(--page) 62%, transparent);
+      backdrop-filter: blur(28px) saturate(2);
+      border-color: color-mix(in srgb, #fff 22%, transparent);
+    }
+    .toolbar { box-shadow: inset 0 1px 1px var(--g-line), 0 8px 24px -6px var(--g-drop); }
+    /* the strip's shadow is short: it falls on the top of the sidebar, where small words are */
+    .tabstrip { box-shadow: inset 0 1px 1px var(--g-line), 0 6px 14px -9px var(--g-drop); }
+    /* the sidebar is tall: lit at its top, not from end to end */
+    .sidebar {
+      background: linear-gradient(180deg, var(--g-hi) 0, var(--g-lo) 180px), color-mix(in srgb, var(--page) 62%, transparent);
+      box-shadow: inset 0 1px 1px var(--g-line), inset -1px 0 0 var(--g-line), 6px 0 20px -8px var(--g-drop);
+    }
+
+    /* its buttons: small panes of their own. (No blur of their own: the bar they sit on is already frosted.) */
+    .tb-btn:not(.tb-primary, :disabled) {
+      background: var(--g-sheen), var(--g-plate);
+      border: 1px solid var(--g-rim);
+      box-shadow: inset 0 1px 1px var(--g-line), 0 4px 12px -2px var(--g-drop);
+    }
+    .toolbar .tb-btn:not(.tb-primary, :disabled) { color: var(--heading); }
+    .tb-btn:not(.tb-primary, :disabled):hover { filter: brightness(1.12); }
+    .tb-btn:not(.tb-primary, :disabled):active { box-shadow: inset 0 2px 4px var(--g-well); filter: brightness(.94); }
+    .tb-btn:disabled { border: 1px solid transparent; }
+    /* the main buttons: the accent colour under glass, lit from above; less white over white words */
+    .tb-primary, .big-btn {
+      --g-gloss-hi: oklch(from var(--on-fill, var(--on-accent)) 1 0 0 / clamp(.12, calc(.32 - .20 * l), .22));
+      --g-gloss-lo: oklch(from var(--on-fill, var(--on-accent)) .1 0 0 / clamp(.08, calc(.15 * l), .15));
+      background: linear-gradient(180deg, var(--g-gloss-hi) 0%, var(--g-gloss-lo) 100%), var(--accent-fill, var(--accent));
+      border: 1px solid color-mix(in srgb, var(--accent-fill, var(--accent)) 70%, #fff 30%);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, .5), 0 6px 16px -4px var(--accent-fill, var(--accent));
+    }
+
+    /* the tab you're on: a raised pane with the accent stripe across its top */
+    .tab.active {
+      background: var(--g-sheen), color-mix(in srgb, var(--page) 78%, transparent);
+      border-color: var(--g-rim);
+      box-shadow: inset 0 1px 1px var(--g-line);
+    }
+    .tab.active::after { left: 0; right: 0; height: 2px; }
+
+    .page {
+      background: color-mix(in srgb, var(--page) 86%, transparent);
+      backdrop-filter: blur(26px) saturate(1.4);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, #fff 30%, transparent), 0 16px 48px -12px rgba(0, 0, 0, .35);
+    }
+
+    :is(dialog, .popover) {
+      background: color-mix(in srgb, var(--page) 88%, transparent);
+      backdrop-filter: blur(26px) saturate(1.5);
+    }
+    :is(dialog.shortcuts, .popover, .find-bar, .palette) {
+      background: var(--g-sheen-panel), color-mix(in srgb, var(--page) var(--g-pane), transparent);
+      backdrop-filter: blur(36px) saturate(2);
+      border-color: var(--g-rim);
+      box-shadow: inset 0 1px 1px var(--g-line), 0 24px 60px -8px var(--g-deep);
+    }
+
+    :is(.speak-bar, .audio-job) {
+      background: var(--g-sheen), color-mix(in srgb, var(--inverse-bg) 82%, transparent);
+      backdrop-filter: blur(20px) saturate(1.8);
+      border-color: var(--g-rim);
+      box-shadow: inset 0 1px 1px var(--g-line), 0 10px 28px -8px var(--g-drop);
+    }
+    .speak-bar .tb-btn.speak-play:not(:disabled) {   /* the play button stays the bar's opposite colour, under glass */
+      background: linear-gradient(180deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, .12) 100%), var(--inverse-fg);
+      color: var(--inverse-bg); border-color: transparent;
+    }
+    :is(.speak-bar, .audio-job) select { background: var(--g-sheen), color-mix(in srgb, var(--inverse-bg) 86%, var(--inverse-fg)); }
+
+    /* text boxes, lists and switches: clear wells in the glass */
+    :is(.shortcuts, .popover, .sidebar, .palette) :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"]), select, textarea),
+    .seg {
+      background: linear-gradient(var(--g-field), var(--g-field)), color-mix(in srgb, var(--code-bg) 72%, transparent);
+      border-color: var(--g-rim);
+      box-shadow: inset 0 1px 3px var(--g-well);
+    }
+    .seg button.active { background: linear-gradient(180deg, var(--g-lo) 0%, transparent 100%), var(--page); box-shadow: inset 0 1px 1px var(--g-line), 0 1px 4px var(--g-drop); }
+
+    /* the search boxes: a glow in the accent colour */
+    :is(.side-filter, .shortcuts input[type="search"]) {
+      box-shadow: inset 0 1px 3px var(--g-well), 0 0 10px color-mix(in srgb, var(--accent-fill, var(--accent)) 28%, transparent);
+    }
+    :is(.find-bar, .palette) { box-shadow: inset 0 1px 1px var(--g-line), 0 0 14px color-mix(in srgb, var(--accent-fill, var(--accent)) 28%, transparent), 0 20px 50px -10px var(--g-deep); }
+  }
+}
