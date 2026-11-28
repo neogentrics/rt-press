@@ -269,18 +269,24 @@ function generateTypst({ book, theme: given, fontMap = {}, targetPages = null, b
     return `#para(indent: ${!first}${idArg(section, node)})[${tighten ? `#text(tracking: ${pt(tighten.tracking_pt)})[${inner}]` : inner}]`;
   }
 
-  // A paragraph cut where a steer says, with a new page at each cut. The part before a cut is ended with a justified break, so
-  // its last line is as full as any other.
+  // A paragraph cut where a steer says, with a new page at each cut. The line left before a cut ends as a paragraph's last line
+  // does, short if it is short; only a steer that says "justify" spreads it to the full width, which suits a line that is
+  // nearly full already. A tracing pass marks where each such line ends, so that can be told.
   function steered(node, first, section) {
-    const cuts = steers.filter((x) => x.type === 'push' && x.section === section.id && x.block === blockIds.get(node)).map((x) => x.at).sort((a, b) => a - b);
+    const cuts = steers.filter((x) => x.type === 'push' && x.section === section.id && x.block === blockIds.get(node)).sort((a, b) => a.at - b.at);
     if (!cuts.length) return null;
-    const pieces = splitContent(node.content, cuts);
+    const pieces = splitContent(node.content, cuts.map((x) => x.at));
     const out = [];
     pieces.forEach((piece, k) => {
       if (k > 0) out.push('#pagebreak(weak: true)');
       if (!piece.length) return;
       const last = k === pieces.length - 1;
-      const tail = last ? '' : '#linebreak(justify: true)';
+      let tail = '';
+      if (!last) {
+        const cut = cuts[k];
+        if (trace) tail += `#context [#metadata((section: ${str(section.id)}, block: ${blockIds.get(node)}, at: ${cut.at}, page: here().page(), x: here().position().x.pt(), y: here().position().y.pt())) <cut>]`;
+        if (cut.justify) tail += '#linebreak(justify: true)';
+      }
       const indent = k === 0 ? !first : false;
       out.push(`#para(indent: ${indent}${idArg(section, node, k ? `.${k}` : '')})[${inlineMarkup(piece)}${tail}]`);
     });

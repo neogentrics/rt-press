@@ -73,8 +73,9 @@ difference: that is the second gate.
 **V8. The beta.** Check the roadmap's v1.0 rows one by one and report any that isn't built. Update the README's screenshots from
 the made-up book. Then ask the owner for `1.0.0-beta.1`.
 
-V3 starts with a fault seen in today's page-turn repair: when a sentence is moved to the next page, the line left behind is
-justified even when it is short, so its words are stretched across the page.
+V3 started with a fault in the page-turn repair: when a sentence was moved to the next page, the line left behind was
+justified even when it was short, so its words were stretched across the page. ✅ Fixed on 27 November, with two other faults
+in the repair that the work turned up.
 
 ## Handing it back
 

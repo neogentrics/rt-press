@@ -68,7 +68,7 @@ async function buildBook({ book, settings: given, details = {}, workDir, fontFol
     steers = outcome.steers;
     const first = outcome.history[0];
     if (first?.midSentence !== undefined && outcome.turns) {
-      repair = { mode: settings.page_turns, before: first.midSentence, after: outcome.turns.pages.length, pushes: steers.length, rounds: outcome.history.length - 1, pagesBefore: first.contentPages, pagesAfter: outcome.final.contentPages };
+      repair = { mode: settings.page_turns, before: first.midSentence, after: outcome.turns.pages.length, pushes: steers.length, rounds: outcome.history.length - 1, pagesBefore: first.pages, pagesAfter: outcome.final.pages };
     }
     timings.repair = Date.now() - t0;
   }

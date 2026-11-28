@@ -26,9 +26,9 @@ books.
 
 > **This is an alpha, on the way to 1.0.** The typesetter was proved on a real book in step zero (see the
 > [results](docs/design/step-zero-results.md)), and the app does the whole interior from start to finish for a book of plain
-> chapters. In-story documents and pictures are not there yet, the type is EB Garamond only, and a page-turn repair can
-> leave a short line stretched across the page. It's for trying, not for printing your book yet. What's left before 1.0 is
-> on the [roadmap](ROADMAP.md#where-it-stands).
+> chapters. In-story documents and pictures are not there yet, the type is EB Garamond only, page bottoms are not evened
+> up, and the page-turn repair still leaves more sentences split than the owner's own build script does. It's for trying,
+> not for printing your book yet. What's left before 1.0 is on the [roadmap](ROADMAP.md#where-it-stands).
 
 <table>
 <tr>
@@ -66,8 +66,8 @@ The builds aren't code-signed yet, so Windows may show a SmartScreen warning the
 anyway*), and macOS will ask you to open the app from *System Settings → Privacy & Security*.
 
 **The published 0.1.0-alpha.0 is older than this page.** It was built before the new icon, the menus, Help, the tutorial,
-Preferences and the languages, and it doesn't look for updates. Those are on the `v1.0` branch, and the next build
-will have them.
+Preferences and the languages, and it doesn't look for updates. Its page-turn repair can also leave a short line
+stretched across the page. All of that is changed on the `v1.0` branch, and the next build will have it.
 
 To build it yourself, on Linux:
 
@@ -84,12 +84,12 @@ npm run dist:linux
 | **Bring in your chapters** | A folder of Word (.docx) files, one for each chapter, in order. Chapter titles are read from the files, curly quotes are set from the text around them, and quotation marks that don't pair are listed so you can check them |
 | **Every KDP trim** | Paperback and hardcover, with only the papers and page limits KDP offers for each size |
 | **Set like a book** | Mirrored margins, every chapter starting on a right-hand page, a drop cap, scene breaks, page numbers outside or centred, an optional title page and contents page, and a blank last page |
-| **No sentence split across a page turn** | Where a page ends in the middle of a sentence, the sentence starts on the next page instead, in rounds, and the book is set again each time. By default no page is added: a sentence is only moved where its chapter has room. Or let pages be added, or leave the pages as set. The repair never changes your words |
+| **No sentence split across a page turn** | Where a page ends in the middle of a sentence, the sentence starts on the next page instead, in rounds, and the book is set again each time. By default no page is added: a sentence is only moved where its chapter has room. Or let pages be added, as far as a pinned count allows, or leave the pages as set. What's left behind on a line ends short, like the end of a paragraph, unless it's nearly full already. The repair never changes your words |
 | **Bleed done the KDP way** | 0.125 in on the top, bottom and outside edges, none at the spine, with the page boxes written |
 | **Pin the page count** | Keep a published page count, so an existing cover still fits |
 | **Check before you save** | Eleven checks on the finished file: page size, page boxes, fonts embedded and none Type 3, nothing transparent, page count, inside and outer margins, text size, file size, and no bookmarks, links or encryption |
 | **See it first** | The whole book as facing pages, in about a second |
-| **Fast** | A 128-page book is set, finished and checked in about a second. Repairing its page turns takes about half a minute |
+| **Fast** | A 128-page book is set, finished and checked in about a second. Repairing its page turns takes from about ten seconds to a minute and a half, by the choice made |
 | **Your choices are kept** | The book, its details and your settings are saved, and are there when you open the app again |
 | **Menus, and every command by name** | File, Edit, View and Help, kept short, with an icon toolbar. `Ctrl+K` jumps to a chapter, and `>` there runs any command |
 | **Help and a tutorial** | A Help Center of searchable guides, and a hands-on tour on a practice book that can be put aside, picked up again, or refused |

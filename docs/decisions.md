@@ -170,6 +170,17 @@ files when they arrive:
 - Not built: Reader's *Typeface* and *Customize colours & fonts…*, and themes kept in the suite's shared folder. *Page width*
   has no use in a print preview.
 
+### The line left before a moved sentence
+
+✅ The build session's choice, 27 November 2026, open to the owner. When a sentence is moved to the next page, what was before
+it on that line ends short, as a paragraph's last line does. The owner's build script does the same, by ending the paragraph
+there. It is spread to the full width only when no space on it would have to grow by more than 0.12 of the type size, about
+half a space again, so that a line which was nearly full looks like the ones above it. On the test book that is 2 of the 28
+such lines.
+
+*Mend, adding no pages* means the book's page count: a round of moves is turned down if any section starts on a new page, or
+if the book gains a page at the end.
+
 ### Theme following between apps
 
 When the theme changes in one app, the linked apps switch too. It needs a small addition to App Link, so a protocol decision, made

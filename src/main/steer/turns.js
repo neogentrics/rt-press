@@ -64,6 +64,30 @@ function textArea(theme) {
   return { top: theme.margins.top_in * POINTS_PER_INCH, bottom: height - theme.margins.bottom_in * POINTS_PER_INCH, height };
 }
 
+// The line left on a page before each moved sentence, read from a setting made with tracing on: how much of the full width it
+// takes as it stands, how many points it falls short, and how many spaces it has to share them among. The typesetter says where
+// the line ends; the PDF says what is on it.
+function cutLines({ result, pdf, theme }) {
+  if (!result.trace?.cuts?.length) return [];
+  const doc = readPdf(pdf);
+  const pages = doc.pages();
+  const area = textArea(theme);
+  const width = (theme.trim.width_in - theme.margins.inside_in - theme.margins.outside_in) * POINTS_PER_INCH;
+  const read = new Map();
+  const linesOf = (number) => {
+    if (!read.has(number)) read.set(number, textLines(doc, pages[number - 1]));
+    return read.get(number);
+  };
+  return result.trace.cuts.map(({ section, block, at, page, x, y }) => {
+    // The book is bound on the left, so an odd page has the inside margin on its left.
+    const left = (page % 2 ? theme.margins.inside_in : theme.margins.outside_in) * POINTS_PER_INCH;
+    const short_pt = left + width - x;
+    const line = linesOf(page).reduce((best, l) => (!best || Math.abs(area.height - l.y - y) < Math.abs(area.height - best.y - y) ? l : best), null);
+    const spaces = line ? line.text.trim().split(/\s+/u).length - 1 : 0;
+    return { section, block, at, page, fill: 1 - short_pt / width, short_pt, spaces };
+  });
+}
+
 // The block's text as a steer counts it: characters in order, a hard break as one.
 const flat = (block) => textOfNode(block).replace(/\n/gu, ' ');
 
@@ -137,4 +161,4 @@ function findMidSentenceTurns({ result, pdf, book, theme }) {
   };
 }
 
-module.exports = { findMidSentenceTurns, textArea };
+module.exports = { cutLines, findMidSentenceTurns, textArea };
