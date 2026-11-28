@@ -12,12 +12,20 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **An icon of its own**: an unfolded book cover, with a striped spine, crop marks and a barcode.
 - **The window**: an icon toolbar, *Go to*, *About*, *Preferences*, update notices, a Help Center and a first-run tutorial.
 - **Languages**: Spanish, French and German, and right-to-left layouts.
-- **Light, dark and Auto**, with the loader and checks ready for the suite's shared themes file. The ten shared themes and the looks come in 1.1.
+- **Light, dark and Auto**: a theme button, *View → Theme* and *Preferences → Appearance* offer *Auto*, *Paper* and *Night*, the system's own light and dark. The loader and checks are ready for the suite's shared themes file; the ten shared themes and the looks come in 1.1.
 - **Tests for contrast and keyboard reach** in the window, on all three systems.
+- **Even page bottoms**, a new setting, on unless turned off: pages whose text carries on end on the same last line where that can be done gently, without moving a word to another page. The build says how many don't.
 
 ### Changed
-- **Page repair**: the line before a moved sentence is left short, and three faults in the repair were fixed.
-- **Even page bottoms**, and a repair that finds many more moves.
+- **Page repair finds many more moves.** Adding no pages, a chapter can now use the blank page that followed it, and a move may leave its page two lines short at most.
+- **Contrast is measured on the pixels** behind each piece of text and each icon, as in RT Markdown Reader.
+
+### Fixed
+- **No more stretched lines**: the line left before a moved sentence ends short, unless it is nearly full.
+- **Pages allowed under a pinned count** now moves sentences. Before, nothing moved at all.
+- ***Adding no pages*** now notices a page added at the very end of the book.
+- **A turned-down try** can no longer be read in place of the one the repair kept, or leave it with no file to read.
+- **Faint placeholder text** in dark mode now meets the contrast minimum.
 
 ## [0.1.0-alpha.0] - 2026-11-23
 

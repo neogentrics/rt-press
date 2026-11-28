@@ -180,10 +180,13 @@ files when they arrive:
   into `src/theme/` and writes `theme.lock`: the source, the tag, a SHA-256 for each file, and one hash over that list. The old
   copy is replaced only once the new one passes the app's own check.
 - The app, the build and the tests read the copy the same way. A changed, added, missing or linked file, or a stylesheet that
-  imports or fetches anything, refuses the whole copy. The window then keeps the system's colours and says why.
+  imports or fetches anything, refuses the whole copy. The window then keeps the system's colours, light or dark, and says why.
 - Which themes, looks and colour-safe choices exist is read from the selectors the theming file prescribes on the root element
   (`data-theme`, `data-surface`, `data-colors`). `theme.css` is applied first, then the other stylesheets by name.
-- With no themes in the build there is no theme button and no Theme menu, and Preferences offers only *Follow System*.
+- With no themes in the build, the theme button, *View → Theme* and Preferences offer *Auto*, *Paper* and *Night*, the suite's
+  names for its light and dark. They are the system's own colours, asked of Electron, not a palette of Press's. Their ids are
+  the suite's, so a choice carries over to its Paper and Night when the themes arrive. There is no *Look* or colour-safe
+  choice until then.
 - Press has no colours of its own for a theme to fall back on. The stand-in colours apply only while no theme is on the window,
   so a theme that leaves a token out fails the tests instead of being quietly filled in.
 - Contrast is measured as RT Markdown Reader measures its looks: each piece of text and each icon against the worst pixel

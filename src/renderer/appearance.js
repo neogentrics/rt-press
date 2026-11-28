@@ -52,15 +52,18 @@ export function createAppearance({ changed }) {
     h('div', { class: 'seg', role: 'group', 'aria-labelledby': labelId },
       options.map((o) => h('button', { type: 'button', 'data-value': o.value, 'aria-pressed': String(current === o.value), title: o.title ?? null, onclick: () => pick(o.value) }, o.text))));
 
+  // The theme shown as chosen: Auto when the saved one isn't among those offered.
+  const chosenTheme = () => (info.themes.some((t) => t.id === info.settings.theme) ? info.settings.theme : 'system');
+
   // The theme button's pop-up.
   function popover() {
     const box = h('div', { id: 'theme-menu', class: 'popover', popover: 'auto', 'aria-label': 'Theme and layout' });
     const draw = () => {
-      if (info.state !== 'ready') return;
+      if (!info.themes.length) return;
       const focused = box.contains(document.activeElement) ? [document.activeElement.closest('.seg')?.getAttribute('aria-labelledby'), document.activeElement.dataset.value, document.activeElement.id] : null;
       const check = h('input', { type: 'checkbox', id: 'pop-colorsafe', checked: info.settings.colorSafe, onchange: (event) => choose({ colorSafe: event.target.checked }) });
       box.replaceChildren(...[
-        segment('pop-theme-label', 'Theme', [{ value: 'system', text: 'Auto' }, ...info.themes.map((t) => ({ value: t.id, text: t.short, title: t.title }))], info.settings.theme, (value) => choose({ theme: value })),
+        segment('pop-theme-label', 'Theme', [{ value: 'system', text: 'Auto' }, ...info.themes.map((t) => ({ value: t.id, text: t.short, title: t.title }))], chosenTheme(), (value) => choose({ theme: value })),
         info.looks.length > 1 ? segment('pop-look-label', 'Look', info.looks.map((l) => ({ value: l.id, text: l.label })), info.settings.surface, (value) => choose({ surface: value })) : null,
         info.colorSafe ? h('label', { class: 'check' }, check, 'Colour-safe colours') : null,
       ].filter(Boolean));
@@ -77,7 +80,7 @@ export function createAppearance({ changed }) {
     const draw = () => {
       const theme = h('select', { id: 'pref-theme', onchange: (event) => choose({ theme: event.target.value }) },
         h('option', { value: 'system' }, 'Follow System'), info.themes.map((t) => h('option', { value: t.id }, t.label)));
-      theme.value = info.themes.some((t) => t.id === info.settings.theme) ? info.settings.theme : 'system';
+      theme.value = chosenTheme();
       const rows = [h('h3', null, 'Appearance'), h('label', null, 'Theme', theme)];
       if (info.looks.length > 1) {
         const look = h('select', { id: 'pref-surface', onchange: (event) => choose({ surface: event.target.value }) }, info.looks.map((l) => h('option', { value: l.id }, l.label)));
@@ -85,7 +88,7 @@ export function createAppearance({ changed }) {
         rows.push(h('label', null, 'Look', look));
       }
       if (info.colorSafe) rows.push(h('label', { class: 'check' }, h('input', { type: 'checkbox', id: 'pref-colorsafe', checked: info.settings.colorSafe, onchange: (event) => choose({ colorSafe: event.target.checked }) }), 'Colour-safe colours'));
-      if (info.state === 'absent') rows.push(h('p', { class: 'hint', id: 'themes-state' }, 'The suite’s themes aren’t in this build yet. Until they are, the window follows your system’s light or dark.'));
+      if (info.state === 'absent') rows.push(h('p', { class: 'hint', id: 'themes-state' }, 'Paper and Night are your system’s own light and dark colours. The suite’s other themes and looks come in a later version.'));
       if (info.state === 'refused') rows.push(h('p', { class: 'problem', id: 'themes-state' }, h('span', null, 'The suite’s themes weren’t loaded.'), ' ', h('span', null, info.reason)));
       const focused = box.contains(document.activeElement) ? document.activeElement.id : null;
       box.replaceChildren(...rows);

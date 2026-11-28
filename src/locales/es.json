@@ -325,7 +325,7 @@
  "Forest (dark)": "Bosque (oscuro)",
  "Dusk (dark)": "Crepúsculo (oscuro)",
  "Colour-Safe Colours": "Colores seguros",
- "The suite’s themes aren’t in this build yet. Until they are, the window follows your system’s light or dark.": "Los temas de la suite aún no están en esta versión. Hasta entonces, la ventana sigue el modo claro u oscuro de su sistema.",
+ "Paper and Night are your system’s own light and dark colours. The suite’s other themes and looks come in a later version.": "Papel y Noche son los colores claro y oscuro de su sistema. Los demás temas y aspectos de la suite llegarán en una versión posterior.",
  "The suite’s themes weren’t loaded.": "No se cargaron los temas de la suite.",
  "there is no theme.lock": "falta theme.lock",
  "theme.lock can’t be read": "no se puede leer theme.lock",

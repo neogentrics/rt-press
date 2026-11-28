@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, clipboard, dialog, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, clipboard, dialog, ipcMain, nativeTheme, shell } = require('electron');
 const os = require('node:os');
 const path = require('node:path');
 const fs = require('node:fs');
@@ -18,6 +18,7 @@ const practice = require('./press/practice');
 const { bundledFolder } = require('./typeset/stand-in-fonts');
 const { detailsText, osName } = require('../shared/about');
 const { createTranslator, pickLanguage, translateMenu } = require('../shared/i18n');
+const { orderThemes } = require('../shared/themes');
 
 // A test gets its own profile, so it can never touch an author's files.
 if (process.env.RTPRESS_USER_DATA) app.setPath('userData', process.env.RTPRESS_USER_DATA);
@@ -30,6 +31,17 @@ let sessionError = null;
 let commands = new Map();
 let sharedTheme = { state: 'absent' };
 
+// Without the suite's themes there are still two to choose between, under the suite's names for its light and dark: the
+// system's own colours, light or dark. Their ids are the suite's, so a choice carries over when its themes arrive.
+const SYSTEM_LIGHT_AND_DARK = orderThemes(['light', 'dark']);
+
+// With no shared themes, a choice of light or dark is the system's own, asked of Electron. With them, the theme's stylesheet
+// does the colouring, and the system is left as it is so that Auto can follow it.
+function applySystemColours() {
+  const chosen = appSettings.values.theme;
+  nativeTheme.themeSource = sharedTheme.state !== 'ready' && ['light', 'dark'].includes(chosen) ? chosen : 'system';
+}
+
 // The window's themes and looks: what the suite's shared file offers (if this build carries it), and what is chosen.
 function appearance() {
   const { theme, surface, colorSafe } = appSettings.values;
@@ -38,7 +50,7 @@ function appearance() {
     state: sharedTheme.state,
     reason: sharedTheme.reason ?? null,
     tag: sharedTheme.tag ?? null,
-    themes: ready ? sharedTheme.themes : [],
+    themes: ready ? sharedTheme.themes : SYSTEM_LIGHT_AND_DARK,
     looks: ready ? sharedTheme.looks : [],
     colorSafe: ready ? sharedTheme.colorSafe : false,
     settings: { theme, surface, colorSafe },
@@ -47,6 +59,7 @@ function appearance() {
 
 function changeAppearance(changes) {
   appSettings.save(changes);
+  applySystemColours();
   send('press:appearance', appearance());
   rebuildMenu();
 }
@@ -224,6 +237,7 @@ function registerFrame() {
   handle('press:app-settings', () => settingsForWindow(appSettings.values));
   handle('press:save-app-settings', (changes) => {
     const values = settingsForWindow(appSettings.save(changes));
+    applySystemColours();
     rebuildMenu(); // the menus are in the chosen language
     return values;
   });
@@ -294,6 +308,7 @@ if (!app.requestSingleInstanceLock()) {
     appSettings = new AppSettings(app.getPath('userData'));
     // A test may point an app run from the source at themes of its own; a packaged app reads only what it was built with.
     sharedTheme = readSharedTheme((!app.isPackaged && process.env.RTPRESS_THEME_DIR) || THEME_FOLDER);
+    applySystemColours(); // before the window, so it opens in the chosen one
     clearPractice(); // one left behind by a tutorial that was never closed
     startSession();
     registerFrame();

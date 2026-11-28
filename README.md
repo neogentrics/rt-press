@@ -95,14 +95,14 @@ npm run dist:linux
 | **Help and a tutorial** | A Help Center of searchable guides, and a hands-on tour on a practice book that can be put aside, picked up again, or refused |
 | **Your language** | The app's own words in English, Spanish, French or German, following your system or as you choose in Preferences. The guides are in English. The other three haven't been checked by a native speaker yet |
 | **Updates itself** | On Windows and the Linux AppImage it downloads a new version and offers *Restart to update*; on a Mac and the `.deb` it tells you where to get it. You can turn the check off |
+| **Light or dark** | The window follows your system, or stays light or dark as you choose from the theme button: *Auto*, *Paper* or *Night*. The suite's other themes and looks come in 1.1 |
 | **For everyone** | Every button is named, the text meets WCAG AA contrast in light and dark, and everything can be reached from the keyboard, all checked by the tests |
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
 | **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
 **Coming next, for 1.0:** a list of sentences to leave split on purpose, a report of what the page repair moved and what it couldn't, every trim size with custom sizes, book themes
 with front and back matter and more fonts, books from Markdown and EPUB, and every KDP rule shown on the page it's on. The
-suite's window themes and looks come when its shared themes file is ready: the theme picker is built and waits for them. Until
-then the window follows your system's light or dark. See the [roadmap](ROADMAP.md).
+suite's ten shared window themes and its looks come in 1.1, and what takes them in is already built. See the [roadmap](ROADMAP.md).
 
 ## What it won't do
 

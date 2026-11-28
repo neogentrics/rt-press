@@ -220,14 +220,14 @@ async function fixtureThemes(chapters) {
   try {
     const { window, errors } = await opened(app);
     await rootIs(window, null, null);
-    assert.equal(await window.isVisible('#btn-theme'), false, 'no theme button');
-    assert.equal(await app.evaluate(({ Menu }) => Boolean(Menu.getApplicationMenu().getMenuItemById('theme-system'))), false, 'no Theme menu');
+    // What is left is the choice there is without the suite's themes: the system's light or dark.
+    assert.equal(await app.evaluate(({ Menu }) => Boolean(Menu.getApplicationMenu().getMenuItemById('theme-contrast'))), false, 'none of the refused themes is in the menu');
     assert.match(await window.textContent('#bars'), /The suite’s themes weren’t loaded\.theme\.css does not match theme\.lock/);
     assert.notEqual(await window.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--text').trim()), 'red', 'none of it reached the window');
     await command(window, 'preferences');
     await visible(window, '#preferences');
     assert.match(await window.textContent('#themes-state'), /theme\.css does not match theme\.lock/);
-    assert.deepEqual(await window.locator('#pref-theme option').allTextContents(), ['Follow System']);
+    assert.deepEqual(await window.locator('#pref-theme option').allTextContents(), ['Follow System', 'Paper (light)', 'Night (dark)']);
     assert.deepEqual(errors, []);
   } finally {
     await app.close();

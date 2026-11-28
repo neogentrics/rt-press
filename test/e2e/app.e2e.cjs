@@ -47,10 +47,37 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
       assert.deepEqual([entry.id, entry.name, entry.version, entry.protocol], ['rt-press', 'RT Press', pkg.version, 1]);
     }
 
-    // The theme button and the Theme menu are there only when this build carries the suite's themes (theme.e2e.cjs tries them).
+    // The theme button and View → Theme are always there. Without the suite's themes they offer Auto, Paper and Night, which
+    // are the system's own light and dark (theme.e2e.cjs tries the suite's).
     const themed = readSharedTheme().state === 'ready';
-    assert.equal(await window.isVisible('#btn-theme'), themed, 'no empty theme button');
-    assert.equal(await app.evaluate(({ Menu }) => Boolean(Menu.getApplicationMenu().getMenuItemById('theme-system'))), themed);
+    assert.equal(await window.isVisible('#btn-theme'), true);
+    assert.equal(await app.evaluate(({ Menu }) => Boolean(Menu.getApplicationMenu().getMenuItemById('theme-system'))), true);
+    if (!themed) {
+      await window.emulateMedia({ colorScheme: null }); // so the app's own choice shows, not the test tool's
+      const dark = () => window.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches);
+      const source = () => app.evaluate(({ nativeTheme }) => nativeTheme.themeSource);
+      await window.click('#btn-theme');
+      await visible(window, '#theme-menu');
+      assert.deepEqual(await window.locator('#theme-menu .seg button').allTextContents(), ['Auto', 'Paper', 'Night']);
+      assert.equal(await window.locator('#theme-menu input').count(), 0, 'no looks or colour-safe colours without the suite\'s themes');
+      for (const [choice, expected] of [['dark', true], ['light', false]]) {
+        await window.click(`#theme-menu button[data-value="${choice}"]`);
+        await window.waitForFunction((d) => matchMedia('(prefers-color-scheme: dark)').matches === d, expected);
+        assert.deepEqual([await source(), await dark(), await window.getAttribute('html', 'data-theme')], [choice, expected, null]);
+        assert.equal(await window.getAttribute(`#theme-menu button[data-value="${choice}"]`, 'aria-pressed'), 'true');
+        assert.deepEqual((await measureContrast(app, window)).failures, [], `${choice}: the pop-up meets WCAG AA`);
+      }
+      await window.click('#theme-menu button[data-value="system"]');
+      await window.waitForFunction(async () => (await window.rtPress.appSettings()).theme === 'system');
+      assert.equal(await source(), 'system');
+      await window.keyboard.press('Escape');
+      await window.waitForSelector('#theme-menu', { state: 'hidden' });
+      // The same choice from the menu.
+      assert.equal(await command(window, 'theme-dark'), true);
+      await window.waitForFunction(() => matchMedia('(prefers-color-scheme: dark)').matches);
+      assert.equal(await source(), 'dark');
+      await command(window, 'theme-system');
+    }
 
     // Nothing to build until a book is in.
     assert.equal(await window.isDisabled('#build'), true);
@@ -107,8 +134,8 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
     assert.deepEqual(await unnamed(window), []);
     assert.equal(await window.inputValue('#pref-theme'), 'system');
     if (!themed) {
-      assert.deepEqual(await window.locator('#pref-theme option').allTextContents(), ['Follow System']);
-      assert.match(await window.textContent('#themes-state'), /suite’s themes aren’t in this build yet/);
+      assert.deepEqual(await window.locator('#pref-theme option').allTextContents(), ['Follow System', 'Paper (light)', 'Night (dark)']);
+      assert.match(await window.textContent('#themes-state'), /your system’s own light and dark colours/);
     }
     assert.equal(await window.isChecked('#pref-updates'), true, 'looking for new versions is on until turned off');
     await window.uncheck('#pref-updates');
@@ -197,6 +224,9 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
 
     assert.deepEqual(errors, [], 'the window reported no errors');
 
+    // A choice of dark, to be found again at the next start.
+    await window.evaluate(() => window.rtPress.saveAppSettings({ theme: 'dark' }));
+
     // The window can't be steered somewhere else.
     const before = window.url();
     await window.evaluate(() => { window.location.href = 'https://example.invalid/'; });
@@ -210,6 +240,8 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
   app = await launch(withDialogs);
   try {
     const { window, errors } = await opened(app);
+    assert.equal(await app.evaluate(({ nativeTheme }) => nativeTheme.themeSource), readSharedTheme().state === 'ready' ? 'system' : 'dark', 'the chosen light or dark is back');
+    await window.evaluate(() => window.rtPress.saveAppSettings({ theme: 'system' }));
     await visible(window, '#tour-welcome');
     await window.click('#tour-never');
     await gone(window, '#tour-welcome');
@@ -287,6 +319,10 @@ const { base, command, configHome, gone, launch, madeUpChapters, opened, package
       await window.keyboard.press('Escape');
       await gone(window, 'dialog[open]');
     }
+    await window.click('#btn-theme');
+    await visible(window, '#theme-menu');
+    await window.keyboard.press('Escape');
+    await window.waitForSelector('#theme-menu', { state: 'hidden' });
     await command(window, 'tutorial');
     await window.click('#tour-start');
     await visible(window, '#tour-card');

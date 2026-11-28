@@ -45,9 +45,9 @@ with cut corners, with a spine that is a CMYK colour bar. Regenerate the icon fi
 and commit them. The owner may still ask for changes, so keep the step repeatable. Make `build/icon.png` (1024), `build/icon.ico` and `build/icon.icns` from it, use it for the window,
 the installers and the About window later, and keep the SVG as the source. Say how you made them, so it can be repeated.
 
-**V2. The suite's frame.** ✅ *Done 27 November 2026, but for the suite's own colours and looks. On the planning session's go, everything about themes that doesn't depend on the colours was built; the colours wait for files in `neogentrics/recon-theme`.* Menus (File, Edit, View, Help) kept short, the command palette (`Ctrl+K`), the Help menu in the suite's
+**V2. The suite's frame.** ✅ *Done 27 November 2026. 1.0 has light, dark and Auto; the suite's ten themes and looks moved to 1.1, with everything that takes them in already built.* Menus (File, Edit, View, Help) kept short, the command palette (`Ctrl+K`), the Help menu in the suite's
 order, a Help Center and Tutorial written as Markdown guides in a `help` folder, the About window, one Preferences window
-(`Ctrl+,`), the theme button on the main screen (hidden until the build carries the suite's themes), an icon toolbar with
+(`Ctrl+,`), the theme button on the main screen (*Auto*, *Paper* and *Night* until the suite's themes arrive), an icon toolbar with
 names on hover, *Restart to update*, the installed-list file, and Spanish, French and German with right-to-left layouts. Put
 the alpha's controls inside this frame; don't build a second one. Split it into commits as you see fit.
 

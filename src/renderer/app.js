@@ -20,11 +20,11 @@ const translator = createUiTranslator();
 window.rtPressUntranslated = () => [...translator.missing];
 const numbers = (n) => n.toLocaleString(translator.lang);
 
-// The window's theme and look, from the suite's shared themes file when this build carries it.
+// The window's theme and look: light or dark, and the suite's own themes and looks when this build carries them.
 const appearance = createAppearance({
   changed: (next) => {
     const button = $('btn-theme');
-    if (button) button.hidden = next.state !== 'ready';
+    if (button) button.hidden = !next.themes.length;
     drawBars();
   },
 });

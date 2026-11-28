@@ -1,6 +1,6 @@
 // The toolbar: icon buttons for what is done most, each with a name that shows on hover and is read out by a screen reader.
 // Everything else is in the menus, and every command can be found by name from Go to. The layout is RT Markdown Reader's. The
-// theme button is there when this build carries the suite's themes; the Apps status joins when it is built.
+// theme button shows once the themes on offer are known; the Apps status joins when it is built.
 import { prettyShortcut } from '../shared/palette.js';
 import { $, h } from './dom.js';
 import { icon } from './icons.js';
