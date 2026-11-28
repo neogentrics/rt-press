@@ -277,23 +277,50 @@ page two lines short at most, the owner's script's own limit. Pages are then eve
 space among the lines of whole paragraphs and before the paragraphs on the page, with at most 0.085 of the line pitch to a share.
 
 **A choice for the owner.** Fewer split sentences and more even pages pull against each other. Measured on the test book on
-28 November, adding no pages, with the bundled stand-ins at the book's own sizes (TeX Gyre Pagella for Book Antiqua, whose
-lines come out the same length):
+28 November, after headings and scene breaks were made to take whole lines (below), adding no pages, with the bundled
+stand-ins at the book's own sizes (TeX Gyre Pagella for Book Antiqua, whose lines come out the same length):
 
 | Rule | Pages splitting a sentence | Pages that carry on, on the bottom line | Pages not on it |
 |---|---|---|---|
-| A move may leave a page 2 lines short (**what Press does**) | 23 | 52 of 79 | 27 |
-| 3 lines | 17 | 49 of 80 | 31 |
-| 3 lines, and only if the page can still be evened | 35 | 51 of 76 | 25 |
+| A move may leave a page 2 lines short (**what Press does**) | 23 | 62 of 79 | 17 |
+| 3 lines | 17 | 57 of 80 | 23 |
+| 3 lines, and only if the page can still be evened | 33 | 64 of 76 | 12 |
 | The owner's script's own output | 26 | 54 of 74 | 20 |
 
 The first row went through the app's own steps; the next two through a trial script with the same repair. The script's splits
-come from its PDF by a rule that gives 24 for the first row's PDF, against Press's own count of 23.
+come from its PDF by a rule that gives 24 for the first row's PDF, against Press's own count of 23. With the rule Press has,
+Press is now ahead of the script's output on both counts. The pages aren't the same pages, since the fonts differ.
 
-**The build session now recommends keeping the rule Press has.** On 27 November it recommended the third, on figures measured
-with EB Garamond set at 16 pt as the stand-in: 18, 6 and 27 split pages for the three rules, and 30, 34 and 23 pages off the
-line. With the closer fonts the third rule leaves 9 more split pages than the script, to leave only 2 fewer uneven pages than
-the rule Press has.
+**The build session recommends keeping the rule Press has.** On 27 November it recommended the third, on figures measured
+with EB Garamond set at 16 pt as the stand-in. With the closer fonts, the third rule would leave 7 more pages split than the
+script does.
+
+### A heading, a scene break and a document take whole lines
+
+✅ The build session's choice, 28 November 2026, for *the text block holds a whole number of lines*. A chapter's or a page's
+heading takes whole lines, and so does a scene break, with its mark in the middle of them. The space round a document inside
+the story is made a whole number of lines. The owner's script snaps to its body lines too. On the test book, the pages that
+carry on and miss the bottom line went from 27 to 17 with the rule above.
+
+### Book themes, the pages and the book's language
+
+✅ The build session's choices, 28 November 2026, open to the owner.
+
+- **A book keeps its design as settings, not as a link to a theme.** Changing or deleting a theme never changes a book. A
+  saved theme is kept by the app, for every book, in a file beside the settings.
+- **The five starter themes** are Press's own designs, with plain names. None is the owner's own theme. His was converted
+  for the test-book measurements, privately; making it a saved theme in the app is a small step if he wants it.
+- **Running heads** stand only on pages that carry on: the story, a prologue, an epilogue, and the matter that reads as prose.
+  Never on a section's first page, a part's page, a blank page, the title page, copyright, dedication, contents, *also by* or
+  *stay connected*.
+- **Page numbers stay on blank pages unless turned off**, as in the owner's script's output.
+- **Numbers in words** ("Chapter One") are English only. In other languages that choice prints the word for chapter and the
+  figure.
+- **Words are edited as plain text** with a small part of Markdown's marks. A page that isn't changed in the editor is left
+  exactly as it was.
+- **A copyright page's starting words** are a common wording, not legal advice, and the guide says so.
+- **Straight quotes are curled when the pages are set**, not when the book comes in, so the book's language can be changed.
+  Quotes the writer curled are never changed.
 
 ### Custom sizes, and the inside margin from the page count
 

@@ -11,7 +11,7 @@ const { textOfNode } = require('../../shared/book-model');
 const SENTENCE_END = /[.?!…][”’"')\]]*$/u;
 // What a line's text may hold that the book's doesn't, or may differ in: spaces, hyphens, and the soft hyphen that Typst writes
 // into the PDF where it breaks a word itself.
-const UNSURE = /[\s\u00AD\u2010-]/u;
+const UNSURE = /[\s\u00AD\u2010\u2060-]/u;
 const BOUNDARY = /[.?!…][”’"')\]]*\s+(?=[“‘"'(\[]?[\p{Lu}\p{N}])/gu;
 const POINTS_PER_INCH = 72;
 const ID_MARK = '\u0001';

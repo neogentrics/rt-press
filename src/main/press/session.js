@@ -6,10 +6,14 @@ const path = require('node:path');
 const { assembleBook, importChapters } = require('../import/book');
 const { countWords, textOfNode } = require('../../shared/book-model');
 const { changeKeepList } = require('../../shared/keep-list');
+const { designOf, sameDesign } = require('../../shared/book-themes');
+const { BOOK_LANGUAGES } = require('../../shared/languages');
 const { BUNDLED } = require('../../shared/font-catalog');
 const computerFonts = require('../typeset/computer-fonts');
 const { refusal } = require('../typeset/resolve-fonts');
+const bookPages = require('./book-pages');
 const { buildBook } = require('./pipeline');
+const { ThemeShelf } = require('./theme-shelf');
 const { PAPER_NAMES, choices, limitsFor, validateSettings, withDefaultSettings } = require('./settings');
 
 const SHOWN_ISSUES = 25;
@@ -24,7 +28,8 @@ function chapterFiles(folder) {
 }
 
 class Session {
-  constructor({ store, workDir, fontFolder, computerFontFolders = null, resourcesPath = null, now = () => new Date() }) {
+  constructor({ store, workDir, fontFolder, computerFontFolders = null, resourcesPath = null, themes = new ThemeShelf(), now = () => new Date() }) {
+    this.themes = themes;
     this.computerFontFolders = computerFontFolders; // null: the system's own
     this.store = store;
     this.workDir = workDir;
@@ -32,12 +37,15 @@ class Session {
     this.resourcesPath = resourcesPath;
     this.now = now;
     this.book = store.get('book');
-    this.details = store.get('details', { title: '', author: '' });
+    this.details = { title: '', subtitle: '', author: '', ...store.get('details') };
     this.settings = withDefaultSettings(store.get('settings'));
     this.report = store.get('report');
     this.keep = store.get('keep_turns', []);
     this.last = null; // the last build, with its PDF
+    this.draft = null; // a quick preview made since, of the book as it is now
     this.building = false;
+    // A project from before pages could be arranged has no title or contents page of its own yet.
+    if (this.book) this.book = bookPages.followSwitches(this.book, this.settings);
   }
 
   // What the menus ask, without working out the whole state.
@@ -51,7 +59,14 @@ class Session {
 
   state() {
     const chapters = (this.book?.sections ?? []).filter((s) => s.type === 'chapter').map((s) => ({ id: s.id, title: s.title, words: countWords(textOfNode(s.document)) }));
+    const theme = this.themes.get(this.settings.book_theme);
     return {
+      pages: bookPages.outline(this.book),
+      addable: chapters.length ? bookPages.ADDABLE.filter((kind) => !(bookPages.GENERATED.has(kind) && this.book.sections.some((s) => s.kind === kind)) && !(kind === 'chapter' && bookPages.readOnlySource(this.book))) : [],
+      source: this.book?.source?.type ?? null,
+      bookThemes: this.themes.list().map(({ id, name, about = '', own }) => ({ id, name, about, own })),
+      themeChanged: theme ? !sameDesign(theme.design, designOf(this.settings)) : true,
+      bookLanguages: BOOK_LANGUAGES.map(({ code, name }) => ({ code, name })),
       hasBook: chapters.length > 0,
       details: this.details,
       chapters,
@@ -82,13 +97,16 @@ class Session {
     if (!files.length) return { error: 'There are no Word (.docx) files in that folder.' };
     let imported;
     try {
-      imported = importChapters(files, {});
+      imported = importChapters(files, { keepQuotes: true });
     } catch (error) {
       return { error: `The chapters could not be read: ${error.message}` };
     }
     if (!imported.chapters.length) return { error: 'None of those files had any text.' };
     const title = this.details.title || path.basename(folder);
-    this.book = assembleBook({ title, chapters: imported.chapters });
+    const assembled = assembleBook({ title, chapters: imported.chapters, language: this.settings.language });
+    assembled.source = { type: 'files', from: 'word-folder', name: path.basename(folder) };
+    // Pages the author added to the book that was here stay with the one that takes its place.
+    this.book = this.withPages(assembled);
     this.details = { ...this.details, title };
     this.report = {
       folder: path.basename(folder),
@@ -105,10 +123,14 @@ class Session {
     return this.state();
   }
 
+  withPages(book) {
+    return bookPages.followSwitches(this.book ? bookPages.keepOwnPages(this.book, book) : book, this.settings);
+  }
+
   // Puts a ready-made book in the project, as an import would: the tutorial's practice book comes in this way.
   loadBook(book, details) {
-    this.book = book;
-    this.details = { title: details.title ?? book.title, author: details.author ?? '' };
+    this.book = bookPages.followSwitches(book, this.settings);
+    this.details = { title: details.title ?? book.title, subtitle: details.subtitle ?? '', author: details.author ?? '' };
     this.report = null;
     this.last = null;
     this.store.set('book', this.book);
@@ -117,8 +139,9 @@ class Session {
     return this.state();
   }
 
-  setDetails({ title, author }) {
-    this.details = { title: String(title ?? '').slice(0, 200), author: String(author ?? '').slice(0, 200) };
+  setDetails({ title, subtitle, author }) {
+    const line = (value) => String(value ?? '').slice(0, 200);
+    this.details = { title: line(title), subtitle: line(subtitle), author: line(author) };
     this.store.set('details', this.details);
     return this.state();
   }
@@ -128,7 +151,92 @@ class Session {
     const problems = validateSettings(merged);
     if (problems.length) return { error: problems.map((p) => p.message).join('. '), problems };
     this.settings = merged;
+    this.draft = null;
     this.store.set('settings', this.settings);
+    if (this.book) this.keepBook(bookPages.followSwitches(this.book, this.settings));
+    return this.state();
+  }
+
+  keepBook(book) {
+    if (book === this.book) return;
+    this.book = book;
+    this.store.set('book', book);
+  }
+
+  // ---- the book's pages ----
+
+  // Every change to the pages goes through here. It answers with the new state, or { error }.
+  changePages(change) {
+    if (this.building) return { error: 'Wait for the build to finish.' };
+    if (!this.hasBook) return { error: 'There is no book to set yet. Import some chapters first.' };
+    let result;
+    try {
+      result = change(this.book);
+    } catch (error) {
+      return { error: error.message };
+    }
+    const { book, id = null } = result.book ? result : { book: result };
+    this.keepBook(book);
+    this.draft = null;
+    // The switches say whether the book has these two pages, so taking one out turns its switch off.
+    const has = (kind) => book.sections.some((s) => s.kind === kind);
+    this.settings = { ...this.settings, title_page: has('title-page'), contents: has('contents') };
+    this.store.set('settings', this.settings);
+    return { ...this.state(), ...(id ? { page: id } : {}) };
+  }
+
+  addPage(kind) {
+    return this.changePages((book) => bookPages.addPage(book, kind, { details: this.details, year: this.now().getFullYear(), language: this.settings.language }));
+  }
+
+  readPage(id) {
+    try {
+      return bookPages.readPage(this.book, id);
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  editPage(id, changes) {
+    return this.changePages((book) => bookPages.editPage(book, id, changes ?? {}));
+  }
+
+  movePage(id, by) {
+    return this.changePages((book) => bookPages.movePage(book, id, by));
+  }
+
+  removePage(id) {
+    return this.changePages((book) => {
+      const next = bookPages.removePage(book, id);
+      if (!next.sections.some((s) => s.type === 'chapter')) throw new Error('A book needs at least one chapter.');
+      return next;
+    });
+  }
+
+  // ---- book themes ----
+
+  // Choosing a theme fills in its design; everything else about the interior stays as it was.
+  applyBookTheme(id) {
+    const theme = this.themes.get(id);
+    if (!theme) return { error: 'That book theme is not here.' };
+    return this.setSettings({ ...this.settings, ...theme.design, book_theme: id });
+  }
+
+  saveBookTheme(name) {
+    try {
+      const id = this.themes.save(name, this.settings);
+      return this.setSettings({ ...this.settings, book_theme: id });
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  deleteBookTheme(id) {
+    try {
+      this.themes.remove(id);
+    } catch (error) {
+      return { error: error.message };
+    }
     return this.state();
   }
 
@@ -159,6 +267,7 @@ class Session {
   async build(onStep = () => {}) {
     if (this.building) return { ok: false, reason: 'busy', messages: 'A build is already running.' };
     this.building = true;
+    this.draft = null;
     try {
       const result = await buildBook({ book: this.book, settings: this.settings, details: this.details, keep: this.keep, workDir: this.workDir, fontFolder: this.fontFolder, computerFontFolders: this.computerFontFolders, resourcesPath: this.resourcesPath, now: this.now, onStep });
       this.last = { ...result, builtAt: this.now().toISOString() };
@@ -168,9 +277,23 @@ class Session {
     }
   }
 
+  // The pages as the design stands now, as pictures: set once, with nothing mended or checked, and no file to save.
+  async preview() {
+    if (this.building) return { ok: false, reason: 'busy' };
+    this.building = true;
+    try {
+      const result = await buildBook({ book: this.book, settings: this.settings, details: this.details, workDir: path.join(this.workDir, 'draft'), fontFolder: this.fontFolder, computerFontFolders: this.computerFontFolders, resourcesPath: this.resourcesPath, now: this.now, quick: true, assumePages: this.last?.pages ?? null });
+      if (!result.ok) return { ok: false, reason: result.reason, messages: result.messages, parts: result.parts, problems: result.problems ?? [] };
+      this.draft = result;
+      return { ok: true, pages: result.pages, startPages: Object.fromEntries(result.units.map((unit) => [unit.id, unit.page])) };
+    } finally {
+      this.building = false;
+    }
+  }
+
   // One page of the preview as a picture the window can show.
   page(number) {
-    const files = this.last?.preview?.files;
+    const files = (this.draft ?? this.last)?.preview?.files;
     if (!files || !Number.isInteger(number) || number < 1 || number > files.length) return null;
     return `data:image/png;base64,${fs.readFileSync(files[number - 1]).toString('base64')}`;
   }

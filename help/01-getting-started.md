@@ -21,5 +21,6 @@ RT Press lays out a finished book for print, checks it against your printer's ru
 
 - [Bringing in your chapters](#help=chapters)
 - [Setting the interior](#help=interior)
+- [The book's pages](#help=pages)
 - [Page turns](#help=page-turns)
 - [The checks](#help=checks)

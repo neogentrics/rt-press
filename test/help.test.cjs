@@ -17,7 +17,7 @@ const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const guides = readGuides();
 
 test('the guides come in order, each with a title, and common questions last', () => {
-  assert.deepEqual(guides.map((g) => g.slug), ['getting-started', 'chapters', 'interior', 'page-turns', 'checks', 'saving', 'privacy', 'faq']);
+  assert.deepEqual(guides.map((g) => g.slug), ['getting-started', 'chapters', 'interior', 'pages', 'page-turns', 'checks', 'saving', 'privacy', 'faq']);
   for (const g of guides) assert.ok(g.title.length > 3 && g.text.startsWith(`# ${g.title}\n`), g.slug);
 });
 

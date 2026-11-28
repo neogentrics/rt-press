@@ -45,7 +45,7 @@ test('Preferences is Ctrl+, and Go to is Ctrl+K; nothing reloads the window', ()
 test('every command in the menus can be run by name, and what can\'t be used now does nothing', () => {
   sent.length = 0;
   const empty = collectCommands(make({ state: {} }));
-  assert.deepEqual([...empty.keys()], ['import-chapters', 'build', 'save-pdf', 'preferences', 'go-to', 'command-palette', 'first-spread', 'previous-spread', 'next-spread', 'last-spread', 'help-center', 'tutorial', 'check-updates', 'about']);
+  assert.deepEqual([...empty.keys()], ['import-chapters', 'book-pages', 'build', 'save-pdf', 'preferences', 'go-to', 'command-palette', 'first-spread', 'previous-spread', 'next-spread', 'last-spread', 'help-center', 'tutorial', 'check-updates', 'about']);
   assert.equal(empty.get('next-spread').path, 'View › Pages');
   assert.equal(runCommand(empty, 'build'), false, 'there is no book');
   assert.equal(runCommand(empty, 'import-chapters'), true);

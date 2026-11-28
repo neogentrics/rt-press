@@ -3,11 +3,13 @@
 // exports build (a book with details and sections, each chapter holding an editor document of paragraphs and marks), so a
 // book sent from there needs no translation. docs/design/working-with-the-suite.md has the larger picture.
 //
-//   book     { format, id, title, details, language, cover, sections: [section] }
+//   book     { format, id, title, details, language, cover, sections: [section], source? }
 //   section  { type: 'part',    id, title }
-//            { type: 'chapter', id, title, document }
-//            { type: 'matter',  id, kind, placement: 'front' | 'back', title, document, folio?, ornament? }
+//            { type: 'chapter', id, title, subtitle?, document }
+//            { type: 'matter',  id, kind, placement: 'front' | 'back', title, subtitle?, document, folio?, ornament? }
 //   matter's `folio: false` leaves the page number off its pages (a title page), and `ornament` is a mark set above its title.
+//   A section Press added itself says `own: true`; its words are written here, whatever the book came from.
+//   `source` says where the book came from: { type: 'files' | 'story-tracker', ... }. Only a book from files is corrected here.
 //   document { type: 'doc', content: [block] }
 //   block    { type: 'paragraph', attrs?: { role }, content: [inline] }       text of the story
 //            { type: 'document', content: [paragraph] }                       an in-story document (a letter, a log, a sign)
@@ -20,7 +22,8 @@
 const FORMAT = 1;
 const SECTION_TYPES = ['part', 'chapter', 'matter'];
 const PLACEMENTS = ['front', 'back'];
-const MATTER_KINDS = ['title-page', 'copyright', 'dedication', 'acknowledgements', 'contents', 'introduction', 'other'];
+// In the order the owner's books and most others put them; a page added in Press goes where this order puts it, and can be moved.
+const MATTER_KINDS = ['title-page', 'copyright', 'dedication', 'acknowledgements', 'contents', 'introduction', 'note', 'prologue', 'epilogue', 'appendix', 'preview', 'also-by', 'stay-connected', 'other'];
 const MARKS = ['italic', 'bold'];
 const CHARACTER_SCRIPTS = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/gu;
 
@@ -108,6 +111,7 @@ function validateBook(book) {
     else if (seen.has(section.id)) problems.push({ path, message: `the id "${section.id}" is used twice` });
     seen.add(section.id);
     if (typeof section.title !== 'string') problems.push({ path, message: 'a section needs a title (it may be empty)' });
+    if (section.subtitle !== undefined && typeof section.subtitle !== 'string') problems.push({ path, message: 'a subtitle is text' });
     if (section.type === 'matter') {
       if (!PLACEMENTS.includes(section.placement)) problems.push({ path, message: 'matter is placed at the front or the back' });
       if (!MATTER_KINDS.includes(section.kind)) problems.push({ path, message: `unknown matter kind "${section.kind}"` });

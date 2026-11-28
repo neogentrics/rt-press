@@ -89,7 +89,7 @@ test('importing a folder makes the book, keeps it in the encrypted project, and 
   opened.push(second);
   const back = second.state();
   assert.deepEqual(back.chapters.map((c) => c.title), ['Title 1', 'Title 2', 'Title 3']);
-  assert.deepEqual(back.details, { title: 'A Made-Up Book', author: 'A. Writer' });
+  assert.deepEqual(back.details, { title: 'A Made-Up Book', subtitle: '', author: 'A. Writer' });
   assert.equal(back.settings.body_pt, 11);
   assert.equal(back.settings.drop_cap, false);
   assert.equal(fs.readFileSync(path.join(dir, 'project', 'press.db')).includes('Sentence'), false, 'the book is not in the file as plain text');

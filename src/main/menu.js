@@ -46,6 +46,7 @@ function menuTemplate({ send, actions = {}, state = {}, version = '', platform =
       label: '&File',
       submenu: [
         tell('import-chapters', 'Import Chapters…', 'CmdOrCtrl+O'),
+        tell('book-pages', 'Pages and Their Order…', null, { enabled: Boolean(state.hasBook) && !state.building }),
         separator,
         tell('build', 'Build the Interior', 'CmdOrCtrl+Return', { enabled: Boolean(state.hasBook) && !state.building }),
         tell('save-pdf', 'Save PDF…', 'CmdOrCtrl+S', { enabled: Boolean(state.canSave) }),

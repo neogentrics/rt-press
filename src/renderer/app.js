@@ -4,9 +4,10 @@ import { openAbout } from './about.js';
 import { createAppearance } from './appearance.js';
 import { turnsReport } from './turns-report.js';
 import { PAPERS, isLargeTrim, pageLimits } from '../shared/print-rules.js';
-import { $, dialogOpen, h, toast } from './dom.js';
+import { $, dialogOpen, h, openDialog, toast } from './dom.js';
 import { createHelp } from './help-ui.js';
 import { createUiTranslator } from './i18n-ui.js';
+import { openPages } from './pages-ui.js';
 import { createPalette } from './palette.js';
 import { openPreferences } from './prefs.js';
 import { createTour } from './tour.js';
@@ -64,6 +65,18 @@ function syncControls() {
 }
 
 // ---- reading the settings out of the window, and putting them back ----
+// The settings that are one control each: [setting, element, how its value is held].
+const CONTROLS = [
+  ['body_font', 'body-font', 'value'], ['title_font', 'title-font', 'value'], ['subtitle_font', 'subtitle-font', 'value'],
+  ['body_pt', 'body-pt', 'number'], ['line_height', 'line-height', 'number'], ['folio', 'folio', 'value'], ['folio_dashes', 'folio-dashes', 'checked'],
+  ['scene_break', 'scene-break', 'value'], ['drop_cap', 'drop-cap', 'checked'], ['drop_cap_lines', 'drop-cap-lines', 'number'],
+  ['chapter_label', 'chapter-label', 'value'], ['title_align', 'title-align', 'value'], ['title_caps', 'title-caps', 'checked'], ['subtitle_italic', 'subtitle-italic', 'checked'],
+  ['title_scale', 'title-scale', 'number'], ['title_sink', 'title-sink', 'number'], ['title_gap', 'title-gap', 'number'], ['opener_ornament', 'opener-ornament', 'value'],
+  ['running_heads', 'running-heads', 'value'], ['head_style', 'head-style', 'value'],
+  ['language', 'language', 'value'], ['hyphenate', 'hyphenate', 'checked'], ['titles_on_right', 'titles-on-right', 'checked'], ['end_blank_even', 'end-blank-even', 'checked'],
+  ['blank_folios', 'blank-folios', 'checked'], ['dash_stays', 'dash-stays', 'checked'],
+  ['bleed', 'bleed', 'checked'], ['title_page', 'title-page', 'checked'], ['contents', 'contents', 'checked'], ['page_turns', 'page-turns', 'value'], ['even_bottoms', 'even-bottoms', 'checked'],
+];
 function readSettings() {
   const pin = $('pin-pages').value.trim();
   const inside = $('inside-margin').value.trim();
@@ -71,19 +84,9 @@ function readSettings() {
     format: $('format').value,
     trim: chosenTrim(),
     paper: $('paper').value,
-    bleed: $('bleed').checked,
-    body_pt: Number($('body-pt').value),
-    line_height: Number($('line-height').value),
-    folio: $('folio').value,
-    body_font: $('body-font').value,
-    title_font: $('title-font').value,
-    scene_break: $('scene-break').value,
-    drop_cap: $('drop-cap').checked,
-    title_page: $('title-page').checked,
-    contents: $('contents').checked,
+    book_theme: state.settings.book_theme,
+    ...Object.fromEntries(CONTROLS.map(([key, id, kind]) => [key, kind === 'checked' ? $(id).checked : kind === 'number' ? Number($(id).value) : $(id).value])),
     pin_pages: pin === '' ? null : Number(pin),
-    page_turns: $('page-turns').value,
-    even_bottoms: $('even-bottoms').checked,
     inside_in: inside === '' ? null : Number(inside),
   };
 }
@@ -174,6 +177,127 @@ function showFonts() {
   if (!state) return;
   fillFont('body-font', state.settings.body_font);
   fillFont('title-font', state.settings.title_font);
+  fillFont('subtitle-font', state.settings.subtitle_font);
+}
+
+// ---- the book theme: the design of the printed pages ----
+function showBookThemes() {
+  const select = $('book-theme');
+  const group = (label, themes) => {
+    if (!themes.length) return null;
+    const made = Object.assign(document.createElement('optgroup'), { label });
+    // A theme's name is a name, whoever gave it.
+    made.append(...themes.map((t) => named(t.id, { textContent: t.name })));
+    return made;
+  };
+  select.replaceChildren(...[group('Comes with RT Press', state.bookThemes.filter((t) => !t.own)), group('Your own', state.bookThemes.filter((t) => t.own))].filter(Boolean));
+  const chosen = state.bookThemes.find((t) => t.id === state.settings.book_theme);
+  if (!chosen) select.prepend(option(state.settings.book_theme, 'A theme that isn’t here'));
+  select.value = state.settings.book_theme;
+  const about = [chosen?.about, chosen && state.themeChanged ? 'Changed since you chose it. Save it as your own to keep this design.' : ''].filter(Boolean);
+  $('theme-about').replaceChildren(...about.flatMap((sentence) => [h('span', null, sentence), ' ']));
+  $('theme-delete').hidden = !chosen?.own;
+}
+
+// A change to the state that came from somewhere other than a build: what was built is now out of date.
+function takeState(next) {
+  const previous = state.build;
+  state = next;
+  state.build = previous ? { ...previous, stale: true } : null;
+  showBook();
+  showSettings();
+  syncControls();
+  if (previous) set('step', 'The settings changed. Build again to see the effect.');
+  schedulePreview();
+}
+
+async function chooseBookTheme(id) {
+  const result = await window.rtPress.applyBookTheme(id);
+  if (result.error) toast(result.error);
+  else takeState(result);
+}
+
+function saveTheme() {
+  const chosen = state.bookThemes.find((t) => t.id === state.settings.book_theme);
+  const name = h('input', { id: 'theme-name', type: 'text', maxlength: '60', autocomplete: 'off', value: chosen?.own ? chosen.name : '' });
+  const problem = h('p', { class: 'problem', role: 'alert', hidden: true });
+  const yes = h('button', { type: 'button', class: 'primary', id: 'theme-save-yes' }, 'Save');
+  const no = h('button', { type: 'button', id: 'theme-save-no' }, 'Cancel');
+  const dialog = openDialog({
+    id: 'theme-saving', labelledby: 'theme-saving-title', className: 'small',
+    children: [
+      h('h2', { id: 'theme-saving-title' }, 'Save as my theme'),
+      h('label', null, 'Name', name),
+      h('p', { class: 'hint' }, 'The design of the pages is saved, for any book. A theme of yours with the same name is replaced.'),
+      problem, h('div', { class: 'actions' }, h('span', { class: 'spacer' }), no, yes),
+    ],
+  });
+  const keep = async () => {
+    const result = await window.rtPress.saveBookTheme(name.value);
+    if (result.error) {
+      problem.hidden = false;
+      problem.textContent = result.error;
+      return;
+    }
+    dialog.close();
+    // Saving changes no page, so what was built still stands.
+    state = { ...result, build: state.build };
+    showSettings();
+  };
+  no.addEventListener('click', () => dialog.close());
+  yes.addEventListener('click', keep);
+  name.addEventListener('keydown', (event) => { if (event.key === 'Enter') keep(); });
+  name.focus();
+}
+
+async function deleteTheme() {
+  const result = await window.rtPress.deleteBookTheme(state.settings.book_theme);
+  if (result.error) {
+    toast(result.error);
+    return;
+  }
+  state = { ...result, build: state.build };
+  showSettings();
+  $('book-theme').focus();
+}
+
+// ---- the quick preview: once pages are showing, a change of design or of pages shows in them without a build ----
+let previewTimer = null;
+let previewWanted = false;
+function schedulePreview() {
+  if ($('preview').hidden) return;
+  previewWanted = true;
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(quickPreview, 700);
+}
+
+async function quickPreview() {
+  if (!previewWanted || building) return;
+  previewWanted = false;
+  building = true;
+  syncControls();
+  const note = $('preview-note');
+  note.hidden = false;
+  note.textContent = 'Updating the preview…';
+  try {
+    const result = await window.rtPress.preview();
+    if (result.ok) {
+      pageCount = result.pages;
+      pictures.clear();
+      spread = Math.min(spread, spreadCount() - 1);
+      await showSpread();
+      note.textContent = 'A quick preview of the pages as they are now. Build the interior to mend the page turns, even the page bottoms and check the file.';
+    } else {
+      note.replaceChildren(...(result.parts ?? [result.messages ?? 'The preview could not be made.']).flatMap((part) => [h('span', null, part), ' ']));
+    }
+  } catch (error) {
+    note.textContent = error.message;
+  } finally {
+    building = false;
+    syncControls();
+    // Something changed while this one was being made.
+    if (previewWanted) schedulePreview();
+  }
 }
 
 // What a build did about the fonts, when it did more than use the ones that come with RT Press.
@@ -190,18 +314,16 @@ function showSettings() {
   $('format').value = s.format;
   fillTrims(s.format, s.trim);
   fillPapers(s.paper);
-  $('bleed').checked = s.bleed;
-  $('body-pt').value = s.body_pt;
-  $('line-height').value = s.line_height;
-  $('folio').value = s.folio;
+  // A language's name is its own.
+  $('language').replaceChildren(...state.bookLanguages.map((l) => named(l.code, { textContent: l.name })));
   showFonts();
-  $('scene-break').value = s.scene_break;
-  $('drop-cap').checked = s.drop_cap;
-  $('title-page').checked = s.title_page;
-  $('contents').checked = s.contents;
+  for (const [key, id, kind] of CONTROLS) {
+    if (id.endsWith('-font')) continue;
+    if (kind === 'checked') $(id).checked = s[key];
+    else $(id).value = s[key];
+  }
+  showBookThemes();
   $('pin-pages').value = s.pin_pages ?? '';
-  $('page-turns').value = s.page_turns;
-  $('even-bottoms').checked = s.even_bottoms;
   $('inside-margin').value = s.inside_in ?? '';
   const l = state.limits;
   const notes = [];
@@ -213,7 +335,9 @@ function showSettings() {
 // ---- the book ----
 function showBook() {
   $('title').value = state.details.title;
+  $('subtitle').value = state.details.subtitle;
   $('author').value = state.details.author;
+  $('pages-open').hidden = !state.hasBook;
   set('header-title', state.details.title);
   const list = $('chapters');
   list.replaceChildren(...state.chapters.map((c) => {
@@ -243,6 +367,8 @@ function showBook() {
 
 // ---- the result of a build ----
 function showBuild(build) {
+  previewWanted = false;
+  $('preview-note').hidden = true;
   $('results').hidden = !build;
   $('preview').hidden = !build?.ok || !build.previewReady;
   syncControls();
@@ -380,18 +506,16 @@ async function saveSettings() {
     return;
   }
   $('settings-error').hidden = true;
-  const previous = state.build;
-  state = result;
-  state.build = previous ? { ...previous, stale: true } : null;
-  showSettings();
-  syncControls();
-  if (previous) set('step', 'The settings changed. Build again to see the effect.');
+  takeState(result);
 }
 
 async function saveDetails() {
-  state = await window.rtPress.setDetails({ title: $('title').value, author: $('author').value });
+  const previous = state.build;
+  state = await window.rtPress.setDetails({ title: $('title').value, subtitle: $('subtitle').value, author: $('author').value });
+  state.build = previous ? { ...previous, stale: true } : null;
   set('header-title', state.details.title);
   syncControls();
+  schedulePreview();
 }
 
 async function build() {
@@ -478,6 +602,7 @@ const COMMANDS = {
   build,
   'save-pdf': exportPdf,
   preferences: () => openPreferences({ run, setLanguage: (code) => translator.setLanguage(code), appearance }),
+  'book-pages': () => { if (state?.hasBook) openPages({ state: () => state, changed: takeState }); },
   'go-to': () => openPalette(''),
   'command-palette': () => openPalette('>'),
   'first-spread': () => go(0),
@@ -499,8 +624,11 @@ function run(command) {
 
 function wire() {
   $('import-empty').addEventListener('click', () => run('import-chapters'));
-  $('title').addEventListener('change', saveDetails);
-  $('author').addEventListener('change', saveDetails);
+  for (const id of ['title', 'subtitle', 'author']) $(id).addEventListener('change', saveDetails);
+  $('pages-open').addEventListener('click', () => run('book-pages'));
+  $('book-theme').addEventListener('change', () => chooseBookTheme($('book-theme').value));
+  $('theme-save').addEventListener('click', saveTheme);
+  $('theme-delete').addEventListener('click', deleteTheme);
   $('format').addEventListener('change', () => {
     fillTrims($('format').value, readSettings().trim);
     fillPapers($('paper').value);
@@ -518,7 +646,7 @@ function wire() {
       saveSettings();
     });
   }
-  for (const id of ['paper', 'bleed', 'body-pt', 'line-height', 'folio', 'scene-break', 'drop-cap', 'title-page', 'contents', 'pin-pages', 'page-turns', 'even-bottoms', 'inside-margin', 'body-font', 'title-font']) $(id).addEventListener('change', saveSettings);
+  for (const id of ['paper', 'pin-pages', 'inside-margin', ...CONTROLS.map(([, control]) => control)]) $(id).addEventListener('change', saveSettings);
   $('first').addEventListener('click', () => go(0));
   $('prev').addEventListener('click', () => go(spread - 1));
   $('next').addEventListener('click', () => go(spread + 1));

@@ -164,16 +164,16 @@ page = f'''<!DOCTYPE html>
 <div class="wrap">
 <section class="now" id="now" aria-labelledby="nowh">
 <div class="kicker"><span class="pulse" aria-hidden="true"></span>1.0 is being built</div>
-<h1 id="nowh">Every trim size is in. Book themes and fonts are next.</h1>
+<h1 id="nowh">Book themes and every page of a book are in. Bringing books in is next.</h1>
 <p>RT Press lays out designed print interiors and cover wraps: trim sizes, themes, page frames, art, spine width and cover wraps, checked against your printer's rules before you upload.</p>
-<ul><li><b>Done</b><span>V1, V2 and V4 of 8: the icon; the window, with the suite's ten themes and three looks; and every KDP trim size, custom ones too, with the inside margin from the page count. KDP's previewer has not seen the files.</span></li>
-<li><b>Now</b><span>V3 is built and waits for your judgement. On the test book Press leaves fewer split sentences than your script, and more uneven pages. One choice is yours: how hard the repair should try, against how even the pages stay.</span></li>
+<ul><li><b>Done</b><span>V1, V2, V4 and V5 of 8: the icon; the window, with the suite's ten themes and three looks; every KDP trim size; and book themes, front and back matter and fonts. KDP's previewer has not seen the files.</span></li>
+<li><b>Now</b><span>V6 to V8 are being built without stopping, as you asked. V3 is built and waits for your judgement: on the test book Press now leaves fewer split sentences and fewer uneven pages than your script's output, in stand-in fonts. How hard the repair should try is still your choice.</span></li>
 <li><b>An alpha is out</b><span>0.1.0-alpha.0, from before V1. No new build is published until you ask for one. Not yet opened by hand on Windows or Mac.</span></li></ul>
 </section>
 <div class="glance">
 <div class="card next"><span class="label">First release</span><b><a href="#r-v10">v1.0: Interiors for KDP</a></b><p>Paperback and hardcover interiors with themes, page-turn repair, even page bottoms, a pinned page count and every check.</p></div>
 <div class="card ok"><span class="label">The goal</span><b><a href="#r-v14">v1.4: The hardcover case wrap</a></b><p>From here Press does everything your build script does, with nothing else installed.</p></div>
-<div class="card you"><span class="label">Waiting on you</span><b>Fonts, KDP and two systems</b><p>Which fonts replace your book's own, one upload to KDP's previewer, and opening a build on Windows and Mac.</p></div>
+<div class="card you"><span class="label">Waiting on you</span><b>Later, with the full build</b><p>Your judgement of the pages, one upload to KDP's previewer, and opening the build on Windows and Mac.</p></div>
 </div>
 {stand_html}
 <section aria-labelledby="railh"><div class="section-head"><h2 id="railh">Every version</h2></div>

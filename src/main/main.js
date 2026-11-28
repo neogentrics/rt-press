@@ -13,6 +13,7 @@ const typesetter = require('./typesetter');
 const { FOLDER: THEME_FOLDER, readSharedTheme } = require('./theme/loader');
 const { RELEASES_URL, Updater } = require('./updater');
 const { Session } = require('./press/session');
+const { ThemeShelf } = require('./press/theme-shelf');
 const { openStore } = require('./press/store');
 const practice = require('./press/practice');
 const { bundledFolder } = require('./typeset/bundled-fonts');
@@ -80,10 +81,10 @@ const updater = new Updater((status) => {
 }, { autoCheck: () => appSettings?.values.autoUpdate !== false });
 
 // The author's book lives in the app's own folder, in an encrypted project; the fonts and the typesetter come with the app.
-function openBook(folder, workDir) {
+function openBook(folder, workDir, themes = new ThemeShelf(app.getPath('userData'))) {
   // A test may add a folder of made-up fonts to the computer's own, in an app run from the source only.
   const extra = !app.isPackaged && process.env.RTPRESS_EXTRA_FONT_FOLDER;
-  return new Session({ store: openStore(folder), workDir, fontFolder: bundledFolder({ resourcesPath: resourcesPath() }), computerFontFolders: extra ? [...fontFolders(), extra] : null, resourcesPath: resourcesPath() });
+  return new Session({ store: openStore(folder), workDir, fontFolder: bundledFolder({ resourcesPath: resourcesPath() }), computerFontFolders: extra ? [...fontFolders(), extra] : null, resourcesPath: resourcesPath(), themes });
 }
 
 function startSession() {
@@ -103,7 +104,8 @@ function startPractice() {
   if (ownBook) return session.state();
   if (session.building) throw new Error('Wait for the build to finish.');
   clearPractice();
-  const sample = openBook(path.join(practiceFolder(), 'project'), path.join(practiceFolder(), 'work'));
+  // The practice book's themes are kept in memory, so the tutorial can't change the person's own.
+  const sample = openBook(path.join(practiceFolder(), 'project'), path.join(practiceFolder(), 'work'), new ThemeShelf());
   sample.loadBook(practice.practiceBook(), practice.DETAILS);
   ownBook = session;
   session = sample;
@@ -185,10 +187,23 @@ function registerBook() {
   handleBook('press:settings', (settings) => session.setSettings(settings ?? {}));
   handle('press:fonts', () => session?.fontChoices() ?? { bundled: [], computer: [] });
   handleBook('press:keep', (sentence, keep) => session.setKept(sentence, keep));
+  handleBook('press:page-add', (kind) => session.addPage(String(kind)));
+  handleBook('press:page-read', (id) => session.readPage(String(id)));
+  handleBook('press:page-edit', (id, changes) => session.editPage(String(id), changes));
+  handleBook('press:page-move', (id, by) => session.movePage(String(id), Number(by)));
+  handleBook('press:page-remove', (id) => session.removePage(String(id)));
+  handleBook('press:theme-apply', (id) => session.applyBookTheme(String(id)));
+  handleBook('press:theme-save', (name) => session.saveBookTheme(String(name)));
+  handleBook('press:theme-delete', (id) => session.deleteBookTheme(String(id)));
   handleBook('press:build', () => {
     const building = session.build((text) => send('press:step', text));
     rebuildMenu(); // Build is off while one is running
     return building;
+  });
+  handleBook('press:preview', () => {
+    const making = session.preview();
+    rebuildMenu();
+    return making;
   });
   handle('press:page', (number) => session?.page(number) ?? null);
   handle('press:in-practice', () => Boolean(ownBook));

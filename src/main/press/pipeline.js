@@ -15,24 +15,32 @@ const { readFaces } = require('../typeset/font-file');
 const { generateTypst } = require('../typeset/typst-source');
 const { typesetBook } = require('../typeset/typeset-book');
 const { BLEED_IN } = require('../../shared/print-rules');
+const { bookLanguage, knownLanguage } = require('../../shared/languages');
+const { curlBook } = require('./book-quotes');
 const { automaticInside, themeFromSettings, validateSettings, withDefaultSettings } = require('./settings');
 
 const PREVIEW_PPI = 80;
 
-// The book as it is set: the author's chapters with a title page and contents page put around them if the choices ask.
+// The title page Press makes: the title, the subtitle if there is one, and the author.
+function titlePageDocument(book, details) {
+  const line = (role, text) => ({ type: 'paragraph', attrs: { role }, content: [{ type: 'text', text }] });
+  return { type: 'doc', content: [line('Title', details.title || book.title || 'Untitled'), ...(details.subtitle ? [line('Subtitle', details.subtitle)] : []), ...(details.author ? [line('Author', details.author)] : [])] };
+}
+
+// The book as it is set: the author's pages in their order, with the title page and the contents page filled in, or put at the
+// front if the choices ask for one the book doesn't hold; in the book's language, with its straight quotes curled for it.
 function withFrontMatter(book, settings, details) {
+  const wanted = { 'title-page': settings.title_page, contents: settings.contents };
+  const sections = book.sections
+    .filter((s) => !(s.generated && !wanted[s.kind]))
+    .map((s) => (s.generated && s.kind === 'title-page' ? { ...s, document: titlePageDocument(book, details) } : s));
   const front = [];
-  if (settings.title_page) {
-    front.push({
-      type: 'matter', id: 'title-page', kind: 'title-page', placement: 'front', title: '', folio: false,
-      document: { type: 'doc', content: [
-        { type: 'paragraph', attrs: { role: 'Title' }, content: [{ type: 'text', text: details.title || book.title || 'Untitled' }] },
-        ...(details.author ? [{ type: 'paragraph', attrs: { role: 'Author' }, content: [{ type: 'text', text: details.author }] }] : []),
-      ] },
-    });
-  }
-  if (settings.contents) front.push({ type: 'matter', id: 'contents', kind: 'contents', placement: 'front', title: 'Contents', document: { type: 'doc', content: [] } });
-  return { ...book, title: details.title || book.title, sections: [...front, ...book.sections] };
+  if (settings.title_page && !sections.some((s) => s.kind === 'title-page')) front.push({ type: 'matter', id: 'title-page', kind: 'title-page', placement: 'front', title: '', folio: false, document: titlePageDocument(book, details) });
+  const language = knownLanguage(settings.language) ?? 'en';
+  const contents = settings.contents && !sections.some((s) => s.kind === 'contents') ? [{ type: 'matter', id: 'contents', kind: 'contents', placement: 'front', title: bookLanguage(language).contents, document: { type: 'doc', content: [] } }] : [];
+  const titled = sections.findIndex((s) => s.kind === 'title-page');
+  sections.splice(titled + 1, 0, ...contents);
+  return curlBook({ ...book, title: details.title || book.title, language, sections: [...front, ...sections] }, bookLanguage(language).quotes);
 }
 
 // Why a font can't be had at all, in a sentence.
@@ -71,7 +79,9 @@ function prepareFonts({ book, theme, fontFolder, workDir, computerFontFolders })
 
 // Returns { ok, ... }. When it can't set the book, { ok: false, reason, messages }; otherwise the finished PDF and everything
 // the window shows: pages, the checks, the section start pages, the preview pictures, and how long each step took.
-async function buildBook({ book, settings: given, details = {}, keep = [], workDir, fontFolder, computerFontFolders = null, resourcesPath = null, now = () => new Date(), onStep = () => {} }) {
+//   quick   only the pages as pictures, set once with no repair, no evening and no checks, for seeing a change of design at
+//           once. `assumePages` is the count the inside margin is taken for.
+async function buildBook({ book, settings: given, details = {}, keep = [], workDir, fontFolder, computerFontFolders = null, resourcesPath = null, now = () => new Date(), onStep = () => {}, quick = false, assumePages = null }) {
   const settings = withDefaultSettings(given);
   const problems = validateSettings(settings);
   if (problems.length) return { ok: false, reason: 'settings', problems, messages: problems.map((p) => p.message).join('. ') };
@@ -81,7 +91,9 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
   const toSet = withFrontMatter(book, settings, details);
   const bleed_in = settings.bleed ? BLEED_IN : 0;
   fs.mkdirSync(workDir, { recursive: true });
-  const found = prepareFonts({ book: toSet, theme: themeFromSettings(settings), fontFolder, workDir, computerFontFolders });
+  // The names running heads give.
+  const heads = { title: toSet.title, author: details.author ?? '' };
+  const found = prepareFonts({ book: toSet, theme: themeFromSettings(settings, { details: heads }), fontFolder, workDir, computerFontFolders });
   if (!found.ok) return found;
   const common = { book: toSet, fontPaths: found.fontPaths, fontMap: found.fontMap, resourcesPath, targetPages: settings.pin_pages ?? null };
 
@@ -91,7 +103,16 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
   // count is the count. Otherwise the book is set and counted, starting from the narrowest margin, until the count asks for no
   // wider one: a wider margin can only make the book longer, so this ends.
   const automatic = settings.inside_in === null;
-  let theme = themeFromSettings(settings, { pages: settings.pin_pages ?? 24, capHeights: found.capHeights });
+  const themeFor = (pages) => themeFromSettings(settings, { pages, capHeights: found.capHeights, details: heads });
+  if (quick) {
+    const draft = themeFor(settings.pin_pages ?? assumePages);
+    const set = await typesetBook({ ...common, theme: draft, workDir: path.join(workDir, 'set'), output: path.join(workDir, 'draft.pdf'), bleed_in: 0, timestamp });
+    if (!set.ok) return { ok: false, reason: 'typesetter', messages: set.messages };
+    const pictures = await renderPages({ input: path.join(workDir, 'set', 'book.typ'), outDir: path.join(workDir, 'preview'), fontPaths: found.fontPaths, embeddedFonts: false, ppi: PREVIEW_PPI, resourcesPath });
+    if (!pictures.ok) return { ok: false, reason: 'typesetter', messages: pictures.messages };
+    return { ok: true, quick: true, pages: set.pages, units: set.units, preview: { dir: path.join(workDir, 'preview'), files: pictures.files } };
+  }
+  let theme = themeFor(settings.pin_pages ?? 24);
   if (automatic && !settings.pin_pages) {
     const t0 = Date.now();
     onStep('Counting the pages');
@@ -99,7 +120,7 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
       const counted = await typesetBook({ ...common, theme, workDir: path.join(workDir, 'count'), output: path.join(workDir, 'count.pdf'), bleed_in: 0, timestamp });
       if (!counted.ok) return { ok: false, reason: 'typesetter', messages: counted.messages };
       if (automaticInside(counted.pages) <= theme.margins.inside_in) break;
-      theme = themeFromSettings(settings, { pages: counted.pages, capHeights: found.capHeights });
+      theme = themeFor(counted.pages);
     }
     timings.count = Date.now() - t0;
   }
@@ -155,7 +176,7 @@ async function buildBook({ book, settings: given, details = {}, keep = [], workD
   let pages = await setPages();
   // Letting pages be added can carry a book into the next band of KDP's table. Then it is set again with that band's margin.
   for (let again = 0; again < 2 && automatic && pages.raw.ok && automaticInside(pages.raw.pages) > theme.margins.inside_in; again += 1) {
-    theme = themeFromSettings(settings, { pages: pages.raw.pages, capHeights: found.capHeights });
+    theme = themeFor(pages.raw.pages);
     pages = await setPages();
   }
   const { raw, steers, repair, even } = pages;

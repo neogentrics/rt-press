@@ -421,6 +421,86 @@ details {
   font-size: 0.85rem;
 }
 
+/* ---- the book's pages, and the editor ---- */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.4rem 0;
+}
+.side details {
+  margin-top: 0.6rem;
+}
+.side summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+dialog.pages {
+  width: min(44rem, 94vw);
+}
+dialog.editor {
+  width: min(48rem, 94vw);
+}
+.pages-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  margin: 0.5rem 0;
+  padding-inline-start: 2.2rem;
+}
+.pages-list li {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.pages-list li > span {
+  vertical-align: middle;
+}
+.page-name {
+  display: inline-block;
+  width: calc(100% - 17rem);
+  min-width: 10rem;
+  overflow-wrap: anywhere;
+}
+.page-kind {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+}
+.page-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  width: 16.5rem;
+}
+.page-actions button {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+}
+.page-adding {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+.page-adding label {
+  flex: 1;
+}
+/* Room for the focus ring, so that it never reaches up into the list's name. */
+.page-adding select {
+  margin-top: 0.45rem;
+}
+textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.5rem;
+  font: inherit;
+  line-height: 1.45;
+  color: inherit;
+  background: var(--page);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  resize: vertical;
+}
+
 /* ---- dialogs ---- */
 dialog {
   width: min(34rem, calc(100vw - 2rem));

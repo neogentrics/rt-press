@@ -30,10 +30,10 @@ function talk() {
 }
 
 let fonts = null;
-function setter(book) {
+function setter(book, design = fakeTheme) {
   fonts ??= prepare({ folder: path.join(scratch, 'fonts') });
   const dir = path.join(scratch, 'work');
-  return (steers = [], extra = {}) => typesetBook({ book, theme: fakeTheme, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fonts], fontMap: TEST_FONTS, timestamp: 1794960000, trace: true, steers, ...extra });
+  return (steers = [], extra = {}) => typesetBook({ book, theme: design, workDir: dir, output: path.join(dir, 'book.pdf'), fontPaths: [fonts], fontMap: TEST_FONTS, timestamp: 1794960000, trace: true, steers, ...extra });
 }
 
 // The body lines of each page of a PDF, from the top: their words, and how far down the last one sits.
@@ -102,9 +102,30 @@ test('a page that would need more than the limit is left as it was', { skip }, a
   // Long paragraphs, nine sentences each, leave pages with hardly a paragraph that starts on them.
   const book = fakeBook({ chapters: 3 });
   book.sections = book.sections.map((section, i) => (section.type === 'chapter' ? chapter(i, [14, 14, 14, 14, 14, 14]) : section));
-  const set = setter(book);
+  // Headings of any height, as they fall, leave pages further from the line than headings that take whole lines do.
+  const set = setter(book, { ...fakeTheme, opener: { wholeLines: false } });
   const out = await evenBottoms({ set, theme });
   const limit = 0.085 * bottomLine(theme).pitch;
   for (const air of out.steers) assert.ok(air.leading_pt <= limit + 0.001 && air.gap_pt <= 3 * limit + 0.001);
   assert.ok(out.report.short.length >= 1, `some page can't be filled, and is named: ${JSON.stringify(out.report)}`);
+});
+
+test('headings and scene breaks take whole lines, so the text beneath them stays on the lines a full page has', { skip }, async () => {
+  const book = talk();
+  const grid = bottomLine(theme);
+  // How far off the page's line grid the last line of each chapter's first page sits, in lines, before any evening. Each of
+  // these pages has a chapter's heading and a scene break on it.
+  const offGrid = async (design) => {
+    const traced = await setter(book, design)();
+    const { pages } = pagesOf(traced, theme);
+    return traced.units.filter((u) => u.kind === 'chapter').map((u) => {
+      const lines = (grid.y - pages.get(u.page).at(-1).y) / grid.pitch;
+      return Math.abs(lines - Math.round(lines));
+    });
+  };
+  const whole = await offGrid(fakeTheme);
+  const loose = await offGrid({ ...fakeTheme, opener: { wholeLines: false } });
+  assert.equal(whole.length, 3);
+  assert.ok(whole.every((part) => part < 0.02), JSON.stringify(whole));
+  assert.ok(loose.every((part) => part > 0.1), JSON.stringify(loose));
 });

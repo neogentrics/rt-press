@@ -262,7 +262,9 @@ async function suiteThemes(chapters) {
     await visible(window, '#tour-welcome');
     await window.click('#tour-not-now');
     await withBook(window);
-    const all = await matrix(app, window, offered, { windows: ['help-center', 'go-to', 'about'] });
+    // The book theme's settings are shown in full, so their words are measured too.
+    await window.evaluate(() => { for (const id of ['openers-box', 'rules-box']) document.getElementById(id).open = true; });
+    const all = await matrix(app, window, offered, { windows: ['help-center', 'go-to', 'about', 'book-pages'] });
     assert.deepEqual(all.short, [], 'every one of the suite\'s themes meets WCAG AA with every look');
     assert.deepEqual(errors, [], 'the window reported no errors');
     console.log(`themes: ${offered.source} ${offered.tag} passed, ${all.combinations} combinations`);

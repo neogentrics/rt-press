@@ -104,6 +104,20 @@ test('every complaint about a setting is translated', () => {
   covered([...new Set(messages)], 'settings');
 });
 
+test('every complaint about a book’s design, and every refusal about its pages and themes, is translated', () => {
+  const { DESIGN_KEYS } = require('../src/shared/book-themes');
+  const bad = { ...Object.fromEntries(DESIGN_KEYS.map((key) => [key, {}])), book_theme: 5, language: 'xx', hyphenate: 'x', titles_on_right: 'x', end_blank_even: 'x', blank_folios: 'x', dash_stays: 'x' };
+  const complaints = validateSettings(withDefaultSettings(bad)).map((p) => p.message);
+  assert.ok(complaints.length >= DESIGN_KEYS.length, complaints.join(' | '));
+  covered([...new Set(complaints)], 'design settings');
+  const thrown = new Set();
+  for (const file of ['src/main/press/book-pages.js', 'src/main/press/theme-shelf.js']) {
+    for (const m of fs.readFileSync(path.join(root, file), 'utf8').matchAll(/throw new Error\('([^'\n]{12,})'\)/g)) thrown.add(m[1]);
+  }
+  assert.ok(thrown.size >= 10, [...thrown].join(' | '));
+  covered([...thrown], 'pages and themes');
+});
+
 test('every message the build and the session can give is translated', () => {
   const found = new Set();
   for (const file of ['src/main/press/pipeline.js', 'src/main/press/session.js']) {

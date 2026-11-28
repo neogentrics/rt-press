@@ -9,6 +9,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 Work toward 1.0.0. Nothing here is a release yet.
 
 ### Added
+- **Book themes**, the design of the printed pages: *Classic*, *Inscription*, *Literary*, *Modern* and *Plain*. Choosing one fills in the design; change anything and **save it as your own**, for any book.
+- **Chapter openers**: a label above the title (a number, Roman numerals, "Chapter 1" or "Chapter One"), subtitles with a font of their own, titles centred or left, their size and space, and a mark under them.
+- **Running heads**: your name on left-hand pages, and the book's or the chapter's title on right-hand ones. None on openers, part pages or blank pages.
+- **The book's pages, in your order**: add a title page, copyright, dedication, acknowledgements, contents, introduction, note to the reader, prologue, parts, epilogue, appendices, a preview, *also by*, *stay connected* or a page of your own; edit their words, move them and take them out. A copyright page comes with words to start from.
+- **The book's language** sets hyphenation, which quotation marks straight quotes become, and the words Press prints itself. Nine languages.
+- **House rules**, each its own switch: titles on right-hand pages, a blank even last page, page numbers on blank pages, a dash never starting a line, and hyphenation.
+- **A quick preview**: once pages are showing, a change of design or of pages shows without a build.
 - **An icon of its own**: an unfolded book cover, with a striped spine, crop marks and a barcode.
 - **The window**: an icon toolbar, *Go to*, *About*, *Preferences*, update notices, a Help Center and a first-run tutorial.
 - **Languages**: Spanish, French and German, and right-to-left layouts.
@@ -24,6 +31,8 @@ Work toward 1.0.0. Nothing here is a release yet.
 - **Even page bottoms**, a new setting, on unless turned off: pages whose text carries on end on the same last line where that can be done gently, without moving a word to another page. The build says how many don't.
 
 ### Changed
+- **Headings, scene breaks and documents inside the story take a whole number of lines**, so the text under them stays on the lines a full page has, and many more pages end on the bottom line.
+- **Straight quotes are curled when the pages are set**, for the book's language. The book Press keeps has your words as written.
 - **Ornaments are set in Noto Sans Symbols 2**, and the large first letter in the title font, sized from the fonts' own capitals.
 - **The inside margin now comes from the page count**: KDP's least for that many pages and 0.375 in more. Books of 151 to 300 pages keep 0.875 in; thinner ones get 0.75 in and longer lines, and thicker ones get more.
 - **Page repair finds many more moves.** Adding no pages, a chapter can now use the blank page that followed it, and a move may leave its page two lines short at most.

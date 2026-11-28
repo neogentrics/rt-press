@@ -72,9 +72,17 @@ const built = (window, ready) => window.waitForSelector(`#results-title:has-text
     await window.waitForFunction(() => document.getElementById('page-right').naturalWidth > 0 && document.getElementById('page-left').naturalWidth > 0);
     await settle();
     await shot(window, 'build');
+    await window.evaluate(() => document.getElementById('settings').scrollIntoView());
+    await settle();
     await window.locator('.side').screenshot({ path: path.join(out, 'settings.png') });
+    await window.evaluate(() => document.querySelector('.side').scrollTo(0, 0));
     await window.locator('.spread').scrollIntoViewIfNeeded();
     await shot(window.locator('.spread'), 'spread');
+    await run(window, 'book-pages');
+    await window.waitForSelector('#pages-list li');
+    await settle();
+    await shot(window, 'pages');
+    await window.click('#pages-done');
     await run(window, 'help-center');
     await window.waitForSelector('#help');
     await settle();

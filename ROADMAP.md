@@ -33,7 +33,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | Release | Theme | Status |
 |---|---|---|
 | [Step zero](#step-zero--prove-the-typesetter) | Prove the typesetter | ✅ Done: the owner went on to 1.0 |
-| [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | 🔨 Building: 3 of 8 milestones done; V3 waits on a choice of the owner's |
+| [v1.0](#v10--interiors-for-kdp) | Interiors for KDP | 🔨 Building: 4 of 8 milestones done; V3 waits on the owner's judgement |
 | [v1.1](#v11--page-frames-and-ornaments) | Page frames and ornaments | Planned |
 | [v1.2](#v12--art-on-the-page) | Art on the page | Planned |
 | [v1.3](#v13--the-paperback-cover-wrap) | The paperback cover wrap | Planned |
@@ -60,9 +60,9 @@ it, before the 1.0 work below.
 |---|---|
 | V1 An icon, and the installers wear it | ✅ The redrawn icon (an unfolded cover with a colour-bar spine), with clear space round it on a Mac. Not yet seen installed on a real desktop. |
 | V2 The suite's frame | ✅ Menus, Go to, Help Center and tutorial, About, Preferences, the icon toolbar, self-update, the installed list, Spanish, French and German with right-to-left layouts, and the suite's themes: the ten with *Auto*, the three looks and colour-safe, from `recon-theme` v0.1.0. Every theme with every look passes the contrast test in the app. |
-| V3 Page quality to the owner's standard | 🔨 Built, and not yet judged. The repair, the keep list, the report, even page bottoms, the pinned count and the blank even last page are in. On the test book with no page added, set in the bundled stand-ins at its own sizes, and with one rule applied to both PDFs, Press leaves 24 pages splitting a sentence and the owner's script's output 26 (Press had 64 before repair). **Still worse than the script:** 27 pages that carry on don't end on the bottom line, against its 20. The fonts differ, so the pages are not the same pages. A choice about moving sentences is the owner's ([decisions](docs/decisions.md#how-the-repair-finds-its-moves-and-evens-the-pages)). |
+| V3 Page quality to the owner's standard | 🔨 Built, and not yet judged. The repair, the keep list, the report, even page bottoms, the pinned count and the blank even last page are in. On the test book with no page added, set in the bundled stand-ins at its own sizes, and with one rule applied to both PDFs, Press leaves 24 pages splitting a sentence and the owner's script's output 26 (Press had 60 before repair). 17 pages that carry on don't end on the bottom line, against the script's 20. The fonts differ, so the pages are not the same pages, and the owner hasn't looked at them. A choice about moving sentences is the owner's ([decisions](docs/decisions.md#how-the-repair-finds-its-moves-and-evens-the-pages)). |
 | V4 Every trim size | ✅ All 16 paperback and 5 hardcover sizes, custom paperback sizes, and the inside margin from the real page count. Every listed size and the corners of the custom range pass every check in the tests, with and without bleed. **KDP's own previewer has seen none of them.** KDP publishes no page limits for a custom size, so Press's are its own ([print rules](docs/design/print-rules.md#kdp-trim-and-page-count)). |
-| V5 Book themes, matter and fonts | 🔨 Started: the fonts. Ten ship with Press, with open stand-ins for the owner's three; the computer's own are used where their flag allows; a missing character or style stops the build. **Still to build:** the book themes, saving your own, and the front and back matter. |
+| V5 Book themes, matter and fonts | ✅ Five starter themes and the author's own; chapter openers, subtitles, running heads and house rules; front and back matter added, edited and ordered; the book's language; ten fonts with open stand-ins for the owner's three. **The themes' pages were judged only on made-up books**, and KDP's previewer has seen none of them. The Spanish, French and German words, in the window and printed, haven't been checked by a native speaker. |
 | V6 Bringing a book in | Not started. Word chapters already come in. |
 | V7 The checks, complete | Not started. Eleven checks and a spread preview exist. |
 | V8 The beta | Not started |
@@ -96,10 +96,10 @@ minutes, and makes the same pages on all three systems. If it can't, this is whe
 | 🙋 Bring in a book | M | From RT Story Tracker in one step, or from Word, Markdown or EPUB files. A Story Tracker book stays read-only here; a book that came from files can have its words corrected here. |
 | 🙋 ✅ Every KDP trim size | S | All 16 paperback sizes, custom paperback sizes inside KDP's limits, and the 5 hardcover sizes, with or without bleed. |
 | 🙋 ✅ Margins from the page count | S | Mirrored margins, the inside margin set from the real page count, and the outside, top and bottom never under KDP's minimum. |
-| 🙋 Book themes | L | A starter set of book themes (the design of the printed pages, not the window's colours), each with fonts for titles, subtitles and body, sizes, spacing, drop caps, scene breaks, chapter openers and folios. Change anything and save it as your own. |
-| 🙋 Front and back matter | M | Title, copyright, dedication, acknowledgements, contents, a note to the reader, Parts, prologue, epilogue, appendices, a preview of the next book, also by, and stay connected, in the order you choose. |
-| 🙋 Titles on the right | S | Every title in the contents starts on a right-hand page, with a blank before it when needed. |
-| 🙋 Running heads | S | The author's name on left-hand pages and the book's title on right-hand pages, or the chapter's title instead, on or off in each book theme. None on chapter openers, Part pages or blank pages. |
+| 🙋 ✅ Book themes | L | A starter set of book themes (the design of the printed pages, not the window's colours), each with fonts for titles, subtitles and body, sizes, spacing, drop caps, scene breaks, chapter openers and folios. Change anything and save it as your own. |
+| 🙋 ✅ Front and back matter | M | Title, copyright, dedication, acknowledgements, contents, a note to the reader, Parts, prologue, epilogue, appendices, a preview of the next book, also by, and stay connected, in the order you choose. |
+| 🙋 ✅ Titles on the right | S | Every title in the contents starts on a right-hand page, with a blank before it when needed. |
+| 🙋 ✅ Running heads | S | The author's name on left-hand pages and the book's title on right-hand pages, or the chapter's title instead, on or off in each book theme. None on chapter openers, Part pages or blank pages. |
 | 🙋 ✅ Page turns | L | No sentence split across a page turn, unless it's on your list of turns kept for suspense. A report lists what moved and anything that couldn't. |
 | 🙋 Even page bottoms | M | The text block holds a whole number of lines, and every full page ends on the same bottom line. |
 | 🙋 ✅ Pin the page count | S | Keep the published page count so an existing cover still fits, and end on a blank page with an even total. |

@@ -23,11 +23,14 @@
           <h2>Book</h2>
           <p id="import-summary" class="hint">Choose a folder of Word (.docx) chapters, one file for each chapter.</p>
           <label>Title <input id="title" type="text" maxlength="200" autocomplete="off" /></label>
+          <label>Subtitle <input id="subtitle" type="text" maxlength="200" autocomplete="off" /></label>
           <label>Author <input id="author" type="text" maxlength="200" autocomplete="off" /></label>
           <details id="import-notes" hidden>
             <summary id="import-notes-summary">Notes from the import</summary>
             <ul id="import-notes-list"></ul>
           </details>
+          <label>Book language <select id="language"></select></label>
+          <p><button type="button" id="pages-open" hidden>Pages and their order…</button></p>
           <ol id="chapters" class="chapters" aria-label="Chapters"></ol>
         </section>
 
@@ -46,8 +49,15 @@
           </div>
           <label>Paper and ink <select id="paper"></select></label>
           <label class="check"><input id="bleed" type="checkbox" /> Bleed (0.125 in on the top, bottom and outside edges)</label>
+          <label>Book theme <select id="book-theme"></select></label>
+          <p id="theme-about" class="hint"></p>
+          <p class="row">
+            <button type="button" id="theme-save">Save as my theme…</button>
+            <button type="button" id="theme-delete" hidden>Delete this theme</button>
+          </p>
           <label>Body font <select id="body-font"></select></label>
           <label>Title font <select id="title-font"></select></label>
+          <label>Subtitle font <select id="subtitle-font"></select></label>
           <div class="pair">
             <label>Body text (pt) <input id="body-pt" type="number" min="8" max="18" step="0.5" /></label>
             <label>Line spacing <input id="line-height" type="number" min="1" max="2.2" step="0.05" /></label>
@@ -58,8 +68,59 @@
               <option value="center">Centred</option>
             </select>
           </label>
+          <label class="check"><input id="folio-dashes" type="checkbox" /> Dashes round the page number</label>
           <label>Scene break <input id="scene-break" type="text" maxlength="20" autocomplete="off" /></label>
           <label class="check"><input id="drop-cap" type="checkbox" /> Drop cap at the start of each chapter</label>
+          <details id="openers-box">
+            <summary>Chapter openers and running heads</summary>
+            <label>Above a chapter’s title
+              <select id="chapter-label">
+                <option value="none">Nothing</option>
+                <option value="number">Its number</option>
+                <option value="roman">Its number in Roman numerals</option>
+                <option value="chapter-number">“Chapter 1”</option>
+                <option value="chapter-words">“Chapter One” (words in English only)</option>
+              </select>
+            </label>
+            <label>Titles
+              <select id="title-align">
+                <option value="center">Centred</option>
+                <option value="left">On the left</option>
+              </select>
+            </label>
+            <label class="check"><input id="title-caps" type="checkbox" /> Titles in capitals</label>
+            <label class="check"><input id="subtitle-italic" type="checkbox" /> Italic subtitles</label>
+            <div class="pair">
+              <label>Title size (× body) <input id="title-scale" type="number" min="1" max="3" step="0.1" /></label>
+              <label>Drop cap lines <input id="drop-cap-lines" type="number" min="2" max="4" step="1" /></label>
+            </div>
+            <div class="pair">
+              <label>Lines above a title <input id="title-sink" type="number" min="0" max="12" step="0.5" /></label>
+              <label>Lines below it <input id="title-gap" type="number" min="0.5" max="6" step="0.5" /></label>
+            </div>
+            <label>Mark under a chapter’s title <input id="opener-ornament" type="text" maxlength="20" autocomplete="off" /></label>
+            <label>Running heads
+              <select id="running-heads">
+                <option value="off">None</option>
+                <option value="book">Author on the left, book on the right</option>
+                <option value="chapter">Author on the left, chapter on the right</option>
+              </select>
+            </label>
+            <label>Running heads set in
+              <select id="head-style">
+                <option value="caps">Capitals</option>
+                <option value="italic">Italic</option>
+              </select>
+            </label>
+          </details>
+          <details id="rules-box">
+            <summary>House rules</summary>
+            <label class="check"><input id="titles-on-right" type="checkbox" /> Every title starts on a right-hand page</label>
+            <label class="check"><input id="end-blank-even" type="checkbox" /> End on a blank page, with an even page count</label>
+            <label class="check"><input id="blank-folios" type="checkbox" /> Page numbers on blank pages</label>
+            <label class="check"><input id="dash-stays" type="checkbox" /> A dash never starts a line</label>
+            <label class="check"><input id="hyphenate" type="checkbox" /> Break words at line ends (hyphenation)</label>
+          </details>
           <label class="check"><input id="title-page" type="checkbox" /> Title page</label>
           <label class="check"><input id="contents" type="checkbox" /> Contents page</label>
           <label>Page turns that split a sentence
@@ -95,6 +156,7 @@
         </section>
 
         <section id="preview" hidden>
+          <p id="preview-note" class="hint page card" role="status" hidden></p>
           <div class="pager page card">
             <button id="first" type="button" aria-label="First spread">First</button>
             <button id="prev" type="button" aria-label="Previous spread">Back</button>

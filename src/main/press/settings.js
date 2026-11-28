@@ -1,8 +1,10 @@
 'use strict';
-// What an author chooses for the interior, and the theme that follows from it. The choices are few on purpose: the edition
-// (which decides the paper and the page limits), the trim, the type size and spacing, and a handful of switches. Everything else
-// about the page is Press's, and the printer's rules decide what passes.
+// What an author chooses for the interior, and the theme that follows from it: the edition (which decides the paper and the
+// page limits), the trim, the book theme's design (see shared/book-themes.js) and the house rules, each its own switch.
+// Everything else about the page is Press's, and the printer's rules decide what passes.
+const { DEFAULT_DESIGN, DESIGN_KEYS, designOf, validateDesign } = require('../../shared/book-themes');
 const { DEFAULT_FAMILY: FAMILY, ORNAMENT_FAMILY } = require('../../shared/font-catalog');
+const { BOOK_LANGUAGES } = require('../../shared/languages');
 const { BLEED_IN, FORMATS, PAPERS, insideMargin, isCustomPaperbackTrim, pageLimits } = require('../../shared/print-rules');
 const { withDefaults, validateTheme } = require('../../shared/theme');
 
@@ -12,13 +14,17 @@ const DEFAULT_SETTINGS = Object.freeze({
   trim: { width_in: 6, height_in: 9 },
   paper: 'black-white',
   bleed: true,
-  body_font: FAMILY,
-  title_font: FAMILY,
-  body_pt: 12,
-  line_height: 1.4,
-  drop_cap: true,
-  folio: 'outside',
-  scene_break: '* * *',
+  book_theme: 'classic',
+  ...DEFAULT_DESIGN,
+  // The book's language: how its words break at line ends, which quotation marks straight quotes become, and the words Press
+  // itself puts on a page.
+  language: 'en',
+  hyphenate: true,
+  // The house rules.
+  titles_on_right: true,
+  end_blank_even: true,
+  blank_folios: true,
+  dash_stays: true,
   title_page: true,
   contents: false,
   pin_pages: null,
@@ -83,17 +89,15 @@ function validateSettings(settings) {
   if (problems.every((p) => p.path !== 'trim')) {
     need('paper', Boolean(pageLimits(settings.format, width, height, settings.paper)), `KDP does not offer ${settings.paper} paper at ${trimLabel([width, height])} as a ${settings.format}`);
   }
+  for (const problem of validateDesign(designOf(settings))) problems.push(problem);
+  need('book_theme', typeof settings.book_theme === 'string' && settings.book_theme.length <= 60, 'a book theme is a name');
+  need('language', BOOK_LANGUAGES.some((l) => l.code === settings.language), 'the book’s language is one of those listed');
+  for (const [key, what] of [['hyphenate', 'hyphenation'], ['titles_on_right', 'titles on right-hand pages'], ['end_blank_even', 'ending on a blank even page'], ['blank_folios', 'page numbers on blank pages'], ['dash_stays', 'keeping a dash with its word']]) {
+    need(key, typeof settings[key] === 'boolean', `${what} is on or off`);
+  }
   need('inside_in', settings.inside_in === null || number(settings.inside_in, 0.375, 2), 'an inside margin is 0.375 to 2 in, or empty to take it from the page count');
   if (settings.inside_in !== null && Number.isFinite(width)) need('inside_in', width - OUTSIDE_IN - settings.inside_in >= 2, 'that inside margin leaves too little room for text at this size');
-  const named = (value) => typeof value === 'string' && value.trim() !== '' && value.length <= 100 && !/[\u0000-\u001f]/.test(value);
-  need('body_font', named(settings.body_font), 'the body font is the name of a font');
-  need('title_font', named(settings.title_font), 'the title font is the name of a font');
   need('bleed', typeof settings.bleed === 'boolean', 'bleed is on or off');
-  need('body_pt', number(settings.body_pt, 8, 18), 'body text is 8 to 18 points');
-  need('line_height', number(settings.line_height, 1, 2.2), 'line spacing is 1 to 2.2 times the size');
-  need('drop_cap', typeof settings.drop_cap === 'boolean', 'the drop cap is on or off');
-  need('folio', ['outside', 'center'].includes(settings.folio), 'page numbers go outside or centre');
-  need('scene_break', typeof settings.scene_break === 'string' && settings.scene_break.trim() !== '' && settings.scene_break.length <= 20, 'a scene break is 1 to 20 characters');
   need('title_page', typeof settings.title_page === 'boolean', 'the title page is on or off');
   need('contents', typeof settings.contents === 'boolean', 'the contents page is on or off');
   need('pin_pages', settings.pin_pages === null || (Number.isInteger(settings.pin_pages) && settings.pin_pages >= 24 && settings.pin_pages <= 900), 'a pinned page count is a whole number from 24 to 900, or empty');
@@ -109,31 +113,48 @@ const CAP_HEIGHT = 0.65;
 
 // `pages` is the book's page count, which sets the inside margin unless the author has set one. `capHeights` says how tall the
 // capitals of the body font and of the large first letter's font are, so that the letter's top meets the first line's.
-function themeFromSettings(given, { pages = null, capHeights = {} } = {}) {
+// `details` are the book's title and author, which running heads name.
+function themeFromSettings(given, { pages = null, capHeights = {}, details = {} } = {}) {
   const s = withDefaultSettings(given);
   const pitch = s.body_pt * s.line_height;
-  // Three lines deep: two pitches and the first line's own capitals.
-  const capSize = Math.round((2 * pitch + (capHeights.body ?? CAP_HEIGHT) * s.body_pt) / (capHeights.dropcap ?? CAP_HEIGHT));
+  const lines = s.drop_cap_lines;
+  // As deep as its lines: the pitches between them and the first line's own capitals.
+  const capSize = Math.round(((lines - 1) * pitch + (capHeights.body ?? CAP_HEIGHT) * s.body_pt) / (capHeights.dropcap ?? CAP_HEIGHT));
+  const small = (part, least = 7) => Math.max(least, Math.round(s.body_pt * part));
+  const copyright = small(0.8);
+  const centred = { align: 'center', first_line_indent_in: 0, space_after_pt: pitch / 2 };
   const theme = withDefaults({
     format: 1,
-    name: 'Garamond novel',
+    name: s.book_theme,
     trim: { width_in: s.trim.width_in, height_in: s.trim.height_in },
     margins: { inside_in: s.inside_in ?? automaticInside(pages ?? s.pin_pages ?? ASSUMED_PAGES), outside_in: OUTSIDE_IN, top_in: TOP_IN, bottom_in: BOTTOM_IN },
     // The large first letter goes with the titles, as in the owner's books.
-    fonts: { body: s.body_font, title: s.title_font, ornament: ORNAMENT_FAMILY, dropcap: s.title_font },
-    body: { size_pt: s.body_pt, line_height: s.line_height, first_line_indent_in: Math.round((s.body_pt * 1.4) / 72 * 100) / 100, justify: true, hyphenate: true },
-    title: { size_pt: Math.round(s.body_pt * 1.7), color: '#000000', space_before_pt: Math.round(pitch * 4), space_after_pt: Math.round(pitch * 1.5), letter_spacing_pt: 1, uppercase: true },
-    dropCap: { enabled: s.drop_cap, lines: 3, size_pt: capSize, color: '#000000' },
-    sceneBreak: { text: s.scene_break.trim(), size_pt: s.body_pt, color: '#000000', space_before_pt: Math.round(pitch * 0.5), space_after_pt: Math.round(pitch * 0.5) },
-    folio: { place: s.folio, text: '{n}', size_pt: Math.max(8, Math.round(s.body_pt * 0.8)) },
+    fonts: { body: s.body_font, title: s.title_font, subtitle: s.subtitle_font, ornament: ORNAMENT_FAMILY, dropcap: s.title_font },
+    body: { size_pt: s.body_pt, line_height: s.line_height, first_line_indent_in: Math.round((s.body_pt * 1.4) / 72 * 100) / 100, justify: true, hyphenate: s.hyphenate },
+    title: { size_pt: Math.round(s.body_pt * s.title_scale), color: '#000000', space_before_pt: Math.round(pitch * s.title_sink), space_after_pt: Math.round(pitch * s.title_gap), letter_spacing_pt: s.title_caps ? 1 : 0, uppercase: s.title_caps, align: s.title_align },
+    subtitle: { size_pt: small(1.05), color: '#000000', italic: s.subtitle_italic, space_before_pt: Math.round(pitch * 0.25) },
+    chapterLabel: { format: s.chapter_label, size_pt: small(0.9), color: '#000000', letter_spacing_pt: 2, uppercase: true, space_after_pt: Math.round(pitch * 0.25) },
+    opener: { ornament: s.opener_ornament.trim(), wholeLines: true },
+    runningHeads: { mode: s.running_heads, style: s.head_style, size_pt: small(0.75), author: String(details.author ?? ''), title: String(details.title ?? '') },
+    dropCap: { enabled: s.drop_cap, lines, size_pt: capSize, color: '#000000' },
+    sceneBreak: { text: s.scene_break.trim(), size_pt: s.body_pt, color: '#000000', space_before_pt: pitch / 2, space_after_pt: pitch / 2 },
+    folio: { place: s.folio, text: s.folio_dashes ? '— {n} —' : '{n}', size_pt: small(0.8, 8), onBlank: s.blank_folios },
     matterTitle: { size_pt: Math.round(s.body_pt * 1.9), space_before_pt: Math.round(pitch * 6), space_after_pt: Math.round(pitch * 1.2) },
     part: { caption: '', size_pt: Math.round(s.body_pt * 2), space_before_pt: Math.round(pitch * 8), space_after_pt: 0, caption_size_pt: s.body_pt, caption_color: '#000000', caption_space_before_pt: 12 },
+    matterLooks: {
+      dedication: { ...centred, italic: true },
+      copyright: { align: 'left', size_pt: copyright, first_line_indent_in: 0, space_after_pt: Math.round(copyright * 0.6), line_pt: Math.round(copyright * 1.3 * 10) / 10 },
+      'also-by': centred,
+      'stay-connected': centred,
+    },
     roles: {
       Title: { align: 'center', size_pt: Math.round(s.body_pt * 2.6), font: 'title', space_before_pt: Math.round(pitch * 6), space_after_pt: Math.round(pitch * 1.2), letter_spacing_pt: 1.5, line_pt: Math.round(s.body_pt * 3.2) },
+      Subtitle: { align: 'center', size_pt: Math.round(s.body_pt * 1.4), font: 'subtitle', italic: s.subtitle_italic, space_after_pt: Math.round(pitch * 0.5), line_pt: Math.round(s.body_pt * 1.9) },
       Author: { align: 'center', size_pt: Math.round(s.body_pt * 1.3), font: 'title', space_before_pt: Math.round(pitch * 1.5), letter_spacing_pt: 1, line_pt: Math.round(s.body_pt * 1.8) },
     },
-    titlesOnRight: true,
-    endOnBlankEven: true,
+    dashStays: s.dash_stays,
+    titlesOnRight: s.titles_on_right,
+    endOnBlankEven: s.end_blank_even,
   });
   const problems = validateTheme(theme);
   if (problems.length) throw new Error(`The settings make a theme that is not valid: ${problems.map((p) => `${p.path} ${p.message}`).join('; ')}`);
@@ -143,4 +164,4 @@ function themeFromSettings(given, { pages = null, capHeights = {} } = {}) {
 // What a book's pages are limited to under these settings, for showing before a build.
 const limitsFor = (s) => pageLimits(s.format, s.trim.width_in, s.trim.height_in, s.paper);
 
-module.exports = { PAGE_TURNS, BLEED_IN, DEFAULT_SETTINGS, FAMILY, PAPER_NAMES, automaticInside, choices, limitsFor, themeFromSettings, validateSettings, withDefaultSettings };
+module.exports = { PAGE_TURNS, BLEED_IN, DEFAULT_SETTINGS, DESIGN_KEYS, FAMILY, PAPER_NAMES, automaticInside, choices, limitsFor, themeFromSettings, validateSettings, withDefaultSettings };

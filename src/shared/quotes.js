@@ -51,6 +51,26 @@ function smartQuotes(text) {
   return { text: ch.join(''), notes };
 }
 
+// The straight quotes in a text, as the marks of a book's language. Only a straight quote is changed: one the writer already
+// curled is theirs. Which way each one faces is decided as above. Gives one string for each character of the text (French marks
+// bring a narrow space with them), so that a paragraph's runs can be rebuilt with their own boundaries.
+function curlStraight(text, [open, close, openSingle, closeSingle]) {
+  const original = [...text];
+  const decided = [...smartQuotes(text).text];
+  return original.map((c, i) => {
+    if (c === '"') return decided[i] === OPEN_D ? open : close;
+    if (c !== "'") return c;
+    // The '90s: figures with their century left off take an apostrophe.
+    if (/^\d\ds?(?![\p{L}\p{N}])/u.test(original.slice(i + 1, i + 5).join(''))) return APOS;
+    if (decided[i] === OPEN_S) return openSingle;
+    // An apostrophe inside a word, or one that stands for letters left out, is an apostrophe in every language.
+    const inWord = isAlnum(original[i - 1] ?? ' ') && isAlnum(original[i + 1] ?? ' ');
+    if (inWord) return APOS;
+    const elision = !isAlnum(original[i - 1] ?? ' ') && isAlnum(original[i + 1] ?? ' ');
+    return elision ? APOS : closeSingle;
+  });
+}
+
 // Double quotes must open and close in turn within a paragraph. A quote may stay open at a paragraph's end only if the next
 // paragraph opens a new one, as a speech that runs over several paragraphs does.
 function quoteBalanceIssues(texts) {
@@ -78,4 +98,4 @@ function quoteBalanceIssues(texts) {
   return issues;
 }
 
-module.exports = { quoteBalanceIssues, smartQuotes };
+module.exports = { curlStraight, quoteBalanceIssues, smartQuotes };

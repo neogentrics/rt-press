@@ -26,8 +26,8 @@ books.
 
 > **This is an alpha, on the way to 1.0.** The typesetter was proved on a real book in step zero (see the
 > [results](docs/design/step-zero-results.md)), and the app does the whole interior from start to finish for a book of plain
-> chapters. In-story documents and pictures are not there yet, and more pages are left
-> uneven at the foot than the owner's own build script leaves. It's for trying, not for printing your book yet. What's left before 1.0 is on the [roadmap](ROADMAP.md#where-it-stands).
+> chapters. Pictures aren't set yet, and KDP's own previewer hasn't seen a file it made. It's for trying, not for printing
+> your book yet. What's left before 1.0 is on the [roadmap](ROADMAP.md#where-it-stands).
 
 <table>
 <tr>
@@ -36,7 +36,7 @@ books.
 </tr>
 <tr>
 <td><img src="docs/screenshots/checks-fail.png" alt="The checks for a book that is too short: the page count and the inside margin are marked as failed"><br><b>Checked, not hoped.</b> Every check reads the finished file. A book that breaks a rule can't be saved.</td>
-<td><img src="docs/screenshots/settings.png" alt="The settings: edition, trim size, paper, bleed, body and title fonts, type size, page numbers, scene break, the inside margin and a pinned page count"><br><b>Only what KDP offers.</b> Pick a trim, and only the papers that come in it are listed.</td>
+<td><img src="docs/screenshots/settings.png" alt="The interior settings: edition, trim size, paper and ink, bleed, the book theme, and the body, title and subtitle fonts"><br><b>Only what KDP offers.</b> Pick a trim, and only the papers that come in it are listed.</td>
 </tr>
 <tr>
 <td><img src="docs/screenshots/go-to.png" alt="The command box, listing every command with its menu and shortcut"><br><b>Go to anything.</b> <code>Ctrl+K</code> jumps to a chapter. Start with <code>&gt;</code> to run any command by name.</td>
@@ -45,6 +45,10 @@ books.
 <tr>
 <td><img src="docs/screenshots/tutorial.png" alt="The tutorial's first step, pointing at the chapters of a practice book"><br><b>A tour on a practice book.</b> Offered the first time, and never touching your own book.</td>
 <td><img src="docs/screenshots/page-turns.png" alt="The page turn report: sentences left split on purpose and sentences moved to the next page, each with its page and a button"><br><b>Every move on record.</b> What was moved, what couldn't be, and a list of the turns you keep for suspense.</td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/pages.png" alt="The pages and their order: a title page and chapters, each with buttons to edit, move and remove it, and a list of kinds of page to add"><br><b>Your pages, your order.</b> Add a dedication, a part or an also-by page, and put it where you want it.</td>
+<td></td>
 </tr>
 </table>
 
@@ -82,8 +86,10 @@ npm run dist:linux
 |---|---|
 | **Bring in your chapters** | A folder of Word (.docx) files, one for each chapter, in order. Chapter titles are read from the files, curly quotes are set from the text around them, and quotation marks that don't pair are listed so you can check them |
 | **Every KDP trim** | All 16 paperback sizes, custom paperback sizes and the 5 hardcover sizes, with only the papers KDP offers for each. KDP publishes no page limits for a custom size, so those are Press's own, and it says so |
-| **Your fonts, or ten that come with it** | A body font and a title font from those that ship with Press or those on your computer that allow being put in a PDF. Open stand-ins for Book Antiqua, Felix Titling and Segoe UI Symbol. A missing character stops the build: nothing is borrowed from another font |
-| **Set like a book** | Mirrored margins with the inside one taken from the page count, or your own, every chapter starting on a right-hand page, a drop cap, scene breaks, page numbers outside or centred, an optional title page and contents page, and a blank last page |
+| **Your fonts, or ten that come with it** | Body, title and subtitle fonts from those that ship with Press or those on your computer that allow being put in a PDF. Open stand-ins for Book Antiqua, Felix Titling and Segoe UI Symbol. A missing character stops the build: nothing is borrowed from another font |
+| **Book themes** | Five designs for the printed pages, from Garamond with a drop cap to sans titles with the chapter in the running head. Change anything and save it as your own. A change shows in the pages at once |
+| **Set like a book** | Mirrored margins with the inside one taken from the page count, or your own; chapter labels, subtitles, drop caps, scene breaks, running heads and page numbers; the book's language for hyphenation and quotation marks; and house rules you can switch: titles on right-hand pages, a blank even last page, no line starting with a dash |
+| **Front and back matter** | Title page, copyright, dedication, acknowledgements, contents, prologue, parts, epilogue, appendices, a preview, also by, stay connected and more, added where they usually stand, edited as plain text, and moved where you like |
 | **No sentence split across a page turn** | Where a page ends in the middle of a sentence, the sentence starts on the next page instead, in rounds, and the book is set again each time. By default no page is added: a sentence is only moved where its chapter has room. Or let pages be added, as far as a pinned count allows, or leave the pages as set. What's left behind on a line ends short, like the end of a paragraph, unless it's nearly full already. The repair never changes your words |
 | **A report, and your keep list** | What was moved, what couldn't be and why, each with its page. Put a sentence on your list to leave it split for suspense |
 | **Even page bottoms** | Pages whose text carries on are brought to the same last line by sharing a little space between lines and paragraphs, without moving a word to another page. Pages that can't be done gently are left, and counted |
@@ -102,8 +108,7 @@ npm run dist:linux
 | **Private by default** | Your book is kept in an encrypted project on your own computer |
 | **Works offline** | No account, no server, and your writing never leaves your computer. The one thing it asks the internet is whether there's a newer version, and you can turn that off |
 
-**Coming next, for 1.0:** book themes
-with front and back matter, books from Markdown and EPUB, and every KDP rule shown on the page it's on. See the [roadmap](ROADMAP.md).
+**Coming next, for 1.0:** books from a single Word, Markdown or EPUB file and from RT Story Tracker, and every KDP rule shown on the page it's on. See the [roadmap](ROADMAP.md).
 
 ## What it won't do
 

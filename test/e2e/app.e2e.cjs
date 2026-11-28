@@ -57,7 +57,7 @@ function pretendFonts() {
     assert.equal(await window.evaluate(() => typeof window.require), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => typeof window.process), 'undefined', 'no Node in the window');
     assert.equal(await window.evaluate(() => Object.keys(window.rtPress).join()),
-      'status,getState,importChapters,setDetails,setSettings,setKept,fontChoices,build,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
+      'status,getState,importChapters,setDetails,setSettings,setKept,fontChoices,addPage,readPage,editPage,movePage,removePage,applyBookTheme,saveBookTheme,deleteBookTheme,build,preview,getPage,exportPdf,inPractice,startPractice,leavePractice,help,appearance,appSettings,saveAppSettings,commands,runCommand,about,copyDetails,checkUpdates,installUpdate,openReleases,onStep,onCommand,onUpdate,onAppearance',
       'the window gets these calls and no more');
     const status = await window.evaluate(() => window.rtPress.status());
     assert.deepEqual([status.version, status.typst.version, status.storage.ok], [pkg.version, TYPST_VERSION, true], 'the bundled typesetter and the encrypted storage work');
@@ -322,6 +322,94 @@ function pretendFonts() {
     await window.waitForFunction(async () => (await window.rtPress.getState()).settings.body_font === 'EB Garamond');
     await rebuild();
 
+    // Book themes: choosing one fills in the design, and the pages that are showing change without a build.
+    const settings = () => window.evaluate(async () => (await window.rtPress.getState()).settings);
+    const previewed = () => textIs(window, '#preview-note', /^A quick preview/);
+    assert.deepEqual(await window.$$eval('#book-theme option', (all) => all.map((o) => o.textContent)), ['Classic', 'Inscription', 'Literary', 'Modern', 'Plain']);
+    await window.selectOption('#book-theme', 'modern');
+    await window.waitForFunction(async () => (await window.rtPress.getState()).settings.chapter_label === 'number');
+    assert.deepEqual([await window.inputValue('#body-font'), await window.inputValue('#running-heads'), await window.isChecked('#drop-cap')], ['Source Serif 4', 'chapter', false]);
+    await previewed();
+    assert.equal(await window.isDisabled('#export'), true, 'a quick preview is not a file to save');
+    await window.waitForFunction(() => document.getElementById('page-right').naturalWidth > 0);
+    // Changed, it can be saved under a name of the author's own, chosen again, and deleted.
+    await window.evaluate(() => { for (const id of ['openers-box', 'rules-box']) document.getElementById(id).open = true; });
+    assert.doesNotMatch(await window.textContent('#theme-about'), /Changed since/);
+    await window.selectOption('#chapter-label', 'roman');
+    await textIs(window, '#theme-about', /Changed since you chose it/);
+    assert.equal(await window.isVisible('#theme-delete'), false, 'a theme that comes with the app stays');
+    await window.click('#theme-save');
+    await window.fill('#theme-name', 'Plain');
+    await window.click('#theme-save-yes');
+    await textIs(window, '#theme-saving .problem', /Choose another/);
+    await window.fill('#theme-name', 'My look');
+    await window.press('#theme-name', 'Enter');
+    await gone(window, '#theme-saving');
+    await visible(window, '#theme-delete');
+    const mine = await window.inputValue('#book-theme');
+    assert.match(mine, /^own-/);
+    await window.selectOption('#book-theme', 'classic');
+    await window.waitForFunction(async () => (await window.rtPress.getState()).settings.chapter_label === 'none');
+    await window.selectOption('#book-theme', mine);
+    await window.waitForFunction(async () => (await window.rtPress.getState()).settings.chapter_label === 'roman');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(profile, 'book-themes.json'), 'utf8'))[0].name, 'My look', 'kept for every book');
+    await window.click('#theme-delete');
+    await window.waitForSelector('#theme-delete', { state: 'hidden' });
+    assert.equal((await settings()).chapter_label, 'roman', 'deleting a theme changes no book');
+    await window.selectOption('#book-theme', 'classic');
+    await window.waitForFunction(async () => (await window.rtPress.getState()).settings.chapter_label === 'none');
+    await previewed();
+
+    // The book's pages: added where such a page goes, written, moved and taken out.
+    const rows = () => window.$$eval('#pages-list li', (all) => all.map((li) => li.dataset.kind));
+    await window.click('#pages-open');
+    await visible(window, '#pages');
+    assert.deepEqual((await rows()).slice(0, 2), ['title-page', 'chapter']);
+    assert.equal((await rows()).length, 11);
+    await window.selectOption('#page-kind', 'dedication');
+    await window.click('#page-add');
+    await visible(window, '#page-editor');
+    assert.deepEqual(await unnamed(window), []);
+    await window.fill('#edit-text', 'For *the ferryman*, who waited.');
+    assert.equal(await window.isChecked('#edit-folio'), false, 'a dedication has no page number');
+    await window.click('#edit-save');
+    await gone(window, '#page-editor');
+    assert.deepEqual((await rows()).slice(0, 3), ['title-page', 'dedication', 'chapter']);
+    const dedicationButton = (action) => `#pages-list li[data-kind="dedication"] .page-${action}`;
+    await window.click(dedicationButton('edit'));
+    assert.equal(await window.inputValue('#edit-text'), 'For *the ferryman*, who waited.');
+    await window.click('#edit-cancel');
+    await gone(window, '#page-editor');
+    await window.focus(dedicationButton('down'));
+    await window.keyboard.press('Enter');
+    await window.waitForFunction(() => document.querySelectorAll('#pages-list li')[2].dataset.kind === 'dedication');
+    assert.equal(await window.evaluate(() => document.activeElement?.className), 'page-down', 'the keyboard stays with the page that moved');
+    await window.keyboard.press('Shift+Tab');
+    await window.keyboard.press('Enter');
+    await window.waitForFunction(() => document.querySelectorAll('#pages-list li')[1].dataset.kind === 'dedication');
+    assert.deepEqual(await unnamed(window), []);
+    await window.click('#pages-done');
+    await gone(window, '#pages');
+    await rebuild();
+    await window.click('#export');
+    await window.waitForFunction(() => /^Saved /.test(document.getElementById('step').textContent));
+    const dedicated = readPdf(fs.readFileSync(saved));
+    assert.ok(textItems(dedicated, dedicated.pages()[2]).map((item) => item.text).join('').replace(/\s/g, '').includes('theferryman'), 'the dedication is on page 3');
+    // A page with words asks before it goes.
+    await command(window, 'book-pages');
+    await window.click(dedicationButton('remove'));
+    await visible(window, '#page-remove');
+    await window.click('#remove-yes');
+    await window.waitForFunction(() => document.querySelectorAll('#pages-list li').length === 11);
+    await window.click('#pages-done');
+    await gone(window, '#pages');
+    // The title page's switch and its place in the list are one thing.
+    await window.uncheck('#title-page');
+    await window.waitForFunction(async () => !(await window.rtPress.getState()).pages.some((p) => p.kind === 'title-page'));
+    await window.check('#title-page');
+    await window.waitForFunction(async () => (await window.rtPress.getState()).pages[0].kind === 'title-page');
+    await rebuild();
+
     // Contrast, measured on the real text in light and in dark: the main window, then each of the frame's own windows.
     for (const colorScheme of ['light', 'dark']) {
       await window.emulateMedia({ colorScheme });
@@ -329,7 +417,7 @@ function pretendFonts() {
       const main = await measureContrast(app, window);
       assert.ok(main.measured > 60, `${colorScheme}: ${main.measured} pieces of text measured`);
       assert.deepEqual(main.failures, [], `${colorScheme}: the window meets WCAG AA`);
-      for (const name of ['about', 'preferences', 'help-center', 'go-to', 'check-updates']) {
+      for (const name of ['about', 'preferences', 'help-center', 'go-to', 'check-updates', 'book-pages']) {
         await command(window, name);
         await visible(window, 'dialog[open]');
         await new Promise((resolve) => setTimeout(resolve, 300));
@@ -339,17 +427,27 @@ function pretendFonts() {
         await window.keyboard.press('Escape');
         await gone(window, 'dialog[open]');
       }
+      // The page editor opens over the list of pages.
+      await command(window, 'book-pages');
+      await window.click('#pages-list li[data-kind="chapter"] .page-edit');
+      await visible(window, '#page-editor');
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      assert.deepEqual((await measureContrast(app, window)).failures, [], `${colorScheme}: the page editor meets WCAG AA`);
+      await window.click('#edit-cancel');
+      await gone(window, '#page-editor');
+      await window.click('#pages-done');
+      await gone(window, '#pages');
     }
     await window.emulateMedia({ colorScheme: null });
 
     // Everything can be reached with the keyboard.
     await window.evaluate(() => document.activeElement?.blur());
     const reached = new Set();
-    for (let press = 0; press < 90; press += 1) {
+    for (let press = 0; press < 140; press += 1) {
       await window.keyboard.press('Tab');
       reached.add(await window.evaluate(() => document.activeElement?.id || document.activeElement?.tagName));
     }
-    for (const id of ['import', 'build', 'export', 'tb-goto', 'tb-prefs', 'tb-help', 'title', 'author', 'format', 'trim', 'paper', 'bleed', 'page-turns', 'pin-pages', 'next', 'last', 'goto']) assert.ok(reached.has(id), `Tab reaches #${id}: ${[...reached].join(' ')}`);
+    for (const id of ['import', 'build', 'export', 'tb-goto', 'tb-prefs', 'tb-help', 'title', 'subtitle', 'language', 'pages-open', 'book-theme', 'theme-save', 'running-heads', 'dash-stays', 'author', 'format', 'trim', 'paper', 'bleed', 'page-turns', 'pin-pages', 'next', 'last', 'goto']) assert.ok(reached.has(id), `Tab reaches #${id}: ${[...reached].join(' ')}`);
 
     assert.deepEqual(errors, [], 'the window reported no errors');
 
@@ -462,6 +560,32 @@ function pretendFonts() {
     await visible(window, '#theme-menu');
     await window.keyboard.press('Escape');
     await window.waitForSelector('#theme-menu', { state: 'hidden' });
+    // The book's themes and pages, in Spanish too.
+    await window.click('#theme-save');
+    await visible(window, '#theme-saving');
+    await window.click('#theme-save-yes');
+    await textIs(window, '#theme-saving .problem', /^Ponle un nombre al tema\.$/);
+    await window.click('#theme-save-no');
+    await gone(window, '#theme-saving');
+    await window.evaluate(() => { for (const id of ['openers-box', 'rules-box']) document.getElementById(id).open = true; });
+    await window.selectOption('#running-heads', 'book');
+    await textIs(window, '#theme-about', /Ha cambiado desde que lo elegiste/);
+    await textIs(window, '#preview-note', /^Vista previa rápida/);
+    await window.click('#pages-open');
+    await visible(window, '#pages');
+    await window.selectOption('#page-kind', 'note');
+    await window.click('#page-add');
+    await visible(window, '#page-editor');
+    await window.fill('#edit-text', 'Read slowly.');
+    await window.click('#edit-save');
+    await gone(window, '#page-editor');
+    await window.click('#pages-list li[data-kind="note"] .page-remove');
+    await visible(window, '#page-remove');
+    await window.click('#remove-yes');
+    await window.waitForFunction(() => !document.querySelector('#pages-list li[data-kind="note"]'));
+    await window.click('#pages-done');
+    await gone(window, '#pages');
+    await window.selectOption('#running-heads', 'off');
     await command(window, 'tutorial');
     await window.click('#tour-start');
     await visible(window, '#tour-card');
