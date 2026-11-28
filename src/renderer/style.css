@@ -539,6 +539,12 @@ dialog h3 {
   font-size: 0.75rem;
   color: var(--muted);
 }
+/* Small grey words in a dialog or a pop-up sit on the looks' shading, and fonts put them on a different part of it on each
+   system. In Night and Dusk with Metallic, the faintest text falls just short of AA on Windows and macOS, so all of it here is
+   one step stronger. */
+:is(dialog, .popover) :is(.hint, .about-version, .about-links span, .about-tech, .about-legal, .pi-detail, .palette-hint) {
+  color: var(--text-soft);
+}
 .prefs section {
   padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--rule);
